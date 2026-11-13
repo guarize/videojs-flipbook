@@ -1,0 +1,503 @@
+/*
+ * Someone else's stylesheet (tests/e2e/hostile.spec.ts). Nothing here is aimed at the player: it is the ordinary,
+ * unlayered, global CSS that sites ship. Served as written (public/), so no build tool tidies it.
+ *
+ * The page's background and the player's own box (#player, pinned inline) are left alone, so a difference between
+ * this page and the quiet one is something this file did to the skin.
+ */
+
+/* ─── A reset (modern-normalize's shape) ─────────────────────────────── */
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+html {
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 1em;
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+/* ─── A preflight (Tailwind 3's shape, unlayered as it shipped) ───────── */
+
+*,
+::before,
+::after {
+  border-width: 0;
+  border-style: solid;
+  border-color: #e5e7eb;
+}
+
+blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+ol,
+ul,
+menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button,
+[role="button"] {
+  cursor: default;
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  -webkit-appearance: button;
+  background-color: transparent;
+  background-image: none;
+}
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  vertical-align: middle;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+[hidden] {
+  display: none;
+}
+
+/* ─── The site's own globals ──────────────────────────────────────────── */
+
+* {
+  box-sizing: content-box;
+  margin: revert;
+  transition: all 1s;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font: italic 700 20px/2 "Comic Sans MS", "Comic Sans", cursive;
+  font-variant: small-caps;
+  font-feature-settings: "smcp", "ss01";
+  letter-spacing: 0.1em;
+  word-spacing: 0.3em;
+  text-transform: uppercase;
+  text-align: center;
+  text-indent: 2em;
+  text-shadow: 1px 1px 0 lime;
+  text-rendering: geometricPrecision;
+  white-space: pre-line;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  color: #c00;
+  cursor: crosshair;
+  list-style: square inside;
+  quotes: "«" "»";
+  caret-color: lime;
+  accent-color: lime;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 2em 0 1em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid currentColor;
+  color: navy;
+  font-family: Georgia, serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+p {
+  max-width: 60ch;
+  margin: 0 0 1.5em;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  text-align: justify;
+}
+
+a {
+  color: blue;
+  font-weight: 700;
+  text-decoration: underline wavy;
+}
+
+a:hover {
+  color: purple;
+  background: yellow;
+}
+
+kbd {
+  display: inline-block;
+  padding: 0 0.4em;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #eee;
+  box-shadow: 0 2px 0 #999;
+  color: #b00;
+  font: 500 16px/1.45 ui-monospace, monospace;
+}
+
+button {
+  display: inline-block;
+  min-width: 120px;
+  height: 48px;
+  margin: 0 8px 8px 0;
+  padding: 12px 24px;
+  border: 2px solid #333;
+  border-radius: 0;
+  background: linear-gradient(#fff, #ccc);
+  box-shadow: 0 4px 0 #333;
+  color: #000;
+  font: 700 18px/1 Georgia, serif;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+button:hover {
+  background: orange;
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(2px);
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  opacity: 0.3;
+}
+
+svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+  max-width: 100%;
+  fill: currentColor;
+  stroke: red;
+  stroke-width: 3;
+  vertical-align: middle;
+}
+
+path {
+  fill: green;
+}
+
+img,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 3px solid red;
+  border-radius: 8px;
+  object-fit: fill;
+}
+
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  height: 50px;
+  margin-bottom: 1em;
+  padding: 10px 16px;
+  border: 2px solid #333;
+  border-radius: 0;
+  background: #fff;
+  color: #000;
+  font: 400 18px/1.4 Georgia, serif;
+  text-align: left;
+}
+
+input::placeholder {
+  color: red;
+  opacity: 1;
+}
+
+ul,
+ol {
+  margin: 1em 0;
+  padding-left: 40px;
+  list-style: disc outside;
+}
+
+li {
+  margin-bottom: 0.5em;
+  line-height: 2;
+}
+
+li::before {
+  content: "→ ";
+  color: red;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1em;
+}
+
+dt {
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+dd {
+  margin-left: 2em;
+}
+
+fieldset {
+  margin: 1em 0;
+  padding: 1em;
+  border: 2px groove #999;
+}
+
+legend {
+  padding: 0 0.5em;
+  font-weight: 900;
+}
+
+span {
+  color: green;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 2;
+}
+
+div {
+  line-height: 2;
+  min-height: 1px;
+}
+
+section,
+header,
+footer {
+  padding: 2rem 1rem;
+  border-top: 1px solid #ccc;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+sup {
+  font-size: 10px;
+  color: red;
+}
+
+time {
+  font-style: italic;
+  color: gray;
+}
+
+[role="slider"] {
+  height: 40px;
+  border-radius: 0;
+  background: orange;
+  outline: 1px solid #000;
+  cursor: grab;
+}
+
+[role="menu"],
+[role="dialog"],
+[role="tooltip"],
+dialog,
+[popover] {
+  margin: auto;
+  padding: 2em;
+  border: 5px solid red;
+  background: #fff;
+  color: #000;
+}
+
+[role="menuitem"],
+[role="menuitemradio"],
+[role="menuitemcheckbox"] {
+  padding: 1em;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+[aria-hidden="true"] {
+  speak: never;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 4px dashed lime;
+  outline-offset: 6px;
+  box-shadow: 0 0 0 8px yellow;
+}
+
+::selection {
+  background: hotpink;
+  color: #000;
+}
+
+::backdrop {
+  background: rgb(255 0 0 / 0.5);
+}
+
+/* ─── A theme's rules, under its classes and ids ──────────────────────── */
+
+.entry-content h2,
+.entry-content h3 {
+  margin-top: 3em;
+  font-size: 40px;
+}
+
+.entry-content ul li,
+.entry-content ol li {
+  padding-left: 1em;
+  background: #ffe;
+}
+
+.entry-content kbd,
+.prose kbd {
+  padding: 2px 6px;
+  font-size: 14px;
+}
+
+.entry-content a,
+#content a {
+  color: #06c;
+  border-bottom: 1px dotted;
+}
+
+.prose p,
+#content p {
+  margin-bottom: 2em;
+  color: #333;
+}
+
+.prose img,
+.prose video,
+#content img {
+  margin: 2em auto;
+  border-radius: 12px;
+}
+
+#page button,
+#content button,
+#content input {
+  border-radius: 999px;
+  font-size: 20px;
+}
+
+#page #content span {
+  letter-spacing: 0.05em;
+}
+
+.prose :where(svg) {
+  display: inline-block;
+}
+
+/* A page's own components that happen to share a class name with the skin's. */
+
+.media-button,
+.fb-bar,
+.fb-keycap {
+  padding: 30px;
+  background: teal;
+}

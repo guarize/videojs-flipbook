@@ -1,0 +1,29 @@
+---
+/**
+ * A pinned chapter of the page: the copy on the left, its scene beside it, both on the desk. The section's id names
+ * the scene that main.ts builds for it (`data-scene`), and its heading is `<id>-title`.
+ */
+import type { Title as TitleText } from '../content/copy';
+import Kicker from './Kicker.astro';
+import Title from './Title.astro';
+
+interface Props {
+  id: string;
+  kicker: string;
+  title: TitleText;
+}
+
+const { id, kicker, title } = Astro.props;
+---
+
+<section class="pin demo" id={id} aria-labelledby={`${id}-title`} data-scene={id}>
+  <div class="stage">
+    <div class="desk" aria-hidden="true"></div>
+    <div class="copy">
+      <Kicker label={kicker} />
+      <h2 id={`${id}-title`} class:list={{ long: title.long }}><Title title={title} /></h2>
+      <slot name="copy" />
+    </div>
+    <slot />
+  </div>
+</section>

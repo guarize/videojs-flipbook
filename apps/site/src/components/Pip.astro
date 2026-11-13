@@ -1,0 +1,29 @@
+---
+import { copy } from '../content/copy';
+import { asset } from '../lib/asset';
+import Demo from './Demo.astro';
+
+const { pip } = copy;
+---
+
+<Demo id="pip" kicker={pip.kicker} title={pip.title}>
+  <Fragment slot="copy">
+    {pip.body.map((text) => <p class="body" set:html={text} />)}
+  </Fragment>
+  <div class="pip-scene" aria-hidden="true">
+    <div class="pip-place" data-pip-place>
+      <div class="waiting">
+        <span class="w-ribbon"></span>
+        <div class="w-plate">
+          <img src={asset('book/pages/p-10.webp')} alt="" width="800" height="450" loading="lazy" decoding="async" />
+        </div>
+        <p class="w-text">{pip.waiting}</p>
+        <span class="w-edge"></span>
+      </div>
+    </div>
+    <div class="pip-window" data-pip-window>
+      <div class="pip-bar"><span></span><span></span><span></span><b>{pip.window}</b></div>
+      <img src={asset('book/player-20.webp')} alt="" width="1200" height="676" loading="lazy" decoding="async" />
+    </div>
+  </div>
+</Demo>

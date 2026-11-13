@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Flipbook · a Video.js skin by Gua</title>
+    <meta name="description" content="A Video.js 10 skin that plays a film like a flipbook. Drag the book’s fore-edge and the film moves under your hand, as fast or as slow as you go." />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0d0b09" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Flipbook · a Video.js skin by Gua" />
+    <meta property="og:description" content="Your hand is the frame rate. A Video.js 10 skin that plays a film like a flipbook." />
+    <meta property="og:image" content="./media/film/poster.webp" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="./fonts/flipbook/onest-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./media/film/poster.webp" as="image" type="image/webp" fetchpriority="high" />
+    <link rel="stylesheet" href="/src/site/site.css" />
+  </head>
+  <body>
+    <a class="skip" href="#player">Skip to the player</a>
+
+    <header class="masthead">
+      <a class="brand" href="https://gua.studio" aria-label="Gua, gua.studio">
+        <svg viewBox="1 1 22 22" aria-hidden="true"><path d="M4.8 2.2H19.2A2.6 2.6 0 0 1 21.8 4.8V19.2A2.6 2.6 0 0 1 19.2 21.8H4.8A2.6 2.6 0 0 1 2.2 19.2V4.8A2.6 2.6 0 0 1 4.8 2.2ZM8.5 4.6H15.5A2.2 2.2 0 0 1 17.7 6.8V14.2A2.2 2.2 0 0 1 15.5 16.4H8.5A2.2 2.2 0 0 1 6.3 14.2V6.8A2.2 2.2 0 0 1 8.5 4.6ZM2.96 2.96L6.94 5.24M21.04 2.96L17.06 5.24M2.96 21.04L6.94 15.76M21.04 21.04L17.06 15.76" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Gua</span>
+      </a>
+      <nav class="links" aria-label="Elsewhere">
+        <a href="https://github.com/guarize/videojs-flipbook">Source</a>
+        <a href="https://gua.studio">gua.studio</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="title">
+        <h1 id="title">Flipbook</h1>
+        <div class="intro-text">
+          <p class="deck">Your hand is the frame rate.</p>
+          <p class="sub">A skin for Video.js 10. The timeline is the book’s fore-edge. Drag along it and the film moves under your hand, forwards and back, as fast as you go. The first moving pictures were flipbooks, and this player is one.</p>
+        </div>
+      </section>
+
+      <section class="canvas" aria-label="Player">
+        <div class="bench">
+          <div class="widths" role="group" aria-labelledby="widths-label">
+            <span class="widths-label" id="widths-label">Frame width</span>
+            <div class="seg" id="seg" style="--i: 3">
+              <button type="button" data-width="360" aria-pressed="false">360<span class="sr"> pixels</span></button>
+              <button type="button" data-width="480" aria-pressed="false">480<span class="sr"> pixels</span></button>
+              <button type="button" data-width="720" aria-pressed="false">720<span class="sr"> pixels</span></button>
+              <button type="button" data-width="fill" aria-pressed="true">Fill</button>
+            </div>
+            <span class="widths-readout" id="readout" aria-hidden="true"></span>
+          </div>
+          <div class="choice" id="features" role="radiogroup" aria-labelledby="features-label" aria-describedby="features-note">
+            <span class="widths-label" id="features-label">Features</span>
+            <div class="seg seg-features" style="--i: 1">
+              <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="essential">Essential</button>
+              <button type="button" role="radio" aria-checked="true" tabindex="0" data-value="book">Full book</button>
+            </div>
+          </div>
+        </div>
+        <div class="bench bench-details" id="details" role="group" aria-labelledby="details-label">
+          <span class="widths-label" id="details-label">Details</span>
+          <div class="chips">
+            <button type="button" class="chip" aria-pressed="true" data-detail="cloth">Cloth bar</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="type">Type sorts</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="folio">Folio</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="icon-fullscreen">Spread icon</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="icon-volume">Sheets icon</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="icon-settings">Stick icon</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="sheaf">Volume sheaf</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="lift">Hover lift</button>
+            <button type="button" class="chip" aria-pressed="true" data-detail="states">States</button>
+          </div>
+        </div>
+        <p class="bench-note" id="features-note">Essential is the player alone; the full book adds its extras, each loaded the first time it’s used. Details are trial touches on the controls: switch each off to see the control as it was. On a touch screen fullscreen and volume keep their familiar glyphs.</p>
+
+        <div class="frame" id="frame">
+          <div class="frame-player" id="player" tabindex="-1" data-fb-float>
+            <img class="frame-poster" src="./media/film/poster.webp" alt="" width="1920" height="1080" fetchpriority="high" decoding="async" />
+          </div>
+          <div class="frame-handle" id="frame-handle" role="slider" tabindex="0" aria-label="Frame width" aria-valuemin="320" aria-valuemax="1200" aria-valuenow="960"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.25 8.25l-8 8M16.25 12.75l-3.5 3.5"/></svg></div>
+        </div>
+      </section>
+
+      <section class="try" aria-labelledby="try-title">
+        <div class="sheet">
+          <header class="sheet-head">
+            <h2 id="try-title">Try it</h2>
+            <p>What the book does that you won’t find by looking. The keys work as soon as the page is open, without clicking the player first. Those marked Book are the book’s extras: on with Full book, off with Essential.</p>
+          </header>
+          <dl class="moves">
+            <div class="move">
+              <dt><svg class="glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.75 13.25v-4M6.25 13.25v-6.5M8.75 13.25V4.5M11.25 13.25V4.5M13.75 13.25v-6.5M16.25 13.25v-4M5.5 16.75h9M7.5 15l-2 1.75 2 1.75M12.5 15l2 1.75-2 1.75"/></svg><span class="sr">Drag</span></dt>
+              <dd><strong>Drag along the fore-edge.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> Point at the timeline and the picture steps back while the pages fan out around that moment. Drag, and they riffle past. Move up, away from the edge, for finer control. With Essential, a single card shows the frame, its time and its chapter.</dd>
+            </div>
+            <div class="move">
+              <dt><svg class="glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.75 13.25v-5M6.25 13.25V5.5M8.75 13.25V4.5M12.75 6.25h3.5M11.75 9.25h4.5M12.75 12.25h3.5"/></svg><span class="sr">Flick</span></dt>
+              <dd><strong>Flick to throw the pages.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> Let go mid-drag and they fly on, slowing as they go; near the start of a chapter, they settle on it.</dd>
+            </div>
+            <div class="move">
+              <dt><kbd>T</kbd></dt>
+              <dd><strong>Contents.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> The film’s table of contents: each chapter with its frame, a dotted leader and the time it starts, the one playing marked in red. Your bookmarks follow.</dd>
+            </div>
+            <div class="move">
+              <dt><kbd>B</kbd> <kbd>[</kbd> <kbd>]</kbd></dt>
+              <dd><strong>Bookmark ribbons.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> <kbd class="inline">B</kbd> drops a red ribbon between the pages at the moment playing; <kbd class="inline">[</kbd> and <kbd class="inline">]</kbd> go to the previous and next one. They stay in this browser.</dd>
+            </div>
+            <div class="move">
+              <dt><svg class="glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M11.75 3.75h-7a1 1 0 0 0-1 1v10.5a1 1 0 0 0 1 1h10.5a1 1 0 0 0 1-1v-7"/><path d="M11.75 3.75v3.5a1 1 0 0 0 1 1h3.5z"/></svg><span class="sr">Corner</span></dt>
+              <dd><strong>The corner, when paused.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> The page’s top corner lifts on the next chapter’s first frame. Pull it, or click it, to turn there.</dd>
+            </div>
+            <div class="move">
+              <dt><kbd>P</kbd></dt>
+              <dd><strong>The Muybridge plate.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> The twelve frames around the paused moment, laid out four by three, numbered and timed, as Muybridge printed a horse’s gallop. Each frame takes you there.</dd>
+            </div>
+            <div class="move">
+              <dt><kbd>N</kbd></dt>
+              <dd><strong>Next chapter.</strong> Turns the page to the next chapter at any time.</dd>
+            </div>
+            <div class="move">
+              <dt><kbd>I</kbd></dt>
+              <dd><strong>Picture-in-picture.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> In Chrome and Edge the whole book goes into the window: fore-edge, chapter tabs, captions and keys. Its place on the page turns over to a waiting page that keeps following the film. With Essential, the same key opens the browser’s own video window.</dd>
+            </div>
+            <div class="move">
+              <dt><kbd>⇧</kbd> <kbd>C</kbd></dt>
+              <dd><strong>Caption style.</strong> Size, backing, colour and position, each applied at once, with a preview line set on the frame you’re watching.</dd>
+            </div>
+            <div class="move">
+              <dt><kbd>?</kbd></dt>
+              <dd><strong>Every shortcut.</strong> All the keys and gestures on one card.</dd>
+            </div>
+            <div class="move">
+              <dt><svg class="glyph" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2"/><rect x="10.25" y="10.25" width="4.5" height="3.5" rx="1"/></svg><span class="sr">Scroll</span></dt>
+              <dd><strong>Scroll on while it plays.</strong> <span class="tag"><span class="sr">Part of the </span>Book</span> The book docks in the corner as a small copy of itself, and its place here stays held, so nothing on the page moves.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">How it holds up</h2>
+        <div class="note">
+          <h3>Weights</h3>
+          <p>The core carries Video.js 10 itself: the controls, the fore-edge with its tabs and preview card, captions and every accessibility fix. The book’s extras are separate chunks, each fetched the first time it’s used, or while the page is idle. Essential never fetches them. Either way the first paint is the same: the extras arrive afterwards and move nothing.</p>
+        </div>
+        <div class="note">
+          <h3>Over bright frames and dark ones</h3>
+          <p>The controls sit on their own cover board, never on the picture, so they read the same over a white sky as over a black stage. Captions sit on an ink backing that keeps them above 7:1 over a white frame, and the focus ring is registration red on an ink plate of its own.</p>
+        </div>
+        <div class="note">
+          <h3>Sized for a thumb</h3>
+          <p>Keys, chapter tabs and ribbons are drawn to a 44&nbsp;px target, on a phone as on a desktop. With less room, the keys’ names fold away and their keycaps stay; below 480&nbsp;px, a Shortcuts key opens the card of keys.</p>
+        </div>
+        <div class="note">
+          <h3>A keyboard is enough</h3>
+          <p>Tab reaches every control in the order you see it, each with the same red ring. The chapter tabs, the ribbons and the plate’s frames are one stop each, with the arrow keys inside. The contents, the plate and the cards close with Escape and hand focus back to where it was.</p>
+        </div>
+        <div class="note">
+          <h3>Still, when asked</h3>
+          <p>With reduced motion, nothing travels. The cover goes instead of turning, the corner lies folded instead of lifting, and the plate and the contents simply appear. Every change still shows; only the travel is gone.</p>
+        </div>
+        <div class="note">
+          <h3>Picture-in-picture keeps the book</h3>
+          <p>In the window, keys still reach the player and the chapters stay a click away. In Safari, which has no document window, the same key opens the browser’s own video window; Firefox has no picture-in-picture API and offers its own button on the video instead, so the key steps aside there.</p>
+        </div>
+      </section>
+
+      <section class="film" aria-labelledby="film-title">
+        <h2 id="film-title">The film</h2>
+        <p class="film-lead"><cite>Locomotion</cite>, 98 seconds in six chapters. A book of Eadweard Muybridge’s motion photographs lies on a desk. Its pages are turned one at a time, then riffled, and the animals run.</p>
+        <ol class="chapters">
+          <li>
+            <span class="ch-num" aria-hidden="true">1</span>
+            <h3>The Book</h3>
+            <p>A book on a dark desk, opened at its title page.</p>
+          </li>
+          <li>
+            <span class="ch-num" aria-hidden="true">2</span>
+            <h3>One Gallop</h3>
+            <p>Muybridge, <cite>The Horse in Motion</cite>, 1878: Sallie Gardner at a gallop, turned a page at a time, then riffled.</p>
+          </li>
+          <li>
+            <span class="ch-num" aria-hidden="true">3</span>
+            <h3>The Herd</h3>
+            <p>Muybridge, <cite>Animal Locomotion</cite>, 1887: plate 700, a buffalo; plate 683, a Virginia deer; plate 720, a cat.</p>
+          </li>
+          <li>
+            <span class="ch-num" aria-hidden="true">4</span>
+            <h3>Flight</h3>
+            <p><cite>Animal Locomotion</cite>, plate 759: a cockatoo in flight.</p>
+          </li>
+          <li>
+            <span class="ch-num" aria-hidden="true">5</span>
+            <h3>Torn Out</h3>
+            <p>One page, the horse with all four hooves off the ground, comes out of the book.</p>
+          </li>
+          <li>
+            <span class="ch-num" aria-hidden="true">6</span>
+            <h3>Colophon</h3>
+            <p>The last page: the credits.</p>
+          </li>
+        </ol>
+        <div class="sources">
+          <p class="attribution">Film: “Locomotion”, made for Flipbook. Photographs by Eadweard Muybridge: <cite>The Horse in Motion</cite> (1878), Library of Congress, and <cite>Animal Locomotion</cite> (1887), plates 683, 700, 720 and 759, University of Southern California Digital Library; public domain, via Wikimedia Commons. Music: “Origami” by Scott Buckley, released under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, <a href="https://www.scottbuckley.com.au">www.scottbuckley.com.au</a>. Set in Newsreader and Familjen Grotesk. Rendered with three.js. Music edited and mixed with page sounds.</p>
+          <p><a href="https://github.com/guarize/videojs-flipbook/blob/main/media-src/film/CREDITS.md">Every source, with its page and licence</a></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="colophon">
+      <h2 class="colophon-title">Colophon</h2>
+      <p>Built on <a href="https://videojs.org">Video.js 10</a> by Pedro Guarize for the Video.js Skins Design Challenge. Set in Onest. Apache 2.0.</p>
+    </footer>
+
+    <script type="module" src="/src/site/main.ts"></script>
+  </body>
+</html>

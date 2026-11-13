@@ -1,0 +1,12 @@
+/*
+ * The snippets sites paste with !important (tests/e2e/hostile.spec.ts). The host means these to win everywhere, and
+ * they do: the skin must stay whole under them, as it does under a visitor's own text-spacing stylesheet.
+ */
+*,
+*::before,
+*::after {
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}

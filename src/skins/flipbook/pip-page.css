@@ -1,0 +1,526 @@
+/*
+ * Picture-in-picture (pip.ts): the book's own window, and the waiting page left in the player's place.
+ */
+/* ─── The window ──────────────────────────────────────────────────────────
+
+   The page's stylesheets are copied into the window, the review page's body rules among them: these outrank them
+   (unlayered, and more specific), so the player fills the window edge to edge. */
+
+html.fb-pip-window,
+html.fb-pip-window body {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+html.fb-pip-window body {
+  display: block;
+}
+
+html.fb-pip-window .media-skin[data-theme="flipbook"] {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+  --media-video-border-radius: 0px;
+}
+
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* In the window the PiP key is the way back, at every size (it hides below 30rem on the page). */
+    :scope[data-fb-pip="document"] .fb-pip {
+      display: grid;
+    }
+
+    /* A picture-in-picture window can't go fullscreen (the browser refuses it), so the key isn't offered. */
+    :scope[data-fb-pip="document"] .fb-fullscreen {
+      display: none;
+    }
+
+    /* The chapter you're in, for the compact window, where the tabs don't fit (pip.ts writes it). */
+    .fb-pip-now {
+      display: none;
+    }
+
+    /*
+     * The compact window: the film, the fore-edge along the foot with the chapter you're in standing on it as its
+     * tab does, play, and the time. The other keys (the title, the top keys, settings, the way back) join them while
+     * the pointer is over the window or a key has focus; they keep their places when hidden, so nothing moves.
+     */
+    @container media-root (width < 480px) {
+      :scope[data-fb-pip="document"] .fb-pip {
+        order: 5;
+      }
+
+      :scope[data-fb-pip="document"] .fb-pip-now {
+        position: absolute;
+        bottom: calc(50% + 7px);
+        left: 12px;
+        z-index: 2;
+        display: block;
+        max-width: calc(100% - 24px);
+        height: 18px;
+        padding: 0 7px;
+        overflow: hidden;
+        border-radius: 5px 5px 0 0;
+        background: linear-gradient(180deg, var(--fb-accent-mid), var(--fb-accent-deep));
+        color: var(--fb-paper);
+        box-shadow:
+          inset 0 1px 0 rgb(from var(--fb-accent-glow) r g b / 0.35),
+          0 0 0 1px rgb(246 241 231 / 0.7);
+        font-family: var(--fb-mono);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        line-height: 18px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      :scope[data-fb-pip="document"] :is(.fb-settings, .fb-pip) {
+        transition:
+          transform var(--fb-fast) var(--fb-ease-out),
+          opacity var(--fb-base) var(--fb-ease);
+      }
+
+      :scope[data-fb-pip="document"]:not(:hover, :focus-within) :is(.video-controls-top, .fb-settings, .fb-pip) {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+/* ─── The waiting page ────────────────────────────────────────────────────
+
+   The page under the player's: paper, the gutter shaded where it goes into the spine, a ribbon there, the frame
+   it left on printed as a plate, and a fore-edge along the foot. It carries the skin's tokens (`media-skin`,
+   `data-theme`), not its layout. In the `apart` layer (armour.css), above every layer that styles the player, so
+   inside the player's frame (video mode, and the turn back in) the skin's own rules don't outrank it. */
+
+@layer apart {
+  .fb-pip-page {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
+    container: fb-pip-page / inline-size;
+    background:
+      linear-gradient(90deg, rgb(20 17 14 / 0.16), rgb(20 17 14 / 0.05) 2.5%, rgb(20 17 14 / 0) 7%),
+      var(--fb-paper);
+    color: var(--fb-ink);
+    font-family: var(--fb-font);
+    font-size: 16px;
+    line-height: 1.3;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    text-align: start;
+  }
+
+  /* Over the player, in its frame. */
+
+  .fb-pip-page[data-fb-over] {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    width: auto;
+    border-radius: inherit;
+  }
+
+  .fb-pip-page *,
+  .fb-pip-page *::before,
+  .fb-pip-page *::after {
+    box-sizing: border-box;
+  }
+
+  /* The paper turning: above everything, touching nothing. */
+
+  .fb-pip-leaf {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .fb-pip-leaf .fb-paper {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* A ribbon in the gutter: the same grosgrain as the bookmarks (ribbons.css), hanging from the head. */
+
+  .fb-pip-ribbon {
+    position: absolute;
+    top: 0;
+    left: clamp(16px, 3.6cqw, 44px);
+    width: clamp(10px, 1.2cqw, 15px);
+    height: clamp(56px, 34%, 240px);
+    filter: drop-shadow(0 1px 1px rgb(20 17 14 / 0.4));
+  }
+
+  .fb-pip-ribbon::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 6px), 0 100%);
+    background:
+      linear-gradient(180deg, rgb(30 2 0 / 0.6), transparent 9px),
+      repeating-linear-gradient(0deg, rgb(30 2 0 / 0.2) 0 1px, transparent 1px 2.5px),
+      var(--fb-cloth);
+  }
+
+  .fb-pip-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    column-gap: 6cqw;
+    width: 100%;
+    height: 100%;
+    padding: 6cqw 6cqw 0 calc(clamp(16px, 3.6cqw, 44px) + clamp(10px, 1.2cqw, 15px) + 4cqw);
+  }
+
+  /* The frame it left on, printed: a keyline and the shadow of a plate tipped in. */
+
+  .fb-pip-plate {
+    display: grid;
+    place-items: center start;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .fb-pip-still {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 2px;
+    background: var(--fb-desk);
+    box-shadow:
+      0 0 0 1px rgb(20 17 14 / 0.6),
+      0 1px 2px rgb(20 17 14 / 0.16),
+      0 16px 30px -18px rgb(20 17 14 / 0.55);
+  }
+
+  .fb-pip-copy {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .fb-pip-rule {
+    width: 34px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--fb-red-deep);
+  }
+
+  .fb-pip-title {
+    max-width: 16ch;
+    margin: 0;
+    font-size: clamp(18px, 2.5cqw, 30px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  /* Where the film is, as the cover's meta line is set: the jacket's ink (#4a4239, 8.6:1 on the paper). */
+
+  .fb-pip-where {
+    margin: 0;
+    color: #4a4239;
+    font-family: var(--fb-mono);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .fb-pip-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--fb-target);
+    margin: 6px 0 0;
+    padding: 0 12px 0 11px;
+    border: 0;
+    border-radius: var(--fb-radius-control);
+    background: var(--fb-ink);
+    color: var(--fb-paper);
+    font: 600 16px/1 var(--fb-font);
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--fb-fast) var(--fb-ease),
+      transform var(--fb-fast) var(--fb-ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fb-pip-back:hover {
+      background: var(--fb-ink-raised);
+    }
+  }
+
+  .fb-pip-back:active {
+    transform: scale(0.96);
+  }
+
+  .fb-pip-back:focus-visible {
+    outline: 2px solid var(--fb-red-deep);
+    outline-offset: 2px;
+  }
+
+  .fb-pip-back-icon {
+    display: grid;
+    flex: none;
+    width: var(--fb-icon);
+    height: var(--fb-icon);
+  }
+
+  .fb-pip-back-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The keycap as the bar sets it (labels.css), on ink. */
+
+  .fb-pip-keycap {
+    display: inline-grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    margin-inline-start: 2px;
+    padding-inline: 4px;
+    border: 1px solid rgb(246 241 231 / 0.32);
+    border-radius: 4px;
+    background: rgb(0 0 0 / 0.22);
+    color: var(--fb-paper-soft);
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.45);
+    font-family: var(--fb-mono);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* ─── The fore-edge ───────────────────────────────────────────────────────
+
+     One segment per chapter, as wide as its share of the film: its pages drawn as hairlines, the read ones sprayed
+     red. Each segment is a 44 px key to its chapter; hover or focus shows its name on a slip above it. */
+
+  .fb-pip-edge {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    column-gap: 3px;
+    margin-inline-start: calc(-1 * (clamp(10px, 1.2cqw, 15px) + 4cqw) + 4px);
+    padding: 22px 0 6px;
+  }
+
+  .fb-pip-seg {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-width: 0;
+    height: var(--fb-target);
+    margin: 0;
+    padding: 0 0 6px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .fb-pip-seg:focus-visible {
+    outline: 2px solid var(--fb-red-deep);
+    outline-offset: 2px;
+  }
+
+  .fb-pip-seg-pages {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 1px;
+    background: repeating-linear-gradient(90deg, rgb(20 17 14 / 0.62) 0 1px, rgb(20 17 14 / 0.08) 1px 3px);
+    transform-origin: 50% 100%;
+    transition: transform var(--fb-fast) var(--fb-ease-out);
+  }
+
+  .fb-pip-seg-read {
+    position: absolute;
+    inset: 0;
+    background: var(--fb-red-deep);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+
+  .fb-pip-seg-name {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    z-index: 1;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: var(--fb-ink);
+    color: var(--fb-paper);
+    font-family: var(--fb-mono);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(3px);
+    transition:
+      opacity var(--fb-fast) var(--fb-ease-out),
+      transform var(--fb-fast) var(--fb-ease-out);
+    pointer-events: none;
+  }
+
+  .fb-pip-seg-name b {
+    color: var(--fb-paper-soft);
+    font-weight: 600;
+  }
+
+  .fb-pip-seg:last-child .fb-pip-seg-name {
+    right: 0;
+    left: auto;
+  }
+
+  .fb-pip-seg:focus-visible .fb-pip-seg-name {
+    opacity: 1;
+    transform: none;
+  }
+
+  .fb-pip-seg:focus-visible .fb-pip-seg-pages {
+    transform: scaleY(1.5);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fb-pip-seg:hover .fb-pip-seg-name {
+      opacity: 1;
+      transform: none;
+    }
+
+    .fb-pip-seg:hover .fb-pip-seg-pages {
+      transform: scaleY(1.5);
+    }
+  }
+
+  .fb-pip-voice {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ─── Sizes: the page's own width ─────────────────────────────────────── */
+
+  /* Small: the words and the fore-edge; the plate would be a thumbnail, so it goes. */
+
+  @container fb-pip-page (width < 480px) {
+    .fb-pip-body {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 14px 16px 0 calc(clamp(16px, 3.6cqw, 44px) + clamp(10px, 1.2cqw, 15px) + 16px);
+    }
+
+    .fb-pip-plate,
+    .fb-pip-rule {
+      display: none;
+    }
+
+    .fb-pip-copy {
+      grid-column: 1;
+      gap: 6px;
+    }
+
+    .fb-pip-title {
+      max-width: none;
+    }
+
+    .fb-pip-back {
+      margin-top: 2px;
+    }
+
+    .fb-pip-edge {
+      margin-inline-start: calc(-1 * (clamp(10px, 1.2cqw, 15px) + 12px));
+      padding-top: 18px;
+    }
+  }
+
+  @container fb-pip-page (width < 352px) {
+    .fb-pip-where {
+      display: none;
+    }
+  }
+
+  /* No frame to print (the film hadn't drawn one): the words take the page. */
+
+  .fb-pip-page[data-fb-blank] .fb-pip-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fb-pip-page[data-fb-blank] .fb-pip-plate {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fb-pip-back,
+    .fb-pip-seg-pages,
+    .fb-pip-seg-name {
+      transition: none;
+    }
+
+    .fb-pip-seg:focus-visible .fb-pip-seg-pages,
+    .fb-pip-seg:hover .fb-pip-seg-pages,
+    .fb-pip-seg-name {
+      transform: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .fb-pip-seg-pages {
+      background: GrayText;
+    }
+
+    .fb-pip-seg-read {
+      background: Highlight;
+    }
+
+    .fb-pip-back {
+      border: 1px solid ButtonText;
+    }
+  }
+}
+
+/* The waiting page stands in the host's page, in the player's place: the armour's line (armour.css), for the page
+   itself; what is inside it is inside a `.media-skin`, and has it already. */
+.fb-pip-page:not(#\#):not(#\#) {
+  all: revert-layer;
+}
+
+/* And the browser's own stylesheet under the skin's layers (armour.css, `reset`). */
+@layer reset {
+  .fb-pip-page {
+    all: revert;
+  }
+}

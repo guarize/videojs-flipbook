@@ -1,0 +1,52 @@
+{
+  "name": "videojs-flipbook",
+  "version": "0.0.0",
+  "description": "A Video.js 10 skin that plays a film like a flipbook. You drag the edge of the book and your hand sets the frame rate.",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Pedro Guarize (https://gua.studio)",
+  "homepage": "https://flipbook.gua.studio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guarize/videojs-flipbook.git"
+  },
+  "bugs": "https://github.com/guarize/videojs-flipbook/issues",
+  "keywords": [
+    "videojs",
+    "video.js",
+    "video-player",
+    "skin",
+    "flipbook",
+    "web-components"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "deploy": "node apps/preview/deploy.mjs",
+    "deploy:vercel": "pnpm dlx vercel@64 build && pnpm dlx vercel@64 deploy --prebuilt",
+    "deploy:netlify": "pnpm dlx netlify-cli@27 deploy --build",
+    "deploy:cloudflare": "pnpm run build && pnpm dlx wrangler@4 pages deploy dist --project-name flipbook",
+    "build:lib": "vite build --config vite.lib.config.ts",
+    "site:dev": "pnpm --filter @flipbook/site dev",
+    "site:build": "pnpm --filter @flipbook/site build",
+    "site:preview": "pnpm --filter @flipbook/site preview",
+    "site:check": "pnpm --filter @flipbook/site check",
+    "film:fetch": "node scripts/film-fetch.mjs"
+  },
+  "dependencies": {
+    "@videojs/html": "10.3.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
+    "@videojs/mux-video": "10.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.1.0"
+  }
+}

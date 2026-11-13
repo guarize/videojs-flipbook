@@ -1,0 +1,18 @@
+---
+/** One still of the player (lib/stills.ts): AVIF then WebP, lazy, its box reserved by its own dimensions. */
+import { still } from '../lib/stills';
+
+interface Props {
+  id: string;
+  alt: string;
+  sizes: string;
+}
+
+const { id, alt, sizes } = Astro.props;
+const image = still(id, sizes);
+---
+
+<picture>
+  <source type="image/avif" srcset={image.avif} sizes={image.sizes} />
+  <img src={image.src} srcset={image.webp} sizes={image.sizes} alt={alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
+</picture>

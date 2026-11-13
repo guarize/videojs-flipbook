@@ -1,0 +1,371 @@
+/*
+ * The deck (deck.ts): point at the bar and the picture steps back while the storyboard fans out around that
+ * moment, printed cards with their thickness, shadow and caption; the sharp frames are swapped in over the
+ * storyboard tiles. Swipes across the picture flip pages. Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+
+    /* While the deck is open: the fore-edge fans, the painting standing up where the gilt was (as skin.css fans it on first sight). */
+    :scope[data-fb-deck] .fb-edge[data-painted] .fb-edge-paint {
+      opacity: 1;
+      transform: none;
+    }
+
+    :scope[data-fb-deck] .fb-edge[data-painted] .fb-edge-block {
+      opacity: 0;
+      transform: scaleY(0.2);
+    }
+
+    :scope[data-fb-deck] .fb-edge-lift {
+      opacity: 0;
+    }
+    /* The picture steps back while the deck is open; it steps forward again to meet the card that lands on it. */
+    :scope[data-fb-deck="open"] :is(video, .media-poster) {
+      transform: scale(0.82);
+    }
+
+    /* ─── The deck ──────────────────────────────────────────────────────── */
+
+    .fb-deck {
+      position: absolute;
+      inset: 0;
+      z-index: 25;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .fb-deck[data-active] {
+      visibility: visible;
+    }
+
+    /* The desk: the picture behind dims as it steps back, so the cards read as the thing in your hand. */
+    .fb-deck-desk {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background:
+        radial-gradient(120% 90% at 50% 42%, rgb(20 17 14 / 0.7), rgb(13 11 9 / 0.9) 72%),
+        rgb(13 11 9 / 0.1);
+      transition: opacity var(--fb-scene) var(--fb-ease);
+    }
+
+    :scope[data-fb-deck] .fb-deck-desk {
+      opacity: 1;
+    }
+
+    :scope[data-fb-deck="keys"] .fb-deck-desk {
+      transition-duration: 120ms;
+    }
+
+    .fb-deck-stage {
+      position: absolute;
+      inset: 0;
+    }
+
+    .fb-card {
+      position: absolute;
+      top: var(--fb-cy);
+      left: var(--fb-cx);
+      width: var(--fb-cw);
+      height: var(--fb-ch);
+      margin-top: calc(var(--fb-ch) / -2);
+      margin-left: calc(var(--fb-cw) / -2);
+      border-radius: var(--fb-radius-card);
+      opacity: 0;
+      transform-origin: 50% 50%;
+      --fb-edge: clamp(2px, calc(var(--fb-cw) * 0.008), 3px);
+    }
+
+    .fb-deck[data-active] .fb-card {
+      will-change: transform, opacity;
+    }
+
+    /* A real shadow under each card: tight contact, then a soft fall-off. */
+    .fb-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: var(--fb-shadow-card);
+    }
+
+    .fb-card-image {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: inherit;
+      background-color: var(--fb-ink);
+      background-image: var(--fb-sprite);
+      background-size: var(--fb-sprite-size);
+      background-repeat: no-repeat;
+    }
+
+    /* The printed edge: a thin warm-white border, with the faintest ink line where paper meets picture. */
+    .fb-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow:
+        inset 0 0 0 var(--fb-edge) var(--fb-paper),
+        inset 0 0 0 calc(var(--fb-edge) + 1px) rgb(20 17 14 / 0.22);
+    }
+
+    .fb-card-shade {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background-color: var(--fb-desk);
+    }
+
+    .fb-deck[data-folding] .fb-card-shade {
+      transition: opacity var(--fb-scene) var(--fb-ease);
+    }
+
+    .fb-card-sheen {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: linear-gradient(100deg, transparent 38%, rgb(255 252 244 / 0.42) 50%, transparent 62%);
+    }
+
+    /* The frame you're on, in the grid and the still strip: a registration-red rule around the card. */
+    .fb-deck:is([data-layout="grid"], [data-layout="strip"]) .fb-card[data-current] {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 3px;
+    }
+
+    /* Fan ⇄ grid: a scene change, so the cards travel; the frame loop takes over again after. */
+    .fb-deck[data-morph] .fb-card {
+      transition:
+        transform 260ms var(--fb-ease),
+        opacity 200ms var(--fb-ease);
+    }
+
+    /* The fold: the others close up behind the front card while it lands on the picture. */
+    .fb-deck[data-folding] .fb-card {
+      transition:
+        transform var(--fb-scene) var(--fb-ease),
+        opacity 200ms var(--fb-ease-out);
+    }
+
+    .fb-deck[data-folding] .fb-card[data-landing] {
+      transition:
+        transform var(--fb-scene) var(--fb-ease),
+        opacity 140ms linear;
+    }
+
+    .fb-card[data-landing]::before,
+    .fb-card[data-landing]::after {
+      opacity: 0;
+      transition: opacity var(--fb-scene) var(--fb-ease);
+    }
+
+    /* The caption: where you are, in which chapter, and how fast the scrub is moving. */
+    .fb-deck-caption {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: calc(100% - 24px);
+      height: 32px;
+      padding-inline: 12px;
+      border-radius: 999px;
+      background-color: rgb(20 17 14 / 0.92);
+      box-shadow: 0 0 0 1px var(--fb-ink-line);
+      white-space: nowrap;
+      translate: -50% 0;
+      opacity: 0;
+      transition: opacity var(--fb-fast) var(--fb-ease);
+    }
+
+    .fb-deck[data-active]:not([data-mode="fold"], [data-mode="idle"]) .fb-deck-caption {
+      opacity: 1;
+    }
+
+    .fb-deck-time {
+      font-family: var(--fb-mono);
+      font-size: 15px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    .fb-deck-chapter {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--fb-paper-soft);
+      font-size: 15px;
+    }
+
+    .fb-deck-chapter:empty,
+    .fb-deck-rate:empty {
+      display: none;
+    }
+
+    .fb-deck-rate {
+      padding: 3px 7px;
+      border-radius: 4px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* The slider's own preview gives way to the deck when there's room for it. */
+    :scope[data-fb-ready] .media-time-slider-preview {
+      display: none;
+    }
+
+    /* (Not while a hand moves the film itself, flip.ts: nothing covers the picture then.) */
+    :scope[data-fb-deck]:not([data-fb-deck="flip"]) :is(.fb-cover-play, .fb-resume, .media-title) {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+
+
+    /* The deck, richer: real card thickness, a contact shadow on the picture beneath, and the front card's label. */
+    .fb-card {
+      transform-style: preserve-3d;
+      --fb-thick: clamp(3px, calc(var(--fb-cw) * 0.012), 6px);
+    }
+
+    .fb-card-edge {
+      position: absolute;
+      top: 1px;
+      bottom: 1px;
+      width: var(--fb-thick);
+      background: linear-gradient(90deg, #cbbfaa, #f3ecdf 45%, #d9cebb);
+    }
+
+    .fb-card-edge[data-side="start"] {
+      left: 0;
+      transform-origin: 0 50%;
+      transform: rotateY(90deg);
+    }
+
+    .fb-card-edge[data-side="end"] {
+      right: 0;
+      transform-origin: 100% 50%;
+      transform: rotateY(-90deg);
+    }
+
+    .fb-deck-shadow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0.28) 55%, transparent);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .fb-deck:not([data-layout="deck"]) .fb-deck-shadow,
+    .fb-deck[data-folding] .fb-deck-shadow {
+      opacity: 0 !important;
+      transition: opacity var(--fb-base) var(--fb-ease);
+    }
+
+    /* The specular light: a brighter, wider band than v1, so a turning card catches it. */
+    .fb-card-sheen {
+      background:
+        linear-gradient(104deg, transparent 30%, rgb(255 252 244 / 0.18) 42%, rgb(255 253 248 / 0.62) 50%, rgb(255 252 244 / 0.18) 58%, transparent 70%);
+    }
+
+    /* The caption is a printed label across the front card's foot: paper, ink, the chapter and the time. */
+    .fb-deck-caption {
+      height: 30px;
+      padding-inline: 10px;
+      border-radius: 6px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 10px 24px -10px rgb(0 0 0 / 0.6);
+      z-index: 70;
+    }
+
+    .fb-deck-chapter {
+      color: #4a4239;
+      font-weight: 500;
+    }
+
+    .fb-deck-rate {
+      background-color: var(--fb-red-deep);
+      color: var(--fb-paper);
+    }
+
+    /* ─── Sharp frames on the cards ─────────────────────────────────────── */
+
+    .fb-card-sharp {
+      position: absolute;
+      inset: 0;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      opacity: 0;
+    }
+
+    /* Swapped in over the storyboard tile once decoded: a quick cross-fade, never a flash. */
+    .fb-card-sharp[data-ready] {
+      opacity: 1;
+      transition: opacity var(--fb-fast) var(--fb-ease);
+    }
+
+    /* Thrown: a light streak runs across the cards while they fly. */
+    .fb-deck[data-streak] .fb-card-sheen {
+      background: linear-gradient(90deg, transparent 6%, rgb(255 252 244 / 0.24) 32%, rgb(255 253 248 / 0.5) 50%, rgb(255 252 244 / 0.24) 68%, transparent 94%);
+    }
+
+    /* Sideways swipes on the picture flip pages; vertical ones still scroll the page, and pinch still zooms. */
+    :scope {
+      touch-action: pan-y pinch-zoom;
+    }
+
+    /* ─── Sizes: the player's own width, not the page's ─────────────────── */
+
+    @container media-root (width < 480px) {
+      .fb-deck-caption {
+        height: 26px;
+        gap: 6px;
+        padding-inline: 8px;
+      }
+
+      .fb-deck-time,
+      .fb-deck-chapter {
+        font-size: 13px;
+      }
+
+      .fb-deck-chapter {
+        display: none;
+      }
+    }
+
+    /* ─── Preferences ───────────────────────────────────────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope[data-fb-deck="open"] :is(video, .media-poster) {
+        transform: none;
+      }
+
+      .fb-card-sharp,
+      .fb-deck-desk,
+      .fb-deck-caption {
+        transition-duration: 0ms !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-deck {
+        display: none;
+      }
+    }
+  }
+}

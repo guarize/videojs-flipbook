@@ -1,0 +1,38 @@
+---
+import Colophon from '../components/Colophon.astro';
+import Corner from '../components/Corner.astro';
+import Evidence from '../components/Evidence.astro';
+import Film from '../components/Film.astro';
+import ForeEdge from '../components/ForeEdge.astro';
+import Hero from '../components/Hero.astro';
+import Masthead from '../components/Masthead.astro';
+import Pip from '../components/Pip.astro';
+import Plate from '../components/Plate.astro';
+import Riffle from '../components/Riffle.astro';
+import { copy } from '../content/copy';
+import Base from '../layouts/Base.astro';
+---
+
+<Base>
+  <a class="skip" href="#player">{copy.hero.skip}</a>
+  <Masthead />
+  <main>
+    <Hero />
+    <Riffle />
+    <ForeEdge />
+    <Plate />
+    <Corner />
+    <Pip />
+    <Evidence />
+    <Film />
+  </main>
+  <Colophon />
+  <script>
+    // The scenes and the player, as the workbench page runs them (apps/preview/src/book/main.ts): the book after first
+    // paint, each scene as its section nears, the player on the first sign of intent, with its first key replayed.
+    // The page's own controls on that player: Essential or the full book, the two measured frames, the visitor's
+    // settings. First, so a choice of Essential in the address is on the host before the player can start.
+    import '../scripts/proof';
+    import '@preview/book/main';
+  </script>
+</Base>

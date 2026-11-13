@@ -1,0 +1,900 @@
+/*
+ * The showcase: the desk Flipbook lies on. Ink ground, paper type, one registration red for focus and the frame
+ * width in use; the paper card under the player is the skin's own keymap card, set out on the desk. Tokens are the
+ * skin's (src/skins/flipbook/theme.css), named for what they do here.
+ */
+
+/* Onest, the skin's face: the same family name and file as theme.css, so the page and the player share one download. */
+@font-face {
+  font-family: "Flipbook Onest";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/flipbook/onest-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Arial, sized to Onest, so the swap moves nothing. */
+@font-face {
+  font-family: "Flipbook Onest Fallback";
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans");
+  size-adjust: 105.2%;
+  ascent-override: 92.2%;
+  descent-override: 28.99%;
+  line-gap-override: 0%;
+}
+
+:root {
+  /* The desk, and what lies on it. */
+  --desk: #0d0b09;
+  --board: #1b1713;
+  --rule: rgb(245 240 230 / 0.14);
+  --rule-strong: rgb(245 240 230 / 0.32);
+
+  /* Type on the desk: 17.4, 13.1 and 9.2 to 1 on --desk. */
+  --paper: #f6f1e7;
+  --paper-soft: #d9d2c4;
+  --paper-mute: #b9b1a2;
+
+  /* Type on the card: 16.7, 8.8 and 6.0 to 1 on --paper (15.0, 7.9 and 5.4 on its darkest corner). */
+  --ink: #14110e;
+  --ink-soft: #4a4239;
+  --red-deep: #a8311a;
+
+  /* Registration red: rules and focus on the desk (4.88:1), never text. On the card, focus and glyphs take --red-deep. */
+  --red: #e2492b;
+
+  --font: "Flipbook Onest", "Flipbook Onest Fallback", ui-sans-serif, system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --fast: 150ms;
+  --base: 200ms;
+
+  --radius-control: 10px;
+  --radius-player: 14px;
+  --radius-card: 4px;
+  --target: 44px;
+
+  /* Never less than a notch or a rounded corner takes (landscape phones; the viewport asks for viewport-fit=cover). */
+  --gutter: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  --column: 1200px;
+
+  color-scheme: dark;
+  accent-color: var(--red);
+  scrollbar-color: var(--paper-mute) var(--desk);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--desk);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background: var(--desk);
+  color: var(--paper);
+  font: 400 17px / 1.6 var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--red-deep);
+  color: var(--paper);
+}
+
+/* The page's links only: the player styles its own. */
+a:not(.media-skin *) {
+  color: inherit;
+  text-decoration-color: var(--rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color var(--fast) var(--ease);
+}
+
+@media (hover: hover) {
+  a:not(.media-skin *):hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+cite {
+  font-style: italic;
+}
+
+/* The page's focus ring is the skin's: registration red, 2 px, 2 px clear. The player draws its own. */
+:focus-visible:not(.media-skin, .media-skin *) {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* `a.skip`, not `.skip`: the page's link rule (`a:not(.media-skin *)`) would otherwise win and hide its text. */
+a.skip {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  display: inline-grid;
+  place-items: center;
+  min-height: var(--target);
+  padding-inline: 16px;
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  translate: 0 -200%;
+}
+
+.skip:focus-visible {
+  translate: none;
+}
+
+/* ------------------------------------------------------------------ Masthead */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--column);
+  margin-inline: auto;
+  padding: 8px var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--target);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.brand svg {
+  width: 20px;
+  height: 20px;
+}
+
+.links {
+  display: flex;
+  gap: 4px;
+  margin-inline-end: -12px;
+}
+
+.links a {
+  display: inline-grid;
+  place-items: center;
+  min-height: var(--target);
+  padding-inline: 12px;
+  border-radius: var(--radius-control);
+  color: var(--paper-soft);
+  text-decoration: none;
+  transition:
+    color var(--fast) var(--ease),
+    background-color var(--fast) var(--ease);
+}
+
+@media (hover: hover) {
+  .links a:hover {
+    background: rgb(245 240 230 / 0.07);
+    color: var(--paper);
+  }
+}
+
+/* ------------------------------------------------------------------ Title */
+
+main {
+  max-width: var(--column);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.intro {
+  display: grid;
+  gap: 16px;
+  padding-block: clamp(12px, 2.5vw, 28px) clamp(20px, 2.5vw, 28px);
+}
+
+/* The cover's title plate, set large: the registration rule above it is the plate's. */
+h1 {
+  margin: 0;
+  font-size: clamp(56px, 11vw, 96px);
+  font-weight: 650;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+}
+
+h1::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin-bottom: clamp(14px, 2vw, 20px);
+  background: var(--red);
+}
+
+.intro-text {
+  display: grid;
+  gap: 8px;
+  max-width: 40rem;
+}
+
+.deck {
+  margin: 0;
+  font-size: clamp(20px, 2.4vw, 24px);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.sub {
+  margin: 0;
+  color: var(--paper-mute);
+  text-wrap: pretty;
+}
+
+@media (min-width: 960px) {
+  .intro {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    column-gap: clamp(40px, 6vw, 88px);
+  }
+
+  .intro-text {
+    padding-bottom: 4px;
+  }
+}
+
+/* ------------------------------------------------------------------ The desk, and the player on it */
+
+/*
+ * The frame fills the column, but no taller than the first screen leaves room for: the whole book, controls and
+ * all, is in view on arrival at 1280 x 800. --above is what stands over it there (masthead, title, the bench: the
+ * width bar, the features and their note), and 30 px of air under it.
+ */
+.canvas {
+  --above: 376px;
+  /* Whole pixels, so the player's own edges (and what hangs from them, like its corner) sit on the pixel grid. */
+  --fill: round(down, min(100%, max(600px, (100svh - var(--above)) * 16 / 9)), 1px);
+  display: grid;
+  /* One track the column's width, never its content's: an auto track keeps the player's old width when the window
+     narrows (WebKit, on rotation), and the page scrolls sideways. */
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 12px;
+  margin-inline: calc(var(--gutter) * -1);
+  padding: 0 var(--gutter) clamp(32px, 5vw, 56px);
+  /* A lamp over the desk, still: the book lies where it's lightest. */
+  background: radial-gradient(60% 70% at 50% 55%, rgb(255 236 205 / 0.045), transparent 70%);
+}
+
+/* Above the player: the frame's width and the player's features, in one row where there's room (they wrap as the
+   page narrows); under them, what the features mean, in one sentence that never changes, so nothing below moves
+   when they do. */
+.bench {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 24px;
+  width: 100%;
+  max-width: var(--column);
+}
+
+.widths,
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 16px;
+}
+
+.bench-note {
+  margin: 0;
+  color: var(--paper-mute);
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.widths-label {
+  color: var(--paper-mute);
+  font-size: 16px;
+}
+
+/* One indicator travels to the width in use; the buttons don't each change. */
+.seg {
+  --cell: 56px;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, var(--cell));
+  padding: 3px;
+  border-radius: 13px;
+  background: var(--board);
+  box-shadow:
+    inset 0 1px 0 rgb(255 248 235 / 0.07),
+    inset 0 0 0 1px rgb(245 240 230 / 0.08);
+}
+
+.seg::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: var(--cell);
+  height: calc(100% - 6px);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.3),
+    0 4px 10px -4px rgb(0 0 0 / 0.5);
+  transform: translateX(calc(var(--i, 3) * 100%));
+  transition:
+    transform var(--base) var(--ease),
+    opacity var(--fast) var(--ease);
+}
+
+.seg[data-free]::before {
+  opacity: 0;
+}
+
+/* Named choices: cells as wide as the longest name, so the indicator still travels a whole cell. */
+.seg-features {
+  --cell: 100px;
+  grid-template-columns: repeat(2, var(--cell));
+}
+
+.seg [role="radio"][aria-checked="true"] {
+  color: var(--ink);
+}
+
+
+.seg button {
+  position: relative;
+  min-height: var(--target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--paper-soft);
+  font: 500 16px / 1 var(--font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    color var(--fast) var(--ease),
+    transform var(--fast) var(--ease);
+}
+
+@media (hover: hover) {
+  .seg button:hover {
+    color: var(--paper);
+  }
+}
+
+.seg button:active {
+  transform: scale(0.96);
+}
+
+.seg button[aria-pressed="true"] {
+  color: var(--ink);
+}
+
+/* The details on trial: each a switch of its own (none depends on another), pressed while its detail is on. A tick
+   stands with the paper fill, so the state is never the colour alone. */
+.bench-details {
+  gap: 8px 16px;
+  max-width: none;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--target);
+  padding: 0 14px 0 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--board);
+  box-shadow:
+    inset 0 1px 0 rgb(255 248 235 / 0.07),
+    inset 0 0 0 1px var(--rule-strong);
+  color: var(--paper-soft);
+  font: 500 16px / 1 var(--font);
+  cursor: pointer;
+  transition:
+    background-color var(--fast) var(--ease),
+    color var(--fast) var(--ease),
+    transform var(--fast) var(--ease);
+}
+
+.chip::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  margin-top: -3px;
+  border: solid currentColor;
+  border-width: 0 0 1.5px 1.5px;
+  opacity: 0;
+  transform: rotate(-45deg);
+  transition: opacity var(--fast) var(--ease);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--paper);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.3),
+    0 4px 10px -4px rgb(0 0 0 / 0.5);
+  color: var(--ink);
+}
+
+.chip[aria-pressed="true"]::before {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .chip[aria-pressed="false"]:hover {
+    color: var(--paper);
+  }
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
+
+.widths-readout {
+  min-width: 7ch;
+  color: var(--paper-mute);
+  font: 500 14px / 1 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.frame {
+  position: relative;
+  width: min(var(--frame-w, var(--fill)), 100%);
+}
+
+/* The player's box, held before the skin arrives: the poster paints in it at once. */
+.frame-player {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-player);
+}
+
+/* A phone's player carries its controls as a pad under its picture (the skin's phone.css): the frame grows with it. */
+.frame-player:has(media-container[data-fb-pad]) {
+  display: flow-root;
+  aspect-ratio: auto;
+}
+
+.frame-player:focus {
+  outline: none;
+}
+
+.frame-poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-player);
+  object-fit: cover;
+  background: var(--board);
+}
+
+.frame-player .media-skin {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+media-i18n,
+video-player {
+  display: contents;
+}
+
+/* The corner: a grip to pull, with a 44 px target, dragged or moved with the arrow keys. */
+.frame-handle {
+  position: absolute;
+  /* Out past the corner, but never past the gutter: a page never scrolls sideways. */
+  right: max(-34px, var(--gutter) * -1);
+  bottom: -34px;
+  display: grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  border-radius: var(--radius-control);
+  color: var(--paper-mute);
+  cursor: nwse-resize;
+  touch-action: none;
+  transition: color var(--fast) var(--ease);
+}
+
+.frame-handle svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  transition: transform var(--fast) var(--ease);
+}
+
+@media (hover: hover) {
+  .frame-handle:hover {
+    color: var(--paper);
+  }
+}
+
+.frame-handle[data-dragging] {
+  color: var(--red);
+}
+
+.frame-handle[data-dragging] svg {
+  transform: scale(1.15);
+}
+
+@media (max-width: 599px) {
+  .widths,
+  .frame-handle {
+    display: none;
+  }
+
+  .canvas {
+    --fill: 100%;
+  }
+}
+
+/* ------------------------------------------------------------------ Shared section type */
+
+/* The page's own headings only: unlayered, these would outrank the skin's (the back cover's title is an h2). */
+h2:not(.media-skin *) {
+  margin: 0;
+  font-size: clamp(28px, 3.4vw, 36px);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+h3:not(.media-skin *) {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+/* Scoped to the page's own text: an unlayered `kbd` rule would outrank the skin's keycaps inside the player. */
+.try kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding-inline: 8px;
+  border: 1px solid rgb(20 17 14 / 0.3);
+  border-radius: 6px;
+  background: rgb(20 17 14 / 0.05);
+  box-shadow: inset 0 -1.5px 0 rgb(20 17 14 / 0.16);
+  color: var(--ink);
+  font: 600 14px / 1 var(--mono);
+  white-space: nowrap;
+}
+
+.try kbd.inline {
+  min-width: 24px;
+  height: 24px;
+  padding-inline: 6px;
+  font-size: 13px;
+  vertical-align: 1px;
+}
+
+/* ------------------------------------------------------------------ Try it: the keymap card, on the desk */
+
+.sheet :focus-visible {
+  outline-color: var(--red-deep);
+}
+
+.try {
+  padding-top: clamp(24px, 4vw, 48px);
+}
+
+.sheet {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(130% 90% at 70% 0%, #fbf8f1, var(--paper) 55%, #ece5d6),
+    var(--paper);
+  color: var(--ink);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.3),
+    0 10px 24px -8px rgb(0 0 0 / 0.6),
+    0 30px 60px -20px rgb(0 0 0 / 0.65);
+}
+
+/* The gutter: the card is a page, bound at its left edge. */
+.sheet::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 28px;
+  background: linear-gradient(90deg, rgb(70 48 25 / 0.2), rgb(70 48 25 / 0.06) 40%, transparent);
+  pointer-events: none;
+}
+
+.sheet-head {
+  display: grid;
+  gap: 8px;
+  padding: clamp(24px, 4vw, 40px) clamp(20px, 4vw, 48px) 20px clamp(36px, 5vw, 64px);
+  border-bottom: 1px solid rgb(20 17 14 / 0.14);
+}
+
+.sheet-head p {
+  max-width: 36rem;
+  margin: 0;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.moves {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  column-gap: clamp(24px, 4vw, 56px);
+  margin: 0;
+  padding: 8px clamp(20px, 4vw, 48px) clamp(16px, 3vw, 32px) clamp(36px, 5vw, 64px);
+}
+
+.move {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  padding-block: 16px;
+  border-bottom: 1px solid rgb(20 17 14 / 0.1);
+}
+
+.move dt {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-top: 1px;
+}
+
+.move dd {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.move strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* An extra of the book's: on with Full book, off with Essential. A printed label, mono and small. */
+.move .tag {
+  display: inline-block;
+  margin-inline-start: 4px;
+  padding: 2px 6px;
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 0 0 1px var(--ink-soft);
+  color: var(--ink-soft);
+  font: 600 12px / 1.2 var(--mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+.glyph {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: var(--red-deep);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 479px) {
+  .move {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .move dt {
+    justify-content: flex-start;
+  }
+}
+
+/* ------------------------------------------------------------------ How it holds up */
+
+.notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 32px clamp(32px, 4vw, 56px);
+  padding-top: clamp(64px, 9vw, 112px);
+}
+
+.notes h2 {
+  grid-column: 1 / -1;
+}
+
+.note {
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+
+.note h3 {
+  margin-bottom: 8px;
+}
+
+.note p {
+  margin: 0;
+  color: var(--paper-soft);
+  text-wrap: pretty;
+}
+
+/* ------------------------------------------------------------------ The film: its contents and its credits */
+
+.film {
+  padding-top: clamp(64px, 9vw, 112px);
+}
+
+.film-lead {
+  max-width: 40rem;
+  margin: 16px 0 0;
+  color: var(--paper-soft);
+  text-wrap: pretty;
+}
+
+.chapters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 0 clamp(32px, 4vw, 56px);
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each chapter as a contents entry: the number in the margin, the name, then where its two halves come from. */
+.chapters li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  column-gap: 8px;
+  align-content: start;
+  padding-block: 16px 20px;
+  border-top: 1px solid var(--rule);
+}
+
+.ch-num {
+  grid-row: 1 / span 2;
+  color: var(--paper-mute);
+  font: 600 18px / 1.35 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.chapters h3 {
+  margin-bottom: 6px;
+}
+
+.chapters p {
+  margin: 0;
+  color: var(--paper-soft);
+  font-size: 16px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.sources {
+  display: grid;
+  gap: 12px;
+  max-width: 46rem;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  color: var(--paper-soft);
+}
+
+.sources p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.attribution a {
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------ Colophon */
+
+.colophon {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-width: 34rem;
+  margin: clamp(80px, 11vw, 136px) auto 0;
+  padding: 0 var(--gutter) calc(clamp(48px, 7vw, 80px) + env(safe-area-inset-bottom, 0px));
+  color: var(--paper-mute);
+  text-align: center;
+}
+
+.colophon::before {
+  content: "";
+  width: 40px;
+  height: 2px;
+  margin-bottom: 8px;
+  background: var(--red);
+}
+
+.colophon-title {
+  color: var(--paper-soft);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.colophon p {
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ------------------------------------------------------------------ Preferences */
+
+/* Still: the page's own transitions go (the skin calms itself). Colour changes stay legible without them. */
+@media (prefers-reduced-motion: reduce) {
+  a,
+  .links a,
+  .seg::before,
+  .seg button,
+  .frame-handle,
+  .frame-handle svg {
+    transition: none;
+  }
+
+  .seg button:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .seg::before {
+    background: Highlight;
+  }
+
+  .seg button[aria-pressed="true"],
+  .seg [role="radio"][aria-checked="true"] {
+    color: HighlightText;
+  }
+
+  .frame-handle {
+    color: CanvasText;
+  }
+}

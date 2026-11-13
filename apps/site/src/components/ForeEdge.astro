@@ -1,0 +1,30 @@
+---
+import { copy } from '../content/copy';
+import { asset } from '../lib/asset';
+import Demo from './Demo.astro';
+
+const { edge } = copy;
+const { folio } = edge;
+---
+
+<Demo id="edge" kicker={edge.kicker} title={edge.title}>
+  <Fragment slot="copy">
+    <p class="body">{edge.body}</p>
+    <p class="body body-2" data-edge-2>{edge.player}</p>
+    <div class="folio" data-folio>
+      <p class="folio-big" data-e-big>{folio.big}<span class="of">{folio.of}</span></p>
+      <p class="folio-meta"><b data-e-chapter>{folio.chapter}</b><br /><span data-e-meta>{folio.meta}</span></p>
+    </div>
+  </Fragment>
+  <figure class="edge-scene" aria-hidden="true">
+    <div class="macro" data-macro>
+      <img src={asset('book/macro.webp')} alt="" width="2300" height="1140" loading="lazy" decoding="async" />
+    </div>
+    <div class="real-edge" data-real-edge>
+      <div class="real-crop">
+        <img src={asset('book/player-20.webp')} alt="" width="1200" height="676" loading="lazy" decoding="async" />
+      </div>
+      <span class="real-label">{edge.real}</span>
+    </div>
+  </figure>
+</Demo>

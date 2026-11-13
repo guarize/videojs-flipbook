@@ -1,0 +1,32 @@
+/*
+ * The opening riffle (riffle.ts): the cover turning over in real paper (WebGL) on first play. Loaded with the cover,
+ * after the core sheets; it runs only while the book's turns are on.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    :scope[data-fb-riffle] .fb-cover-play {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .fb-riffle {
+      position: absolute;
+      inset: 0;
+      z-index: 24;
+      overflow: hidden;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    .fb-riffle:not([data-active]) {
+      visibility: hidden;
+    }
+
+    @media (forced-colors: active) {
+      .fb-riffle {
+        display: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,128 @@
+/*
+ * Real paper (turn.ts): the chapter turns, drawn in WebGL over the picture until the video shows the same frame.
+ * Loaded with their module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-turn {
+      position: absolute;
+      inset: 0;
+      z-index: 24;
+      overflow: hidden;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    .fb-turn:not([data-turning]) {
+      visibility: hidden;
+    }
+
+    /* Landed: the paper gives way to the video, which now shows the same frame. */
+    .fb-turn[data-landing] .fb-paper {
+      opacity: 0;
+    }
+
+    /* ─── A chapter opens, on a phone (opening.ts) ──────────────────────── */
+
+    /* The chapter's number and name, set large on the picture for a beat, as a chapter's opening page is. Over the
+       turning page (24) and under the captions (31), which stay readable through it. Paper type on a soft pool of
+       ink that thins to nothing, so it holds over the brightest frame and has no edge to point at. */
+    .fb-opening {
+      position: absolute;
+      inset: 0;
+      z-index: 25;
+      display: grid;
+      place-items: center;
+      padding: 0 8%;
+      pointer-events: none;
+      opacity: 0;
+      /* Out a little quicker than in; cut at once when a touch skips it. */
+      transition: opacity var(--fb-base) var(--fb-ease);
+    }
+
+    .fb-opening[data-open] {
+      opacity: 1;
+      transition-duration: var(--fb-slow);
+    }
+
+    /* The page is still going over: the title waits for it to clear the middle. */
+    .fb-opening[data-open][data-leafed] {
+      transition-delay: 220ms;
+    }
+
+    .fb-opening[data-skipped]:not([data-open]) {
+      transition-duration: 0s;
+    }
+
+    .fb-opening-title {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4em;
+      max-width: 100%;
+      margin: 0;
+      padding: 0.35em 0.9em 0.45em;
+      border-radius: 999px;
+      background: radial-gradient(closest-side, rgb(13 11 9 / 0.86), rgb(13 11 9 / 0.78) 62%, rgb(13 11 9 / 0));
+      color: var(--fb-paper);
+      font-family: var(--fb-serif, "Flipbook Newsreader", "Iowan Old Style", Georgia, serif);
+      font-size: clamp(32px, 10.5cqw, 68px);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+      transform: translateY(6px);
+      transition: transform var(--fb-slow) var(--fb-ease-out);
+    }
+
+    .fb-opening[data-open] .fb-opening-title {
+      transform: none;
+    }
+
+    .fb-opening[data-open][data-leafed] .fb-opening-title {
+      transition-delay: 220ms;
+    }
+
+    /* One thing at a time: a hint's slip waits out the beat. */
+    :scope[data-fb-opening-chapter] fb-hints {
+      visibility: hidden;
+    }
+
+    .fb-opening-number {
+      color: var(--fb-paper-soft);
+      font-variant-numeric: lining-nums;
+    }
+
+    .fb-opening-number::after {
+      content: "\2002·";
+      color: var(--fb-accent, var(--fb-red));
+    }
+
+    .fb-opening-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-opening-title {
+        transform: none !important;
+      }
+
+      .fb-opening {
+        transition-duration: 200ms !important;
+        transition-delay: 0s !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-turn {
+        display: none;
+      }
+
+      .fb-opening-title {
+        background: Canvas;
+        color: CanvasText;
+        outline: 1px solid CanvasText;
+      }
+    }
+  }
+}

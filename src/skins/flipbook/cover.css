@@ -1,0 +1,518 @@
+/*
+ * The back cover (cover.ts): bound in the slab's cloth, a blind-tooled frame pressed into it, the hinge groove by the
+ * spine. Paper-white title, the length and chapter count in figures, Watch again as the one paper key, and the
+ * chapters and bookmarks as small debossed entries. The slab stays on top of it, as the controls do everywhere.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-cover {
+      position: absolute;
+      inset: 0;
+      z-index: 24;
+      overflow: hidden;
+      border-radius: inherit;
+      color: var(--fb-paper);
+      font-family: var(--fb-font);
+    }
+
+    .fb-cover[hidden] {
+      display: none;
+    }
+
+    /* While the cover is closed the picture's own furniture steps aside: it says all of this already. */
+    :scope[data-fb-cover] :is(.fb-cover-play, .media-title, .fb-curl, .fb-resume) {
+      visibility: hidden;
+    }
+
+    .fb-cover-board {
+      position: absolute;
+      inset: 0;
+      border: 1px solid transparent;
+      background:
+        repeating-linear-gradient(0deg, rgb(255 248 235 / 0.022) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgb(0 0 0 / 0.09) 0 1px, transparent 1px 3px),
+        radial-gradient(120% 95% at 55% 0%, var(--fb-cover-hi), var(--fb-cover) 55%, var(--fb-cover-lo));
+      transform-origin: 0 50%;
+      backface-visibility: hidden;
+    }
+
+    /* The hinge groove, where the board bends at the spine. */
+    .fb-cover-board::before {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: 0;
+      width: 30px;
+      background: linear-gradient(90deg, rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.12) 12px, rgb(255 248 235 / 0.06) 16px, rgb(0 0 0 / 0.18) 20px, transparent 30px);
+      pointer-events: none;
+    }
+
+    /* Blind tooling: a double rule pressed into the cloth, no ink, only light and shadow. */
+    .fb-cover-tooling {
+      position: absolute;
+      inset: 20px 20px calc(var(--fb-slab-top) + 2px) 44px;
+      border: 1px solid rgb(0 0 0 / 0.5);
+      border-radius: 6px;
+      box-shadow:
+        0 1px 0 rgb(255 248 235 / 0.07),
+        inset 0 1px 0 rgb(255 248 235 / 0.05);
+      pointer-events: none;
+    }
+
+    .fb-cover-tooling::after {
+      content: "";
+      position: absolute;
+      inset: 5px;
+      border: 1px solid rgb(0 0 0 / 0.38);
+      border-radius: 3px;
+      box-shadow: 0 1px 0 rgb(255 248 235 / 0.05);
+    }
+
+    .fb-cover-inner {
+      position: absolute;
+      inset: 0 0 calc(var(--fb-slab-top) + 6px) 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* Safe: what doesn't fit runs out at the foot (where the height queries below drop it), never off the top. */
+      justify-content: safe center;
+      gap: 12px;
+      padding: 36px 48px 16px;
+      overflow: hidden;
+      text-align: center;
+      container: fb-cover / size;
+    }
+
+    /* Nothing on the cover is squeezed to fit: Watch again keeps its whole target. */
+    .fb-cover-inner > * {
+      flex-shrink: 0;
+    }
+
+    /* A short red rule over the title, as a printer sets one. */
+    .fb-cover-title {
+      max-width: 22ch;
+      margin: 0;
+      color: var(--fb-paper);
+      font-size: clamp(24px, 5.2cqw, 40px);
+      font-weight: 650;
+      line-height: 1.1;
+      letter-spacing: -0.022em;
+      text-shadow: 0 1px 0 rgb(0 0 0 / 0.55);
+      text-wrap: balance;
+    }
+
+    .fb-cover-title::before {
+      content: "";
+      display: block;
+      width: 28px;
+      height: 2px;
+      margin: 0 auto 14px;
+      border-radius: 1px;
+      background: var(--fb-red);
+    }
+
+    .fb-cover-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      color: var(--fb-paper-mute);
+      font-family: var(--fb-mono);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+
+    .fb-cover-length {
+      color: var(--fb-paper-soft);
+      font-weight: 600;
+    }
+
+    .fb-cover-dot[hidden] {
+      display: none;
+    }
+
+    /* Watch again: the one paper key on the cover, as play is on the slab. */
+    .fb-cover-again {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 48px;
+      margin-top: 4px;
+      padding: 0 20px 0 16px;
+      border: 1px solid transparent;
+      border-radius: var(--fb-radius-control);
+      background: linear-gradient(180deg, #fffdf8, var(--fb-paper) 60%, #e9e2d3);
+      color: var(--fb-ink);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.7),
+        0 1px 1px rgb(0 0 0 / 0.45),
+        0 8px 18px -6px rgb(0 0 0 / 0.6);
+      font-size: 16px;
+      font-weight: 650;
+      cursor: pointer;
+      outline: none;
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-cover-again media-icon {
+      width: var(--fb-icon);
+      height: var(--fb-icon);
+    }
+
+    .fb-cover-again:active {
+      transform: scale(0.96);
+    }
+
+    .fb-cover-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: var(--fb-target);
+      padding: 0 12px 0 9px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: rgb(0 0 0 / 0.22);
+      color: var(--fb-paper-soft);
+      box-shadow:
+        inset 0 1px 2px rgb(0 0 0 / 0.55),
+        0 1px 0 rgb(255 250 240 / 0.06);
+      font-family: var(--fb-font);
+      font-size: 16px;
+      font-weight: 500;
+      text-align: start;
+      cursor: pointer;
+      outline: none;
+      transition:
+        background-color var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-cover-entry:hover {
+        background-color: rgb(255 250 240 / 0.07);
+        color: var(--fb-paper);
+      }
+    }
+
+    .fb-cover-entry:active {
+      transform: scale(0.96);
+    }
+
+    .fb-cover-again:focus-visible,
+    .fb-cover-entry:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgb(20 17 14 / 0.92);
+    }
+
+    .fb-cover-chapters,
+    .fb-cover-marks {
+      width: min(620px, 100%);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .fb-cover-chapters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .fb-cover-marks {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .fb-cover-marks[hidden] {
+      display: none;
+    }
+
+    .fb-cover-marks .fb-cover-entry {
+      width: auto;
+    }
+
+    .fb-cover-number {
+      display: grid;
+      flex: none;
+      place-items: center;
+      min-width: 24px;
+      height: 18px;
+      padding-inline: 4px;
+      border-radius: 5px 5px 0 0;
+      background: linear-gradient(180deg, #3a322a, var(--fb-cover-hi));
+      color: var(--fb-paper);
+      box-shadow: inset 0 1px 0 rgb(255 250 240 / 0.16), 0 0 0 1px rgb(246 241 231 / 0.35);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .fb-cover-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .fb-cover-name:empty {
+      display: none;
+    }
+
+    .fb-cover-time {
+      flex: none;
+      color: var(--fb-paper-mute);
+      font-family: var(--fb-mono);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fb-cover-mark .fb-cover-time {
+      color: var(--fb-paper-soft);
+      font-weight: 600;
+    }
+
+    .fb-cover-ribbon {
+      flex: none;
+      align-self: flex-start;
+      width: 8px;
+      height: 24px;
+      background:
+        repeating-linear-gradient(0deg, rgb(40 4 0 / 0.16) 0 1px, transparent 1px 2.5px),
+        var(--fb-cloth);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 4px), 0 100%);
+    }
+
+    /* Short covers keep what matters: the title and Watch again; the contents page has the chapters. */
+    @container fb-cover (height < 360px) {
+      .fb-cover-marks {
+        display: none;
+      }
+    }
+
+    @container fb-cover (height < 300px) {
+      .fb-cover-title::before {
+        display: none;
+      }
+
+      .fb-cover-title {
+        font-size: 28px;
+      }
+    }
+
+    @container fb-cover (height < 240px) {
+      .fb-cover-chapters {
+        display: none;
+      }
+    }
+
+    @container fb-cover (height < 150px) {
+      .fb-cover-meta {
+        display: none;
+      }
+
+      /* One line, so the title and Watch again both fit a phone's 162 px cover. */
+      .fb-cover-title {
+        max-width: 100%;
+        overflow: hidden;
+        font-size: 18px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+
+    @container fb-cover (width < 460px) {
+      .fb-cover-chapters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @container media-root (width < 720px) {
+      .fb-cover-tooling {
+        inset: 12px 12px calc(var(--fb-slab-top) + 2px) 32px;
+      }
+
+      .fb-cover-inner {
+        inset-inline-start: 18px;
+        padding: 20px 28px 10px;
+        gap: 10px;
+      }
+    }
+
+    /* From 480 to 1240 px the book's keys are in the top row (56 px): the words start under them, which the centred
+       column otherwise reaches when it has no height to spare. */
+    @container media-root (480px <= width < 1240px) {
+      .fb-cover-inner {
+        padding-top: 60px;
+      }
+    }
+
+    @container media-root (width < 480px) {
+      .fb-cover-tooling {
+        inset: 8px 8px calc(var(--fb-slab-top) + 2px) 24px;
+      }
+
+      .fb-cover-inner {
+        inset-inline-start: 14px;
+        padding: 12px 16px 6px;
+        gap: 8px;
+      }
+
+      .fb-cover-again {
+        height: var(--fb-target);
+        font-size: 16px;
+      }
+
+      /* A phone's cover: set by the spine. (The book's keys are in Settings there: the corner is free.) */
+      .fb-cover-tooling {
+        display: none;
+      }
+
+      .fb-cover-inner {
+        align-items: flex-start;
+        text-align: start;
+      }
+    }
+
+    /* The smallest covers (a phone's narrowest player, 162 px tall): the top keys step aside, so the back cover's title
+       has the width and the front cover's resume offer has the height. The slab still does what it does. */
+    @container media-root (width < 352px) {
+      :scope[data-fb-cover] .video-controls-top {
+        visibility: hidden;
+      }
+
+      .fb-cover-inner {
+        padding-block: 8px 4px;
+        padding-inline-end: 16px;
+      }
+    }
+
+    /* ─── The closing riffle ────────────────────────────────────────────── */
+
+    .fb-cover-leaves {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .fb-cover-leaf {
+      position: absolute;
+      inset: 0;
+      transform-origin: 0 100%;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .fb-cover-leaf-front,
+    .fb-cover-leaf-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+    }
+
+    .fb-cover-leaf-front {
+      background-color: var(--fb-desk);
+    }
+
+    .fb-cover-leaf-front canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    /* The blank leaves at the back of the book: plain paper, a shade warmer toward the fore-edge. */
+    .fb-cover-leaf-blank {
+      background: linear-gradient(90deg, #d8ccb7, #f2ebde 7%, #efe7d6 82%, #e0d5c1);
+    }
+
+    .fb-cover-leaf-front::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 97%, rgb(255 252 244 / 0.4));
+    }
+
+    .fb-cover-leaf-back {
+      transform: rotateY(180deg);
+      background: linear-gradient(90deg, #cfc3ae, #f5efe3 22%, #ece4d5 70%, #d9cdb8);
+    }
+
+    .fb-cover-leaf-shade {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      opacity: 0;
+      background: linear-gradient(110deg, rgb(13 11 9 / 0.75), rgb(13 11 9 / 0.25) 60%, rgb(13 11 9 / 0.1));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-cover-again,
+      .fb-cover-entry {
+        transition-duration: 0ms !important;
+      }
+
+      .fb-cover-again:active,
+      .fb-cover-entry:active {
+        transform: none;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-cover-board {
+        background: Canvas;
+      }
+
+      .fb-cover-entry,
+      .fb-cover-again {
+        border-color: ButtonText;
+      }
+
+      .fb-cover-leaves {
+        display: none;
+      }
+    }
+  }
+}
+
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-cover-entry {
+      border-color: var(--fb-line-control-cover);
+    }
+
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    @media (forced-colors: active) {
+      .fb-cover-entry,
+      .fb-cover-again {
+        forced-color-adjust: auto;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+        color: ButtonText;
+      }
+
+      .fb-cover-entry {
+        border: 1px solid ButtonText;
+      }
+
+      .fb-cover-board {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+    }
+  }
+}

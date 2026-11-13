@@ -1,0 +1,23 @@
+---
+import { copy } from '../content/copy';
+
+const { brand, nav, links } = copy.masthead;
+---
+
+<header class="masthead">
+  <a class="brand" href={brand.href} aria-label={brand.label}>
+    <svg viewBox="1 1 22 22" aria-hidden="true"
+      ><path
+        d="M4.8 2.2H19.2A2.6 2.6 0 0 1 21.8 4.8V19.2A2.6 2.6 0 0 1 19.2 21.8H4.8A2.6 2.6 0 0 1 2.2 19.2V4.8A2.6 2.6 0 0 1 4.8 2.2ZM8.5 4.6H15.5A2.2 2.2 0 0 1 17.7 6.8V14.2A2.2 2.2 0 0 1 15.5 16.4H8.5A2.2 2.2 0 0 1 6.3 14.2V6.8A2.2 2.2 0 0 1 8.5 4.6ZM2.96 2.96L6.94 5.24M21.04 2.96L17.06 5.24M2.96 21.04L6.94 15.76M21.04 21.04L17.06 15.76"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"></path></svg
+    >
+    <span>{brand.name}</span>
+  </a>
+  <nav class="links" aria-label={nav}>
+    {links.map((link) => <a href={link.href}>{link.label}</a>)}
+  </nav>
+</header>

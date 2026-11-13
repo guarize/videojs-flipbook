@@ -1,0 +1,19 @@
+/*
+ * Captions in the browser's picture-in-picture window (pip-captions.ts). The skin hides the browser's own caption
+ * rendering and draws its own (skin.css, "Captions that are never covered"); while the film is in that window the
+ * browser's rendering is let through, so the window has captions, and the skin's layer on the page steps aside.
+ * In the same layer as the skin, and more specific, so it wins over the skin's `!important`.
+ */
+@layer components {
+  .media-skin[data-theme="flipbook"][data-fb-captions][data-fb-pip-captions] video::-webkit-media-text-track-container {
+    display: revert !important;
+  }
+
+  .media-skin[data-theme="flipbook"][data-fb-captions][data-fb-pip-captions] video::cue {
+    visibility: visible;
+  }
+
+  .media-skin[data-theme="flipbook"][data-fb-pip-captions] > fb-captions {
+    visibility: hidden;
+  }
+}

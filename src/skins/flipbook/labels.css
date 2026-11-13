@@ -1,0 +1,232 @@
+/*
+ * Names and keys in plain sight (labels.ts). The book's own keys print what they are and the key that does it, as a
+ * keycap; with less room the name folds away (it stays the key's accessible name) and the keycap stays; on a phone they're
+ * in Settings. The chapter tabs carry their chapters' names; the time plate says it takes a
+ * typed time. Nothing here moves.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── Keycaps ───────────────────────────────────────────────────────── */
+
+    .fb-keycap {
+      display: inline-grid;
+      place-items: center;
+      min-width: 18px;
+      height: 18px;
+      padding-inline: 4px;
+      border: 1px solid rgb(246 241 231 / 0.32);
+      border-radius: 4px;
+      background: rgb(0 0 0 / 0.22);
+      color: var(--fb-paper-soft);
+      box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.45);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* On paper (the keymap card here; the hints, the next key and the contents page in their own sheets): ink on cream. */
+    .fb-sheet-page .fb-keycap {
+      border-color: rgb(20 17 14 / 0.3);
+      background: rgb(20 17 14 / 0.05);
+      color: var(--fb-ink);
+      box-shadow: inset 0 -1px 0 rgb(20 17 14 / 0.16);
+    }
+
+    /* ─── The book's keys: icon, name, keycap ───────────────────────────── */
+
+    .fb-key-name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    :is(.fb-top-key, .fb-slab-key) .fb-keycap {
+      display: none;
+    }
+
+    .fb-keymap-key {
+      display: none !important;
+    }
+
+    /* Printed, the key widens to carry its name and keycap; the icons keep their shared cell, so state swaps hold. */
+    :is(.fb-top-key, .fb-slab-key) .fb-key-name {
+      z-index: 1;
+      color: var(--fb-paper);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+    }
+
+    :is(.fb-top-key, .fb-slab-key) .fb-keycap {
+      z-index: 1;
+    }
+
+    /* Wide players: the keys on the slab, named. */
+    .fb-slab-key {
+      grid-auto-flow: column;
+      grid-auto-columns: auto;
+      column-gap: 7px;
+      width: auto;
+      /* The keycap sits 4 px inside the key's plate (8 − 4), so its 4 px corners run with the plate's 8. */
+      padding-inline: 12px 8px;
+    }
+
+    .fb-slab-key .fb-key-name {
+      position: static;
+      width: auto;
+      height: auto;
+      clip-path: none;
+    }
+
+    .fb-slab-key .fb-keycap {
+      display: inline-grid;
+    }
+
+    /* The top bar: named from 720 px, keycaps alone from 480 px, the icon and a Shortcuts key below that. */
+    @container media-root (width >= 480px) {
+      .fb-top-key {
+        grid-auto-flow: column;
+        grid-auto-columns: auto;
+        column-gap: 7px;
+        width: auto;
+        padding-inline: 12px 8px;
+      }
+
+      .fb-top-key .fb-keycap {
+        display: inline-grid;
+      }
+    }
+
+    @container media-root (width >= 720px) {
+      .fb-top-key .fb-key-name {
+        position: static;
+        width: auto;
+        height: auto;
+        clip-path: none;
+      }
+    }
+
+    /* ─── Chapter tabs, named ───────────────────────────────────────────── */
+
+    /* A tab prints its chapter's whole name beside its number where that fits before the next tab, and its number
+       alone where it doesn't (edge.ts measures the tabs as these rules lay them out, and hides the names that don't
+       fit): a name is never cut, so nothing here clips or ends in an ellipsis. */
+
+    .fb-tabs[data-fb-named] .fb-tab {
+      display: flex;
+      align-items: flex-end;
+      width: auto;
+      min-width: var(--fb-target);
+      padding: 0 6px 0 0;
+      /* The face ends 6 px before the tab does: the focus ring (skin.css) follows it. */
+      --fb-tab-face-end: 6px;
+    }
+
+    .fb-tabs[data-fb-named] .fb-tab-face {
+      position: relative;
+      left: auto;
+      display: inline-flex;
+      gap: 5px;
+      width: auto;
+      min-width: 30px;
+      margin-left: 4px;
+      padding-inline: 7px;
+    }
+
+    /* A tab that prints its number alone is a target wide, and its face stops 10 px short of that, as an unlettered
+       tab's does: its slip hangs from there, and its focus ring ends there. */
+    .fb-tabs[data-fb-named] .fb-tab:not([data-fb-full]) {
+      --fb-tab-face-end: 10px;
+    }
+
+    .fb-tab-short {
+      color: var(--fb-paper-soft);
+      font-family: var(--fb-font);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .fb-tab-short[hidden] {
+      display: none;
+    }
+
+    .fb-tab[data-current] .fb-tab-short {
+      color: var(--fb-paper);
+    }
+
+    /* The name is already printed in full on the tab: the slip above would only repeat it. */
+    .fb-tab[data-fb-full] .fb-tab-name {
+      display: none;
+    }
+
+    /* ─── The time plate takes a typed time ─────────────────────────────── */
+
+    .fb-time-display {
+      position: relative;
+      text-decoration-line: underline;
+      text-decoration-style: dotted;
+      text-decoration-color: rgb(246 241 231 / 0.5);
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 6px;
+    }
+
+    .fb-time-display::after {
+      content: attr(data-fb-hint);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + var(--fb-tip-gap));
+      padding: 5px 9px;
+      border-radius: 5px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px -6px rgb(0 0 0 / 0.5);
+      font-family: var(--fb-font);
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      text-decoration: none;
+      opacity: 0;
+      translate: -50% 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition:
+        opacity var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-time-display:focus-visible::after {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-time-display:hover::after {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* Without hover, a press says it: the slip shows while the finger is on the time. */
+    @media (hover: none) {
+      .fb-time-display:active::after {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-time-display::after {
+        transition-duration: 0ms !important;
+        transform: none !important;
+      }
+    }
+  }
+}

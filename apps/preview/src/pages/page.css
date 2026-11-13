@@ -1,0 +1,35 @@
+/* The review page around one skin: neutral, so only the skin reads. */
+:root {
+  color-scheme: dark;
+  background: #111;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 24px;
+  box-sizing: border-box;
+  font: 16px/1.5 system-ui, sans-serif;
+  color: #ddd;
+}
+
+:root[data-bare] body {
+  padding: 0;
+  background: #111;
+}
+
+#player {
+  width: min(100%, 1280px);
+}
+
+#player .media-skin {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+media-i18n,
+video-player {
+  display: contents;
+}

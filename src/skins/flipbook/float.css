@@ -1,0 +1,274 @@
+/*
+ * The mini player (float.ts): the book in the bottom-right corner while its place is scrolled away, and two keys
+ * above it. In the `apart` layer, above every layer that styles the player (armour.css), and `!important` where the page
+ * sizes the player: afloat, the corner sizes it.
+ *
+ * Phases on the container and the bar (`data-fb-dock`): `set` is placed and unseen, `in` is arriving or there,
+ * `out` is leaving. Visibility follows opacity, late on the way out, so the switch back into the page is unseen.
+ */
+@layer apart {
+  media-container[data-theme="flipbook"],
+  .fb-float-bar {
+    --fb-float-gutter: 16px;
+    /* As wide as 320 px and the window allow, and never taller than about a third of the window (a phone on its side). */
+    --fb-float-width: min(
+      320px,
+      100vw - 2 * var(--fb-float-gutter) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px),
+      34dvh * var(--fb-float-ratio-n, 1.7778)
+    );
+    --fb-float-right: calc(var(--fb-float-gutter) + env(safe-area-inset-right, 0px));
+    --fb-float-bottom: calc(var(--fb-float-gutter) + env(safe-area-inset-bottom, 0px));
+    --fb-float-gap: 8px;
+    --fb-float-in: 220ms;
+    --fb-float-out: 200ms;
+    --fb-float-travel: 12px;
+  }
+
+  /* ─── The book, afloat ─────────────────────────────────────────────── */
+
+  media-container[data-theme="flipbook"][data-fb-dock] {
+    position: fixed !important;
+    inset: auto var(--fb-float-right) var(--fb-float-bottom) auto !important;
+    z-index: 2147483000;
+    width: var(--fb-float-width) !important;
+    height: auto !important;
+    aspect-ratio: var(--fb-float-ratio, 16 / 9) !important;
+    margin: 0 !important;
+    box-shadow: var(--fb-shadow-card);
+    transform-origin: 100% 100%;
+  }
+
+  media-container[data-theme="flipbook"][data-fb-dock],
+  .fb-float-bar[data-fb-dock] {
+    transition:
+      opacity var(--fb-float-in) var(--fb-ease-out),
+      transform var(--fb-float-in) var(--fb-ease-out),
+      visibility 0s linear 0s;
+  }
+
+  media-container[data-theme="flipbook"]:is([data-fb-dock="set"], [data-fb-dock="out"]),
+  .fb-float-bar:is([data-fb-dock="set"], [data-fb-dock="out"]) {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(0, var(--fb-float-travel), 0) scale(0.96);
+  }
+
+  /* Placed unseen: nothing animates into the placement itself. */
+
+  media-container[data-theme="flipbook"][data-fb-dock="set"],
+  .fb-float-bar[data-fb-dock="set"] {
+    transition: none;
+  }
+
+  media-container[data-theme="flipbook"][data-fb-dock="out"],
+  .fb-float-bar[data-fb-dock="out"] {
+    transition:
+      opacity var(--fb-float-out) var(--fb-ease-out),
+      transform var(--fb-float-out) var(--fb-ease-out),
+      visibility 0s linear var(--fb-float-out);
+  }
+
+  /* The one frame between afloat and back in its place: not drawn, so it reappears there rather than moves. */
+
+  media-container[data-theme="flipbook"][data-fb-dock="gone"],
+  .fb-float-bar[data-fb-dock="gone"] {
+    display: none !important;
+  }
+
+  /* Its place on the page, held while it's away: the desk it lay on. */
+
+  .fb-float-slot {
+    display: block;
+    max-width: 100%;
+    background: rgb(255 255 255 / 0.03);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+  }
+
+  /* ─── The keys above it ─────────────────────────────────────────────── */
+
+  .fb-float-bar {
+    position: fixed;
+    right: var(--fb-float-right);
+    /* The book's height (its width over its ratio), the gap, and the corner's own margin. */
+    bottom: calc(var(--fb-float-bottom) + var(--fb-float-width) / (var(--fb-float-ratio-n, 1.7778)) + var(--fb-float-gap));
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    box-sizing: border-box;
+    width: var(--fb-float-width);
+    padding: 0;
+    color: var(--fb-on-cover);
+    font-family: var(--fb-font);
+    font-size: 16px;
+    line-height: 1.25;
+    -webkit-font-smoothing: antialiased;
+    transform-origin: 100% 100%;
+  }
+
+  .fb-float-bar[hidden] {
+    display: none;
+  }
+
+  .fb-float-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: var(--fb-target);
+    min-height: var(--fb-target);
+    margin: 0;
+    padding: 0 14px 0 12px;
+    border: 1px solid var(--fb-cover-line);
+    border-radius: var(--fb-radius-control);
+    background: var(--fb-cover-raised);
+    color: inherit;
+    box-shadow: var(--fb-shadow-card);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--fb-fast) var(--fb-ease-out),
+      transform var(--fb-fast) var(--fb-ease-out);
+  }
+
+  .fb-float-close {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .fb-float-key svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+  }
+
+  .fb-float-key:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fb-float-key:hover {
+      background: var(--fb-cover-solid);
+    }
+  }
+
+  .fb-float-key:focus-visible {
+    outline: 2px solid var(--fb-ring);
+    outline-offset: 2px;
+  }
+
+  /* ─── Reduced motion: it fades in place, without travel ─────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    media-container[data-theme="flipbook"]:is([data-fb-dock="set"], [data-fb-dock="out"]),
+    .fb-float-bar:is([data-fb-dock="set"], [data-fb-dock="out"]) {
+      transform: none;
+    }
+
+    .fb-float-key,
+    .fb-float-key:active {
+      transform: none;
+      transition: background-color var(--fb-fast) linear;
+    }
+  }
+
+  /* Docked, the player is a small book in the corner: the picture and its bar only. The title, the top keys, the corner
+     curl, the plate key, the next-chapter key and the hints wait for it to come back to the page. */
+
+  media-container[data-theme="flipbook"][data-fb-dock] :is(.video-controls-top, fb-curl, fb-plate, fb-next, fb-hints) {
+    display: none;
+  }
+}
+
+/*
+ * The keys and the slot stand in the host's page, outside the player: the armour's line (armour.css), for them. And
+ * what the page's body would hand down to the keys' lettering, set here as the player's root sets it for itself
+ * (the same list as armour.css's, kept whole: a property left out is one the page decides).
+ */
+.fb-float-bar:not(#\#):not(#\#),
+.fb-float-slot:not(#\#):not(#\#),
+.fb-float-bar :not(#\#):not(#\#),
+.fb-float-bar :not(#\#):not(#\#)::before,
+.fb-float-bar :not(#\#):not(#\#)::after {
+  all: revert-layer;
+}
+
+/* And the browser's own stylesheet under the skin's layers, as inside the player (armour.css, `reset`). */
+@layer reset {
+  .fb-float-bar,
+  .fb-float-slot,
+  .fb-float-bar *,
+  .fb-float-bar *::before,
+  .fb-float-bar *::after {
+    all: revert;
+  }
+
+  /* A drawing's attributes are the drawing (armour.css has the why). */
+  .fb-float-bar svg * {
+    d: revert-layer;
+    x: revert-layer;
+    y: revert-layer;
+    cx: revert-layer;
+    cy: revert-layer;
+    r: revert-layer;
+    rx: revert-layer;
+    ry: revert-layer;
+    width: revert-layer;
+    height: revert-layer;
+    fill: revert-layer;
+    stroke: revert-layer;
+    mask: revert-layer;
+  }
+}
+
+/* The icons' paint, as armour.css says it for the player's. */
+@layer base {
+  .fb-float-bar svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+@layer base {
+  .fb-float-bar,
+  .fb-float-slot {
+    font: normal 400 16px/1.25 sans-serif;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-align: start;
+    text-align-last: auto;
+    text-indent: 0;
+    text-shadow: none;
+    text-rendering: auto;
+    text-wrap: wrap;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: manual;
+    line-break: auto;
+    tab-size: 8;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-text-fill-color: currentColor;
+    -webkit-text-stroke: 0 currentColor;
+    cursor: auto;
+    list-style: disc outside none;
+    quotes: auto;
+    caret-color: auto;
+    accent-color: auto;
+    color-scheme: dark;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    image-rendering: auto;
+    box-sizing: border-box;
+  }
+}

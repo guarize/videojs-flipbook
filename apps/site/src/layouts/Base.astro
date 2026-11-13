@@ -1,0 +1,60 @@
+---
+/**
+ * The page's head and body frame. The book's styles are the workbench's own (apps/preview/src/book/book.css), so a
+ * fix there lands here unchanged. The display face is preloaded, roman and italic (the headline sets both): the
+ * headline paints first, and the player's poster is in the HTML at high priority (Hero.astro).
+ *
+ * The canonical link and the share tags carry the page's public address, which is one value: `site` in
+ * astro.config.mjs. A share picture must be an absolute URL, and a JPEG (not every preview reads WebP).
+ *
+ * Search engines are kept out until the page is released: a build carries `noindex` unless it is made with
+ * `SITE_INDEX=1` (`SITE_INDEX=1 pnpm site:build`).
+ */
+import '@preview/book/book.css';
+import '../styles/proof.css';
+import { copy } from '../content/copy';
+import { asset } from '../lib/asset';
+
+const { site } = copy;
+/** The page's own address and the share picture's, on the public origin. */
+const here = new URL(Astro.url.pathname, Astro.site);
+const picture = new URL(asset(site.image.path), Astro.site);
+const indexed = process.env.SITE_INDEX === '1';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{site.title}</title>
+    <meta name="description" content={site.description} />
+    {!indexed && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content={site.desk} />
+    <meta name="color-scheme" content="dark" />
+    <link rel="canonical" href={here} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={here} />
+    <meta property="og:title" content={site.title} />
+    <meta property="og:description" content={site.share} />
+    <meta property="og:image" content={picture} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(site.image.width)} />
+    <meta property="og:image:height" content={String(site.image.height)} />
+    <meta property="og:image:alt" content={site.image.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
+    <link rel="preload" href={asset('book/fonts/newsreader.woff2')} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={asset('book/fonts/newsreader-italic.woff2')} as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    {/* Firefox opens no fallback face while the face before it in the stack is still loading (measured, Firefox
+        157): the page stood in plain Arial and Georgia until the webfonts came, and then moved, 24 px under the hero
+        on a phone. Asked for by name, the sized fallbacks (book.css) are there for the first paint, as they are in
+        Chromium and Safari without asking. Here, not in the head: the stylesheet that declares them is read by now. */}
+    <script is:inline>
+      for (const face of ['1em "Book Text Fallback"', '1em "Book Display Fallback"', 'italic 1em "Book Display Fallback"']) document.fonts?.load(face);
+    </script>
+    <slot />
+  </body>
+</html>

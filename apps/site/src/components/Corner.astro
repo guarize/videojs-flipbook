@@ -1,0 +1,18 @@
+---
+import { copy } from '../content/copy';
+import Demo from './Demo.astro';
+
+const { corner } = copy;
+const { folio } = corner;
+---
+
+<Demo id="corner" kicker={corner.kicker} title={corner.title}>
+  <Fragment slot="copy">
+    {corner.body.map((text) => <p class="body" set:html={text} />)}
+    <div class="folio" data-folio>
+      <p class="folio-big"><i>p.</i><span data-c-page>{folio.page}</span><span class="of">{folio.of}</span></p>
+      <p class="folio-meta"><b data-c-chapter>{folio.chapter}</b><br /><span data-c-time>{folio.time}</span>{folio.duration}</p>
+    </div>
+  </Fragment>
+  <div class="scene3d corner-scene" aria-hidden="true"><div class="anchor" data-corner></div></div>
+</Demo>

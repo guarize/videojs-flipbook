@@ -1,0 +1,543 @@
+/*
+ * Proof on the page: the "Try it" line and the Essential / Full book switch under the hero's player, and in "How it
+ * holds up" the sources under each number, the two frame keys, the sheet of states and the visitor's settings.
+ * Tokens are the book page's (apps/preview/src/book/book.css). Controls answer in 150 to 200 ms, and in each one
+ * thing moves; nothing here moves on its own.
+ */
+
+/* ─── Under the player: try it, and what the player loads ──────────────── */
+
+.hero-try {
+  max-width: 40ch;
+  margin: 0;
+  color: var(--paper-soft);
+  text-wrap: balance;
+}
+
+.hero-try b {
+  color: var(--paper);
+  font-weight: 600;
+}
+
+/* On a phone the line names the thumb. */
+.try-phone {
+  display: none;
+}
+
+@media (max-width: 479px) {
+  .try-wide {
+    display: none;
+  }
+
+  .try-phone {
+    display: inline;
+  }
+}
+
+/* A radio group drawn as one control: the thumb is the only thing that travels, and it carries the ribbon. */
+.preset {
+  --i: 1;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 360px);
+  padding: 3px;
+  border: 1px solid var(--rule-strong);
+  /* The keys' radius and the 3 px between them and this edge, 1 px of it the border. */
+  border-radius: calc(var(--radius-control) + 4px);
+  background: var(--desk);
+  text-align: left;
+}
+
+.preset-thumb {
+  position: absolute;
+  z-index: 0;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border: 1px solid var(--paper-mute);
+  border-radius: var(--radius-control);
+  background: var(--desk-lit);
+  transform: translateX(calc(var(--i) * 100%));
+  transition: transform 200ms var(--ease);
+}
+
+/* The address's choice is shown where it belongs, not travelled to. */
+.preset[data-still] .preset-thumb {
+  transition: none;
+}
+
+.preset-thumb .rib {
+  position: absolute;
+  top: -1px;
+  right: 12px;
+  width: 8px;
+  height: 15px;
+}
+
+.preset-key {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: var(--target);
+  margin: 0;
+  padding: 0 30px 0 14px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--paper);
+  font: 600 16px / 44px var(--book-text);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  /* A key, not text: a long press on a phone selects nothing and opens no callout. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.preset-weight {
+  font: 400 12px / 1 var(--book-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--paper-mute);
+}
+
+/* What the chosen one is: both lines are on the page, the other one put away. */
+.preset-lines {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.preset[data-value="book"] ~ .preset-lines [data-for="essential"],
+.preset[data-value="essential"] ~ .preset-lines [data-for="book"] {
+  display: none;
+}
+
+@media (min-width: 1024px) and (min-aspect-ratio: 5 / 4) {
+  .hero {
+    --below: 96px;
+  }
+
+  /* The line to try and the switch; under them the cue and what the switch's choice is. */
+  .hero-foot {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "try try preset"
+      "cue line line";
+    align-items: center;
+    gap: 6px 24px;
+  }
+
+  .hero-try {
+    grid-area: try;
+    justify-self: start;
+    max-width: none;
+  }
+
+  .preset {
+    grid-area: preset;
+    width: auto;
+  }
+
+  .preset-lines {
+    grid-area: line;
+    justify-self: end;
+  }
+
+  .hero-cue {
+    grid-area: cue;
+    justify-self: start;
+  }
+}
+
+/* ─── The numbers' sources ─────────────────────────────────────────────── */
+
+.ev .ev-source {
+  margin-top: 12px;
+  font: 400 12px / 1.5 var(--book-mono);
+  color: var(--paper-mute);
+}
+
+/* ─── A block of proof: a head, then the thing itself ──────────────────── */
+
+.proof {
+  margin-top: clamp(64px, 8vw, 104px);
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+}
+
+.proof-head h3 {
+  margin: 0;
+  font: 400 var(--type-sub) / 1.1 var(--book-display);
+  color: var(--paper);
+  text-wrap: balance;
+}
+
+.proof-head p {
+  max-width: 38rem;
+  margin: 10px 0 0;
+  font-size: 16px;
+  color: var(--paper-mute);
+  text-wrap: pretty;
+}
+
+/* ─── The brightest frame, and the darkest ─────────────────────────────── */
+
+.frame-keys {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 16px 24px;
+  max-width: 880px;
+  margin-top: 28px;
+}
+
+.frame-key {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: var(--target);
+  margin: 0;
+  padding: 4px 16px 4px 4px;
+  border: 1px solid var(--rule-strong);
+  /* The picture's radius and the 4 px around it. */
+  border-radius: calc(var(--radius-control) + 4px);
+  background: var(--desk);
+  color: var(--paper);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  /* A key, not text: a long press on a phone selects nothing and opens no callout. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  transition:
+    border-color var(--fast) var(--ease),
+    transform var(--fast) var(--ease);
+}
+
+.frame-key:active {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .frame-key:hover {
+    border-color: var(--paper-mute);
+  }
+}
+
+.frame-thumb {
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-control);
+  background: var(--board);
+}
+
+.frame-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.frame-text {
+  display: grid;
+  gap: 2px;
+}
+
+.frame-name {
+  font: 600 17px / 1.35 var(--book-text);
+}
+
+.frame-time {
+  margin-left: 4px;
+}
+
+/* Two facts: side by side with room, one under the other without. Neither breaks inside. */
+.frame-meta {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 14px;
+  white-space: nowrap;
+}
+
+.frame-time,
+.frame-meta {
+  font: 400 12px / 1.5 var(--book-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--paper-mute);
+}
+
+/* ─── Every state ──────────────────────────────────────────────────────── */
+
+.states {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px 32px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.state figure {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 14px;
+  height: 100%;
+  margin: 0;
+}
+
+.state picture {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-control);
+  background: var(--board);
+}
+
+.state img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The picture's own edge: pure white at a tenth, so it reads as an edge on any frame. */
+.state picture::after,
+.frame-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  pointer-events: none;
+}
+
+.frame-thumb {
+  position: relative;
+}
+
+.state figcaption {
+  display: grid;
+  gap: 2px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--paper-mute);
+  text-wrap: pretty;
+}
+
+.state figcaption b {
+  font: 600 17px / 1.4 var(--book-text);
+  color: var(--paper);
+}
+
+/* A phone's screen stands upright, two rows tall, its picture filling what the rows give it. */
+.state-tall {
+  grid-row: span 2;
+}
+
+.state-tall figure {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.state-tall picture {
+  aspect-ratio: auto;
+}
+
+.state-tall img {
+  object-position: 50% 0;
+}
+
+@media (max-width: 960px) {
+  .states {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 24px;
+  }
+}
+
+/* A phone: one strip of cards, pulled sideways, the next one always showing its edge. */
+@media (max-width: 700px) {
+  .states {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-inline: calc(-1 * var(--gutter));
+    padding: 4px var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+
+  .state {
+    flex: none;
+    width: 78vw;
+    scroll-snap-align: start;
+  }
+
+  /* The phone's screen from its top: the player, its edge down the side, and the head of the sheet. */
+  .state-tall figure {
+    grid-template-rows: auto auto;
+  }
+
+  .state-tall picture {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* ─── Your settings ────────────────────────────────────────────────────── */
+
+.prefs {
+  display: grid;
+  max-width: 62rem;
+  margin: 24px 0 0;
+}
+
+.pref {
+  display: grid;
+  grid-template-columns: 11rem 12rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 4px 24px;
+  padding: 16px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.pref:first-child {
+  border-top: 0;
+}
+
+.pref dt {
+  font: 600 17px / 1.4 var(--book-text);
+  color: var(--paper);
+}
+
+.pref dd {
+  margin: 0;
+}
+
+.pref-value {
+  justify-self: start;
+  padding: 2px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  font: 400 12px / 1.5 var(--book-mono);
+  color: var(--paper-soft);
+  white-space: nowrap;
+}
+
+/* A setting away from its default: the chip is filled, and marked by more than its colour. */
+.pref[data-set] .pref-value {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--desk);
+  font-weight: 600;
+}
+
+.pref-does {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--paper-mute);
+  text-wrap: pretty;
+}
+
+@media (max-width: 860px) {
+  .pref {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .pref-value {
+    justify-self: end;
+  }
+
+  .pref-does {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preset-thumb,
+  .frame-key {
+    transition: none;
+  }
+
+  .frame-key:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .preset-thumb {
+    border-color: Highlight;
+  }
+
+  .pref[data-set] .pref-value {
+    border-color: Highlight;
+  }
+}
+
+/* ─── The site's layout of what the book page's sheet also styles ──────── */
+
+/* The numbers: three to a row, two on a tablet, one on a phone (the sheet lays seven out as three, two, two). */
+.evidence .ev,
+.evidence .ev:nth-child(n + 4) {
+  grid-column: span 2;
+}
+
+@media (max-width: 960px) {
+  .evidence {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .evidence .ev,
+  .evidence .ev:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 700px) {
+  .evidence {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence .ev,
+  .evidence .ev:nth-child(n + 4) {
+    grid-column: auto;
+  }
+}
+
+/* ─── A phone's player: room for its pad ───────────────────────────────── */
+
+/* Under 480 px the player carries its controls as a pad under the picture (src/skins/flipbook/phone.css, --fb-pad-h).
+   The page keeps that room from the first paint, as the same board, so nothing moves when the player stands in it
+   (scripts/site-check.mjs holds the two heights together). */
+@media (max-width: 479.98px) {
+  .hero {
+    --pad: 220px;
+  }
+
+  .player-host {
+    margin-bottom: var(--pad);
+  }
+
+  .player-host::before {
+    content: "";
+    position: absolute;
+    inset: 100% 0 auto;
+    height: var(--pad);
+    background: var(--board);
+  }
+}

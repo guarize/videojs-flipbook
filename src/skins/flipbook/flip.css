@@ -1,0 +1,236 @@
+/*
+ * Flipping is playing, and pausing prints (flip.ts, print.ts). Loaded with the book's `deck`, after the core sheets.
+ *
+ * While a hand moves the film (`data-fb-deck="flip"`, a scrub like the deck's, so everything that stands back for a
+ * scrub does) the picture stays the picture: the deck's desk and the preview print keep away, and the chip over the
+ * ribbon reads the hand's speed. Paused, the picture steps in and paper shows around it, with the folio and chapter
+ * printed up its side; a turned page lifts off it and goes.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── The hand on the film ──────────────────────────────────────────── */
+
+    :scope[data-fb-deck="flip"] .fb-deck .fb-deck-desk {
+      opacity: 0;
+    }
+
+    /* The film is in the picture, so the print above the pointer has nothing to add. */
+    :scope[data-fb-deck="flip"] .media-time-slider .media-time-slider-preview {
+      visibility: hidden;
+    }
+
+    /* The hand's speed, in the chip's own place and type: a fixed width, so the digits change and nothing else does. */
+    .fb-edge-chip[data-rate] {
+      justify-content: center;
+      /* "−2.0×" and "p. 52" are both five characters: the chip never changes width. */
+      min-width: 6ch;
+    }
+
+    /* ─── The stand-in (stand.ts) ───────────────────────────────────────── */
+
+    /* Over the picture, in the picture's own box, while a hand drives a film that cannot keep up: a silent copy of
+       the film (a video of the player's, so the rules that fit, scale and print the picture hold for it), or the
+       storyboard's pages on a canvas (named beside the video in those rules, here and in intertitle.css). It comes up
+       at once; its leaving is a short fade made in stand.ts (the transform's own transition, the print's, must stay
+       the picture's). */
+    .fb-stand {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .fb-stand[data-on] {
+      opacity: 1;
+    }
+
+    /* The copy, before its first frame has come: the page's still from the storyboard, behind its empty picture. */
+    video.fb-stand {
+      background-image: var(--fb-sprite);
+      background-size: var(--fb-sprite-size);
+      background-repeat: no-repeat;
+    }
+
+    /* The pages: a canvas the size of the picture, fitted as the film is, and moved as the picture is. */
+    canvas.fb-stand {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      object-fit: var(--media-object-fit, contain);
+      object-position: var(--media-object-position, center);
+      transform-origin: 50% 46%;
+      transition: transform var(--fb-base) var(--fb-ease-out);
+    }
+
+    /* ─── The fan under the thumb (fan.ts) ──────────────────────────────── */
+
+    /* Seven of the film's pages standing up from under the finger. The root is a point (the pivot); each leaf stands
+       over it and turns about it. Only transforms and opacity change while it is up. */
+    .fb-fan {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    /* The middle leaf on top, then outwards, the later page over the earlier. */
+    .fb-fan-leaf:nth-child(4) { z-index: 7; }
+    .fb-fan-leaf:nth-child(5) { z-index: 6; }
+    .fb-fan-leaf:nth-child(3) { z-index: 5; }
+    .fb-fan-leaf:nth-child(6) { z-index: 4; }
+    .fb-fan-leaf:nth-child(2) { z-index: 3; }
+    .fb-fan-leaf:nth-child(7) { z-index: 2; }
+    .fb-fan-leaf:nth-child(1) { z-index: 1; }
+
+    .fb-fan-leaf {
+      position: absolute;
+      left: calc(var(--fb-fan-w, 100px) / -2);
+      bottom: 0;
+      width: var(--fb-fan-w, 100px);
+      height: var(--fb-fan-h, 56px);
+      /* A page: a paper margin round its picture, a hairline, and the soft shadow it lays on the leaf behind. */
+      border: 3px solid var(--fb-paper);
+      border-radius: 2px;
+      background-color: var(--fb-paper);
+      background-image: var(--fb-sprite);
+      background-size: var(--fb-sprite-size);
+      background-origin: border-box;
+      background-clip: padding-box;
+      box-shadow:
+        0 0 0 1px rgb(20 17 14 / 0.4),
+        0 6px 14px -4px rgb(0 0 0 / 0.55),
+        0 1px 2px rgb(0 0 0 / 0.4);
+      /* The pivot: under the leaf's foot, where the finger is. */
+      transform-origin: 50% calc(100% + var(--fb-fan-reach, 50px));
+      backface-visibility: hidden;
+      will-change: transform, opacity;
+    }
+
+    .fb-fan[hidden] {
+      display: none;
+    }
+
+    @media (forced-colors: active) {
+      .fb-fan {
+        display: none;
+      }
+    }
+
+    /* ─── The print ─────────────────────────────────────────────────────── */
+
+    fb-flip {
+      position: absolute;
+      inset: 0;
+      z-index: 27;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* The margin replaces the core's thin print border. */
+    :scope[data-fb-flip]::before {
+      display: none;
+    }
+
+    /* Out a little quicker than in: the page becomes film at once. */
+    :scope[data-fb-flip] :is(video, .media-poster) {
+      transition-duration: var(--fb-base);
+      transition-timing-function: var(--fb-ease-out);
+    }
+
+    :scope[data-fb-flip][data-fb-print] :is(video, .media-poster, canvas.fb-stand) {
+      transform: scale(var(--fb-print-scale, 1));
+      transition-duration: var(--fb-slow);
+    }
+
+    /* A swipe across the print turns a page; the page behind still scrolls up and down, and still zooms. */
+    :scope[data-fb-flip][data-fb-print] {
+      touch-action: pan-y pinch-zoom;
+    }
+
+    /* The paper: a border the size print.ts works out, over the picture's own box, with the picture's edge drawn on it. */
+    .fb-print-frame {
+      position: absolute;
+      box-sizing: border-box;
+      border: 0 solid var(--fb-paper);
+      opacity: 0;
+      transition: opacity var(--fb-base) var(--fb-ease-out);
+    }
+
+    .fb-print-frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      box-shadow: inset 0 0 0 1px rgb(20 17 14 / 0.3);
+    }
+
+    :scope[data-fb-print] .fb-print-frame {
+      opacity: 1;
+      transition-duration: var(--fb-slow);
+    }
+
+    /* A page in the air (print.ts animates it; at rest it isn't there). */
+    .fb-print-sheet {
+      position: absolute;
+      opacity: 0;
+      backface-visibility: hidden;
+      box-shadow: 0 12px 28px -12px rgb(0 0 0 / 0.6);
+    }
+
+    /*
+     * With room in the margin (20 px or more), the folio and chapter are printed in it, up the left side, as a frame
+     * number is on a contact sheet: "P. 31 · SPIN". The stamp is the core's own; it loses its chip and stands on whole
+     * pixels.
+     */
+    :scope[data-fb-flip][data-fb-print-margin="wide"] .fb-stamp,
+    :scope[data-fb-flip][data-fb-print-margin="wide"]:fullscreen .fb-stamp,
+    :scope[data-fb-flip][data-fb-print-margin="wide"][data-fb-fill] .fb-stamp {
+      top: calc(var(--fb-print-top, 0px) + 72px);
+      /* Centred in the margin whatever face the folio is set in (12 px mono, or the details' 14 px serif). */
+      left: calc(var(--fb-print-left, 0px) + (var(--fb-print-margin, 28px) - 1em) / 2);
+      padding: 0;
+      border-radius: 0;
+      background: none;
+      box-shadow: none;
+      color: var(--fb-ink);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      /* Read from the bottom up, set that way by the browser: no transform, so every glyph is on whole pixels. */
+      writing-mode: sideways-lr;
+      translate: none;
+    }
+
+    /* A browser without sideways-lr turns the same line over instead (its box turns about its own middle). */
+    @supports not (writing-mode: sideways-lr) {
+      :scope[data-fb-flip][data-fb-print-margin="wide"] .fb-stamp {
+        writing-mode: vertical-rl;
+        rotate: 180deg;
+      }
+    }
+
+    :scope[data-fb-flip][data-fb-print-margin="wide"] .fb-stamp[data-fb-chapter]:not([data-fb-chapter=""])::after {
+      content: "\2002·\2002" attr(data-fb-chapter);
+      color: var(--fb-ink-soft);
+    }
+
+    @media (forced-colors: active) {
+      .fb-print-frame {
+        border-color: Canvas;
+      }
+
+      .fb-print-frame::after {
+        box-shadow: none;
+        outline: 1px solid CanvasText;
+        outline-offset: -1px;
+      }
+
+      :scope[data-fb-flip][data-fb-print-margin="wide"] .fb-stamp {
+        color: CanvasText;
+      }
+    }
+  }
+}

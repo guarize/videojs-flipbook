@@ -1,0 +1,190 @@
+@layer base.theme, base.preset, base.preferences;
+
+/* Onest (SIL OFL 1.1, apps/preview/public/fonts/flipbook/OFL.txt): a grotesk with a printer's warmth. */
+@font-face {
+  font-family: "Flipbook Onest";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/flipbook/onest-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Arial, sized to Onest, so the swap moves nothing. */
+@font-face {
+  font-family: "Flipbook Onest Fallback";
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans");
+  size-adjust: 105.2%;
+  ascent-override: 92.2%;
+  descent-override: 28.99%;
+  line-gap-override: 0%;
+}
+
+/*
+ * Flipbook: printed cards on an ink desk. The chrome is quiet ink and paper, so the deck is the hero; one
+ * registration red marks focus, the playhead and the frame you're on.
+ *
+ * Two tiers. The materials (ink, paper, the desk) are the book's own. The roles below them (the cover, what's printed
+ * on it, the accent and its ramp, the focus ring) are the custom properties a site sets to rebrand the player, in its
+ * own stylesheet; no rule in the skin hard-codes them. The accent's tokens move together (README, "Rebrand"), and the
+ * contrast spec measures a rebranded accent as well as this one.
+ */
+@layer base.preset {
+  .media-skin[data-theme="flipbook"] {
+    /* ─── Materials: the book's own ─── */
+    --fb-ink: #14110e;
+    --fb-ink-raised: #1f1b17;
+    --fb-ink-line: rgb(245 240 230 / 0.14);
+    --fb-paper: #f6f1e7;
+    --fb-paper-soft: #d9d2c4;
+    --fb-paper-mute: #b9b1a2;
+    /* Secondary ink on paper (a print's page number): at least 4.9:1 on the paper. */
+    --fb-ink-soft: #5b5249;
+    --fb-desk: #0d0b09;
+    --fb-edge-paper: #efe7d6;
+    /* Control boundaries on paper (WCAG 1.4.11 with the house margin, at least 3.4:1). */
+    --fb-line-control: #7a7064;
+
+    /* ─── Surfaces on the picture that never take the cover's colours ─── */
+    /* The wash over the picture: the controls' vignette, the deck's desk, the scrims under the panels. */
+    --fb-scrim: #0d0b09;
+    /* Captions' backing and lettering (the caption style page can change both). */
+    --fb-caption-ground: #14110e;
+    --fb-caption-text: #f6f1e7;
+
+    /* ─── The cover: the board the controls are bound into, and what's printed on it ─── */
+    --fb-cover-hi: #29231c;
+    --fb-cover: #1b1713;
+    --fb-cover-lo: #13100d;
+    /* Raised off the cover (popovers), and solid (more contrast, the docked keys' hover). */
+    --fb-cover-raised: #1f1b17;
+    --fb-cover-solid: #14110e;
+    --fb-cover-line: rgb(245 240 230 / 0.14);
+    --fb-on-cover: #f6f1e7;
+    --fb-on-cover-soft: #d9d2c4;
+    --fb-on-cover-mute: #b9b1a2;
+    /* A control's boundary on the cover, at least 3.4:1 against it. */
+    --fb-line-control-cover: #9c9384;
+    /* Lettering pressed into the cover: its shadow. */
+    --fb-cover-emboss: rgb(0 0 0 / 0.55);
+    /* A key under the pointer (raised) and pressed or open (sunk), and a keycap's lower edge. */
+    --fb-key-raised-hi: rgb(255 250 240 / 0.12);
+    --fb-key-raised-lo: rgb(255 250 240 / 0.05);
+    --fb-key-sunk: rgb(0 0 0 / 0.22);
+    --fb-key-sunk-edge: rgb(0 0 0 / 0.45);
+    /* The plate under a key that stands on the picture (the top bar), so its icon holds over any frame. */
+    --fb-top-plate: rgb(20 17 14 / 0.78);
+    --fb-top-plate-hover: rgb(31 27 23 / 0.9);
+    /* Thumb-index tabs (the chapters, and their numbers in Contents and on the cover): an ink-dyed face. */
+    --fb-tab-hi: #3a322a;
+    --fb-tab-lo: #29231c;
+    --fb-tab-line: rgb(246 241 231 / 0.6);
+
+    /* ─── The accent: one colour, its ramp, and the cloth it's dyed into ─── */
+    --fb-accent: #e2492b;
+    /* Marks drawn straight on the cover (a menu's tick, a set bookmark): at least 3.4:1 against it. */
+    --fb-accent-on-cover: var(--fb-accent);
+    --fb-accent-edge: #cf4429;
+    /* Fills that carry paper text: at least 4.9:1 under it, top to bottom. */
+    --fb-accent-mid: #b8381e;
+    --fb-accent-deep: #a8311a;
+    --fb-accent-glow: rgb(255 230 210);
+    /* The fore-edge's read pages: the lines between them, and the shade along their foot. */
+    --fb-accent-shade: rgb(70 8 0);
+    --fb-accent-shade-deep: rgb(50 6 0);
+    /* Bookmark cloth (the ribbons, Contents, the covers, the waiting page), the playhead's ribbon, a read page. */
+    --fb-cloth: linear-gradient(90deg, #5e130a, #8a2112 38%, #a8311a 56%, #6c180c);
+    --fb-cloth-shade: rgb(30 2 0);
+    --fb-cloth-playhead: linear-gradient(90deg, #b8331c, var(--fb-accent) 45%, #f0603f 60%, #c23a20);
+    --fb-page-read: linear-gradient(180deg, #f27a5d, var(--fb-accent-edge) 40%, #9a2c17);
+
+    /* ─── Focus: the ring, and the plate under it that holds it over the brightest frame ─── */
+    --fb-ring: var(--fb-accent);
+    --fb-ring-plate: rgb(20 17 14 / 0.92);
+
+    /* BEGIN legacy-aliases: the old names, read by files the theme tokens haven't been merged into yet; nothing new
+       should use them. */
+    --fb-red: var(--fb-accent);
+    --fb-red-deep: var(--fb-accent-deep);
+    --fb-edge-red: var(--fb-accent-edge);
+    /* END legacy-aliases */
+
+    --fb-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --fb-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --fb-fast: 150ms;
+    --fb-base: 200ms;
+    --fb-slow: 250ms;
+    --fb-scene: 300ms;
+
+    --fb-radius-control: 10px;
+    --fb-radius-surface: 12px;
+    /* Keys, nested (polish-r1): a key's 44 px box has corners of 12; the plate drawn inside it (4 px in, 3 px for the
+       play key) takes the box's radius less that inset, and the slab around the keys takes the box's radius plus the
+       distance from its outer edge to the box. Outer = inner + gap, all the way out. */
+    --fb-radius-key-box: 12px;
+    --fb-radius-key: calc(var(--fb-radius-key-box) - 4px);
+    --fb-radius-key-play: calc(var(--fb-radius-key-box) - 3px);
+    /* One focus ring: 2 px of the ring colour, 2 px clear of what it rings, on an ink plate 2 px wider again. */
+    --fb-ring-width: 2px;
+    --fb-ring-offset: 2px;
+    /* Tooltips and slips stand this far from the edge you can see (a key's plate, a tab's face, the time). */
+    --fb-tip-gap: 8px;
+    /* An icon that changes with its control's state: the old one goes small, soft and clear as the new one arrives. */
+    --fb-ease-icon: cubic-bezier(0.2, 0, 0, 1);
+    --fb-radius-card: 3px;
+    --fb-target: 44px;
+    --fb-icon: 20px;
+
+    --fb-font: "Flipbook Onest", "Flipbook Onest Fallback", ui-sans-serif, system-ui, sans-serif;
+    --fb-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+    --fb-shadow-card: 0 1px 1px rgb(0 0 0 / 0.28), 0 6px 14px -4px rgb(0 0 0 / 0.45), 0 22px 44px -14px rgb(0 0 0 / 0.55);
+    --fb-shadow-surface: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.35);
+
+    --media-background: transparent;
+    --media-foreground: var(--fb-on-cover);
+    --media-accent: var(--fb-accent);
+    --media-accent-foreground: var(--fb-paper);
+    --media-primary: var(--fb-paper);
+    --media-primary-foreground: var(--fb-ink);
+    --media-muted: color-mix(in srgb, var(--fb-on-cover) 16%, transparent);
+    --media-popover: var(--fb-cover-raised);
+    --media-popover-foreground: var(--fb-on-cover);
+    --media-ring: var(--fb-ring);
+    --media-backdrop: var(--fb-ink);
+    --media-font-family: var(--fb-font);
+    --media-popover-boundary-offset: 12px;
+    --media-tooltip-boundary-offset: 12px;
+    --media-popup-translate-distance: 6px;
+    --media-hidden-popup-scale: 0.97;
+    --media-hidden-popup-blur: 0px;
+    --media-video-border-radius: var(--media-border-radius, 14px);
+    --media-control-radius: var(--fb-radius-control);
+    --media-controls-radius: var(--fb-radius-control);
+    --media-menu-item-radius: 8px;
+    --media-popup-radius: var(--fb-radius-surface);
+    --media-dialog-radius: var(--fb-radius-surface);
+    --media-caption-controls-y: -104px;
+    --media-shadow-surface: var(--fb-shadow-surface);
+    --media-backdrop-filter-surface: none;
+    --media-backdrop-filter-indicator: none;
+    --media-backdrop-filter-dialog: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .media-skin[data-theme="flipbook"] {
+      --fb-fast: 0ms;
+      --fb-base: 0ms;
+      --fb-slow: 0ms;
+      --fb-scene: 0ms;
+      --media-popup-translate-distance: 0px;
+      --media-hidden-popup-scale: 1;
+    }
+  }
+
+  /*
+   * Forced colours (Windows contrast themes) are not handled by remapping these tokens: the system's colours are set
+   * on each part in a11y.css, by what the part is (a control, a keycap, a surface, a selection, a focus ring).
+   */
+}

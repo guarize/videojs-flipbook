@@ -1,0 +1,133 @@
+/*
+ * The one-time hints (hints.ts): paper slips that turn up when they're useful and go when they're not; they
+ * fade and lift 6 px, and under reduced motion only fade. Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* Keycaps on paper: ink on cream, as on the keymap card (labels.css). */
+    .fb-hint .fb-keycap {
+      border-color: rgb(20 17 14 / 0.3);
+      background: rgb(20 17 14 / 0.05);
+      color: var(--fb-ink);
+      box-shadow: inset 0 -1px 0 rgb(20 17 14 / 0.16);
+    }
+
+    :scope[data-fb-caption-over~="hint"] fb-hints {
+      visibility: hidden;
+    }
+
+    /* ─── Hints ─────────────────────────────────────────────────────────── */
+
+    fb-hints {
+      position: absolute;
+      inset: 0;
+      z-index: 33;
+      pointer-events: none;
+    }
+
+    .fb-hint {
+      position: absolute;
+      top: 64px;
+      /* Centred by auto margins, not left: 50% and a translate, which would give it only half the picture to wrap in. */
+      inset-inline: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: max-content;
+      max-width: min(88%, 440px);
+      margin-inline: auto;
+      margin-block: 0;
+      padding: 7px 12px 7px 10px;
+      border-radius: 6px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 20px -8px rgb(0 0 0 / 0.55);
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.3;
+      text-wrap: balance;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition:
+        opacity var(--fb-base) var(--fb-ease),
+        transform var(--fb-base) var(--fb-ease-out);
+    }
+
+    /* A red registration mark leads it: the skin's one colour, here meaning "worth knowing". */
+    .fb-hint::before {
+      content: "";
+      flex: none;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--fb-red-deep);
+    }
+
+    .fb-hint-text {
+      display: inline;
+    }
+
+    .fb-hint .fb-keycap {
+      margin-inline: 2px;
+      vertical-align: 1px;
+    }
+
+    fb-hints[data-open] .fb-hint {
+      opacity: 1;
+      transform: none;
+      /* While it shows, a touch on it puts it away (hints.ts). */
+      pointer-events: auto;
+    }
+
+    /* The back cover is its own page: no hints over its title. */
+    :scope[data-fb-cover] fb-hints {
+      display: none;
+    }
+
+    @container media-root (width < 480px) {
+      .fb-hint {
+        top: 56px;
+      }
+    }
+
+    /* A phone's picture has no top row to stand under, and its middle is the film's to tap (a tap there plays and
+       pauses, hand.ts): the slip stands at the picture's head, so even set in two lines it leaves the middle free. */
+    :scope[data-fb-pad] .fb-hint {
+      top: 12px;
+    }
+
+    /* A slip stands where the page stamp does while that is a chip on the picture (not printed in a wide margin,
+       flip.css): the stamp gives its place up while one shows, as it does for a caption line. */
+    :scope[data-fb-print]:not([data-fb-print-margin="wide"]):has(fb-hints[data-open]) .fb-stamp {
+      opacity: 0;
+    }
+
+    /* Reduced motion: they fade, nothing travels (the durations are already 0 from the theme's tokens). */
+    @media (prefers-reduced-motion: reduce) {
+      .fb-hint {
+        transform: none !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-hint {
+        outline: 1px solid CanvasText;
+      }
+    }
+  }
+}
+
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    @media (forced-colors: active) {
+      .fb-hint {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+    }
+  }
+}

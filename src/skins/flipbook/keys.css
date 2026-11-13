@@ -1,0 +1,104 @@
+/*
+ * Keys the core markup carries, so they're styled before any extra loads: the bookmark key, the keys that live
+ * in the top bar when the slab has no room for them, and the polite voice that the ribbons, the contents page and
+ * the back cover speak through.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── The bookmark key ──────────────────────────────────────────────── */
+
+    .fb-bookmark .media-button-icon {
+      transition:
+        opacity var(--fb-base) var(--fb-ease-icon),
+        transform var(--fb-base) var(--fb-ease-icon),
+        filter var(--fb-base) var(--fb-ease-icon);
+    }
+
+    /* The same swap as every state icon (skin.css): small, soft and clear going, into place arriving. */
+    .fb-bookmark .fb-bookmark-on-icon,
+    .fb-bookmark[data-bookmarked] .fb-bookmark-add-icon {
+      opacity: 0;
+      transform: scale(0.25);
+      filter: blur(4px);
+    }
+
+    /* Marked: the ribbon is red, with a tick (red on the cover 4.3:1, on the plate 4.6:1). */
+    .fb-bookmark[data-bookmarked] .fb-bookmark-on-icon {
+      opacity: 1;
+      transform: none;
+      filter: none;
+      color: var(--fb-accent-on-cover);
+    }
+
+    /* ─── Keys in the top bar, on the picture, when the slab is full ────── */
+
+    .fb-top-key {
+      display: none;
+      pointer-events: auto;
+    }
+
+    /* An ink plate under each, so the icon holds over the brightest frame. AirPlay and Cast, which only ever live up
+       here (Safari shows the first, Chrome the second, each only with a receiver to offer), take the same plate. */
+    .fb-top-key::after,
+    .video-controls-top > :is(.media-airplay-button, .media-cast-button)::after {
+      opacity: 1;
+      inset: 4px;
+      background: var(--fb-top-plate);
+      box-shadow:
+        inset 0 1px 0 rgb(255 250 240 / 0.12),
+        0 0 0 1px var(--fb-cover-line),
+        0 4px 10px -3px rgb(0 0 0 / 0.5);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-top-key:hover::after,
+      .video-controls-top > :is(.media-airplay-button, .media-cast-button):hover::after {
+        background: var(--fb-top-plate-hover);
+      }
+    }
+
+    /* The slab has room for the keys with their printed names only on a wide player; below that they're the book's
+       running header. (1240 px: with the names in, the row needs 1225 px in Chromium and 1233 in Safari to print the
+       page count whole; at 1200 it was cut for the first thirty.) */
+    @container media-root (width < 1240px) {
+      .fb-slab-key {
+        display: none;
+      }
+
+      .fb-top-key {
+        display: grid;
+      }
+    }
+
+    /* ─── Shared ────────────────────────────────────────────────────────── */
+
+    .fb-voice {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-bookmark .media-button-icon {
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-top-key::after,
+      .video-controls-top > :is(.media-airplay-button, .media-cast-button)::after {
+        display: none;
+      }
+    }
+
+    @container media-root (width < 352px) {
+      :scope:has(.fb-resume:not([hidden])) .video-controls-top {
+        visibility: hidden;
+      }
+    }
+  }
+}

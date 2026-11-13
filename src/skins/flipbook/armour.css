@@ -1,0 +1,230 @@
+/*
+ * Armour: the skin on someone else's page.
+ *
+ * The skin's rules live in cascade layers (Video.js 10's contract: light DOM, `@layer`, `@scope`), and a host page
+ * reaches into the player two ways.
+ *
+ * With unlayered rules, which beat a layered one whatever its specificity: a site's ordinary `kbd { … }`,
+ * `button { … }`, `svg { … }` or `* { … }` restyles the player's insides. The rules at the foot of this file are
+ * unlayered on purpose and say one thing, `revert-layer`: for an element of the skin, forget the unlayered rules and
+ * take what the layers say. The values stay where they are, in the layers; nothing is repeated here.
+ *
+ * With layers of its own. A page built with Tailwind CSS 4 keeps its preflight and its element rules in layers named
+ * as a Video.js skin's are (`base`, `components`, `utilities`), so what ships has the skin's layers under names of
+ * its own, above Tailwind's four whichever stylesheet loads first (build/layers.mjs: `components` here is
+ * `fb-components` on the page). And under them all is `reset`: every element of the player handed back to the
+ * browser's own stylesheet, so a property the skin does not set is the browser's and never the page's. Without it a
+ * host's `@layer base { kbd { color: … } }` lettered the keycaps, the skin giving a keycap no colour of its own.
+ *
+ * None of it is `!important`, so three things still reach in, as they should: the skin's own inline styles, a
+ * visitor's stylesheet for text spacing (WCAG 1.4.12), and a host's deliberate `!important`. The custom properties
+ * (README, "Rebrand") are untouched: `all` does not cover them.
+ *
+ * `:not(#\#)` matches everything and weighs as much as an id, twice: the armour outranks a theme's `#content p` and
+ * `#page #content span`, not only its `p`.
+ *
+ * Because of this, a rule of the skin's that reaches inside the player must be in a layer: an unlayered one would be
+ * reverted with the host's (tests/unit/flipbook-armour.test.ts holds every stylesheet to that). And this stylesheet
+ * is the first the skin loads (skin.ts): the order below is the order.
+ */
+
+/* The skin's layers, in order. `apart` is for the parts that stand outside the player's frame or over it (the mini
+   player's keys, the waiting page): above every layer that styles the player, as they were when they were unlayered. */
+@layer reset, base, components, utilities, a11y, apart;
+
+/*
+ * The browser's own stylesheet, for everything inside the player (the same elements as the unlayered lines below):
+ * `revert` forgets every author rule under this layer, the page's layers among them. The player's own box stays the
+ * host's; of it, only what the root rule below and the skin's own rules set.
+ */
+@layer reset {
+  .media-skin[data-theme="flipbook"] *,
+  .media-skin[data-theme="flipbook"] *::before,
+  .media-skin[data-theme="flipbook"] *::after,
+  .media-skin[data-theme="flipbook"] input::placeholder,
+  .media-skin[data-theme="flipbook"] li::marker,
+  .media-skin[data-theme="flipbook"] :is(dialog, [popover])::backdrop,
+  .media-skin[data-theme="flipbook"]::before,
+  .media-skin[data-theme="flipbook"]::after {
+    all: revert;
+  }
+
+  /*
+   * The player's own box stays the host's. Of it, the skin answers for what the unlayered lines at the foot name
+   * (what runs down into the player, and what it lays itself out with), and the root rule below says most of that;
+   * what neither it nor the skin's own rules say is the browser's too (a page's `:focus-visible { outline-offset }`).
+   */
+  .media-skin[data-theme="flipbook"] {
+    font-synthesis: revert;
+    -webkit-font-smoothing: revert;
+    -webkit-tap-highlight-color: revert;
+    color: revert;
+    scrollbar-color: revert;
+    margin: revert;
+    overflow: revert;
+    clip-path: revert;
+    outline: revert;
+    outline-offset: revert;
+    transition: revert;
+    animation: revert;
+  }
+
+  /*
+   * But a drawing's own attributes are the drawing (`d`, `x`, `rx`, `fill="currentColor"` on a path; the size a
+   * canvas or an image is given), and an attribute ranks under every layer: `revert` forgets it with the page's
+   * rules. Those few properties go back one layer instead, where there is nothing but the attribute, or a page's
+   * layered rule for that very property on that very element (a `path { d: … }`, which no page writes).
+   */
+  .media-skin[data-theme="flipbook"] svg * {
+    d: revert-layer;
+    x: revert-layer;
+    y: revert-layer;
+    cx: revert-layer;
+    cy: revert-layer;
+    r: revert-layer;
+    rx: revert-layer;
+    ry: revert-layer;
+    width: revert-layer;
+    height: revert-layer;
+    fill: revert-layer;
+    stroke: revert-layer;
+    mask: revert-layer;
+  }
+
+  .media-skin[data-theme="flipbook"] :is(canvas, img) {
+    aspect-ratio: revert-layer;
+  }
+
+  /* Video.js places a popup with an `align` attribute, which a browser also reads as the old text alignment: a
+     tooltip's and a menu's lines are set from it, and stay so. */
+  .media-skin[data-theme="flipbook"] [align] {
+    text-align: revert-layer;
+  }
+}
+
+/*
+ * What the page would otherwise hand down. Inherited properties arrive from the host's `body` unless the skin's root
+ * sets them, so it sets them all, in the lowest layer; skin.css gives the face, the size, the leading and the colour
+ * above it. Sizes in the skin are px (and em of its own px), never rem: the host's root font size is not its business.
+ */
+@layer base {
+  .media-skin[data-theme="flipbook"] {
+    font: normal 400 16px/1.25 sans-serif;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-align: start;
+    text-align-last: auto;
+    text-indent: 0;
+    text-shadow: none;
+    text-rendering: auto;
+    text-wrap: wrap;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: manual;
+    line-break: auto;
+    tab-size: 8;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-text-fill-color: currentColor;
+    -webkit-text-stroke: 0 currentColor;
+    cursor: auto;
+    list-style: disc outside none;
+    quotes: auto;
+    caret-color: auto;
+    accent-color: auto;
+    /* A dark book on any page: its scrollbars and its one text field are a dark surface's. */
+    color-scheme: dark;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    image-rendering: auto;
+    box-sizing: border-box;
+  }
+}
+
+/*
+ * Every icon in the skin is drawn one way, and says so in its attributes (`fill="none" stroke="currentColor"
+ * stroke-width="1.5"`, round caps and joins). A page's layered `svg { fill: currentColor; stroke-width: 2 }` would
+ * outrank the attributes, so the skin says the same in a layer of its own
+ * (tests/unit/flipbook-armour.test.ts holds every icon to these five).
+ */
+@layer base {
+  .media-skin[data-theme="flipbook"] svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+/*
+ * Everything inside the player. (The parts that stand in the page beside it, the mini player's keys and the waiting
+ * page, carry the same line in their own stylesheets, float.css and pip-page.css: an extra's names stay out of the
+ * core.) Of the other pseudo-elements, only
+ * where the skin has one: the time field's placeholder, a list item's marker, a popup's backdrop. (A rule for every
+ * element's ::selection would have the browser work out a selection style for each of them on every restyle, half as
+ * much work again while the film plays; the colour of selected text is left to the page.)
+ */
+.media-skin[data-theme="flipbook"] :not(#\#):not(#\#),
+.media-skin[data-theme="flipbook"] :not(#\#):not(#\#)::before,
+.media-skin[data-theme="flipbook"] :not(#\#):not(#\#)::after,
+.media-skin[data-theme="flipbook"] input:not(#\#):not(#\#)::placeholder,
+.media-skin[data-theme="flipbook"] li:not(#\#):not(#\#)::marker,
+.media-skin[data-theme="flipbook"] :is(dialog, [popover]):not(#\#):not(#\#)::backdrop,
+.media-skin[data-theme="flipbook"]:not(#\#):not(#\#)::before,
+.media-skin[data-theme="flipbook"]:not(#\#):not(#\#)::after {
+  all: revert-layer;
+}
+
+/*
+ * The player's own box is the host's to size and place (width, height, aspect-ratio, position, a shadow), so the root
+ * is not taken whole. Only what would run down into the skin (the inherited properties above), and what the skin lays
+ * itself out with: how it clips, and its margin (a phone's controls hang under the picture on one, and every reset
+ * has `* { margin: 0 }`). A page that wants space around the player gives it to the element the player is in.
+ */
+.media-skin[data-theme="flipbook"]:not(#\#):not(#\#) {
+  font: revert-layer;
+  font-synthesis: revert-layer;
+  letter-spacing: revert-layer;
+  word-spacing: revert-layer;
+  text-transform: revert-layer;
+  text-align: revert-layer;
+  text-align-last: revert-layer;
+  text-indent: revert-layer;
+  text-shadow: revert-layer;
+  text-rendering: revert-layer;
+  text-wrap: revert-layer;
+  white-space: revert-layer;
+  word-break: revert-layer;
+  overflow-wrap: revert-layer;
+  hyphens: revert-layer;
+  line-break: revert-layer;
+  tab-size: revert-layer;
+  -webkit-text-size-adjust: revert-layer;
+  text-size-adjust: revert-layer;
+  -webkit-text-fill-color: revert-layer;
+  -webkit-text-stroke: revert-layer;
+  -webkit-font-smoothing: revert-layer;
+  -webkit-tap-highlight-color: revert-layer;
+  color: revert-layer;
+  cursor: revert-layer;
+  list-style: revert-layer;
+  quotes: revert-layer;
+  caret-color: revert-layer;
+  accent-color: revert-layer;
+  color-scheme: revert-layer;
+  writing-mode: revert-layer;
+  text-orientation: revert-layer;
+  image-rendering: revert-layer;
+  scrollbar-color: revert-layer;
+  box-sizing: revert-layer;
+  margin: revert-layer;
+  overflow: revert-layer;
+  clip-path: revert-layer;
+  outline: revert-layer;
+  outline-offset: revert-layer;
+  transition: revert-layer;
+  animation: revert-layer;
+}

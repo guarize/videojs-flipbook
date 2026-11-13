@@ -1,0 +1,37 @@
+node_modules
+dist
+dist-lib
+*.local
+.DS_Store
+
+# Hosting CLIs keep their project links here.
+.vercel
+.netlify
+.wrangler
+
+# Astro's generated types (apps/site).
+.astro/
+
+# The film itself is not in the repository. `pnpm film:fetch` downloads it and makes the copy with no audio track
+# that every automated browser plays; scripts/film-assets.mjs writes both from a new delivery of the film.
+media-src/film/*.mp4
+media-src/film/*.jpg
+apps/preview/public/media/film/*.mp4
+apps/preview/public/media/film/*.part
+test-fixtures/
+
+# Browser test output. The numbers the tests measure are kept, in design/previews/audit/; the crops they leave there
+# to be looked at (tests/e2e/keyboard.spec.ts) are not.
+test-results/
+playwright-report/
+design/previews/audit/**/*.png
+design/previews/audit/**/*.jpg
+design/previews/audit/**/*.webp
+
+# The 1878 card the riffle's horse is cut from (scripts/gallop.mjs): its source and numbers are in the .meta.json beside it.
+media-src/gallop/*.jpg
+
+# What the picture scripts leave behind (scripts/site-states.mjs, design/directions/2-the-object/).
+design/previews/states-raw/
+design/directions/**/*.png
+design/directions/**/*.jpg

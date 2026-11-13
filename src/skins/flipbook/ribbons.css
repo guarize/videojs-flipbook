@@ -1,0 +1,235 @@
+/*
+ * Bookmark ribbons (ribbons.ts): slim red grosgrain ribbons hanging from the fore-edge where you marked a moment.
+ * The bookmark key that makes them, the keys in the top bar and the polite voice are in the core markup, so their
+ * styles are core too (keys.css). Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── The ribbons ───────────────────────────────────────────────────── */
+
+    .fb-ribbons {
+      position: absolute;
+      inset-inline: 6px;
+      top: 0;
+      z-index: 3;
+      height: var(--fb-target);
+      pointer-events: none;
+    }
+
+    .fb-ribbon {
+      position: absolute;
+      top: 0;
+      width: var(--fb-target);
+      height: var(--fb-target);
+      margin-left: calc(var(--fb-target) / -2);
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
+      background: none;
+      cursor: pointer;
+      outline: none;
+      pointer-events: auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /*
+     * The cloth: it comes out from between the pages just above the edge and hangs below it, its end cut in a notch.
+     * Oxblood, deeper than the sprayed edge, inside a paper hairline: it reads on the cream pages, on the red ones and on
+     * the dark cover alike.
+     */
+    .fb-ribbon-cloth {
+      position: absolute;
+      left: 50%;
+      top: 9px;
+      width: 9px;
+      height: 33px;
+      margin-left: -4.5px;
+      transform-origin: 50% 0;
+      filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.55));
+      transition:
+        transform var(--fb-fast) var(--fb-ease-out),
+        scale var(--fb-fast) var(--fb-ease-out);
+    }
+
+    /* Pressed, as every key is: 0.96, from where it comes out of the pages. */
+    .fb-ribbon:active .fb-ribbon-cloth {
+      scale: 0.96;
+    }
+
+    .fb-ribbon-cloth::before,
+    .fb-ribbon-cloth::after {
+      content: "";
+      position: absolute;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 4.5px), 0 100%);
+    }
+
+    .fb-ribbon-cloth::before {
+      inset: 0;
+      background: #f3ecde;
+    }
+
+    /* Grosgrain: fine ribs across the weave, a lit middle, and the shade where it goes in between the pages. */
+    .fb-ribbon-cloth::after {
+      inset: 0 1.25px 1.25px;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--fb-cloth-shade) 60%, transparent), transparent 7px),
+        repeating-linear-gradient(0deg, color-mix(in srgb, var(--fb-cloth-shade) 20%, transparent) 0 1px, transparent 1px 2.5px),
+        var(--fb-cloth);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-ribbon:hover .fb-ribbon-cloth {
+        transform: translateY(1px);
+      }
+    }
+
+    .fb-ribbon:focus-visible {
+      outline: 2px solid var(--fb-ring);
+      outline-offset: -2px;
+      box-shadow: 0 0 0 4px var(--fb-ring-plate);
+    }
+
+    /* Its moment and chapter, on a paper slip at the height the chapter tabs set theirs. */
+    .fb-ribbon-label {
+      position: absolute;
+      left: 50%;
+      bottom: 73px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 5px 9px;
+      border-radius: 5px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px -6px rgb(0 0 0 / 0.5);
+      font-family: var(--fb-font);
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      translate: -50% 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition:
+        opacity var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-ribbon[data-align="start"] .fb-ribbon-label {
+      left: 2px;
+      translate: none;
+    }
+
+    .fb-ribbon[data-align="end"] .fb-ribbon-label {
+      left: auto;
+      right: 2px;
+      translate: none;
+    }
+
+    /* A small ribbon mark leads the slip, so it reads as a bookmark and not a chapter. */
+    .fb-ribbon-label::before {
+      content: "";
+      align-self: center;
+      width: 6px;
+      height: 12px;
+      background: var(--fb-accent-deep);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+    }
+
+    .fb-ribbon-time {
+      font-family: var(--fb-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fb-ribbon-chapter {
+      color: #5b5249;
+      font-weight: 500;
+    }
+
+    .fb-ribbon-chapter:empty {
+      display: none;
+    }
+
+    .fb-ribbon:focus-visible .fb-ribbon-label,
+    .fb-ribbon[data-fb-tap] .fb-ribbon-label {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-ribbon:hover .fb-ribbon-label {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* While the deck is open the ribbons step back with the rest of the edge's furniture. */
+    :scope[data-fb-deck="open"] .fb-ribbon-label {
+      opacity: 0;
+    }
+
+    /* A phone's fore-edge is a few centimetres: the ribbons are a mark on it, and the contents page lists them. */
+    @container media-root (width < 480px) {
+      .fb-ribbon {
+        pointer-events: none;
+      }
+
+      /* It comes out between the tabs and the pages and lies across the edge (skin.css, "The edge down the side"). */
+      .fb-ribbon-cloth {
+        top: 22px;
+        width: 7px;
+        height: 25px;
+        margin-left: -3.5px;
+      }
+
+      .fb-ribbons {
+        inset-inline: 12px;
+        height: 48px;
+      }
+    }
+
+    /* ─── Shared ────────────────────────────────────────────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-ribbon-cloth,
+      .fb-ribbon-label {
+        transition-duration: 0ms !important;
+      }
+
+      .fb-ribbon:hover .fb-ribbon-cloth,
+      .fb-ribbon-label {
+        transform: none !important;
+      }
+
+      .fb-ribbon:active .fb-ribbon-cloth {
+        scale: none;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-ribbon-cloth::after {
+        forced-color-adjust: none;
+        background: Highlight;
+      }
+
+      .fb-ribbon-label {
+        outline: 1px solid CanvasText;
+      }
+    }
+  }
+}
+
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    @media (forced-colors: active) {
+      .fb-ribbon {
+        forced-color-adjust: auto;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+        color: ButtonText;
+      }
+    }
+  }
+}

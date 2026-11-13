@@ -1,0 +1,262 @@
+/*
+ * The corner curl, while paused (curl.ts): the page's corner lifts on the next chapter's first frame, and the
+ * top bar's keys make room for it. Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-curl-button:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgb(20 17 14 / 0.92);
+    }
+
+    /* ─── The corner curl, while paused ─────────────────────────────────── */
+
+    .fb-curl {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 28;
+      width: var(--fb-curl);
+      height: var(--fb-curl);
+      pointer-events: none;
+    }
+
+    .fb-curl-button {
+      position: absolute;
+      inset: 0;
+      padding: 0;
+      border: 0;
+      border-top-right-radius: var(--media-video-border-radius);
+      background: none;
+      cursor: grab;
+      touch-action: none;
+      opacity: 0;
+      transform-origin: 100% 0;
+      transform: scale(0.3);
+      pointer-events: none;
+      transition:
+        transform var(--fb-scene) var(--fb-ease-out),
+        opacity var(--fb-base) var(--fb-ease);
+    }
+
+    .fb-curl[data-open] .fb-curl-button {
+      opacity: 1;
+      transform: scale(var(--fb-pull, 1));
+      pointer-events: auto;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-curl[data-open]:not([data-pulling]) .fb-curl-button:hover {
+        transform: scale(1.14);
+      }
+    }
+
+    /* On a touch screen a drag that starts on the corner may still scroll the page up or down; across, it pulls. */
+    @media (pointer: coarse) {
+      .fb-curl-button {
+        touch-action: pan-y pinch-zoom;
+      }
+    }
+
+    .fb-curl[data-pulling] .fb-curl-button {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    /* The top bar's keys make room for the corner while it's lifted, so nothing sits on the dog-ear. */
+    .video-controls-top > .media-button {
+      transition: translate var(--fb-base) var(--fb-ease-out);
+    }
+
+    :scope:has(.fb-curl[data-open]) .video-controls-top > .media-button {
+      translate: calc(-1 * var(--fb-curl) + 4px) 0;
+    }
+
+    :scope:is([data-fb-deck], [data-fb-riffle]):has(.fb-curl[data-open]) .video-controls-top > .media-button {
+      translate: none;
+    }
+
+    :scope:is([data-fb-deck], [data-fb-riffle], [data-fb-turning]) .fb-curl-button {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    /* Underneath: the next chapter's first frame, at the picture's own scale. */
+    .fb-curl-under {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-top-right-radius: inherit;
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+
+    .fb-curl-image {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: var(--fb-ink);
+      background-image: var(--fb-sprite);
+      background-repeat: no-repeat;
+      transform-origin: 100% 0;
+      transform: scale(calc(1 / var(--fb-pull, 1)));
+    }
+
+    /* The lifted page shades the page beneath along the fold. */
+    .fb-curl-under::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent 50%, rgb(13 11 9 / 0.55) 50%, rgb(13 11 9 / 0.12) 66%, transparent 86%);
+    }
+
+    .fb-curl-fold {
+      position: absolute;
+      inset: 0;
+      filter: drop-shadow(-3px 6px 7px rgb(0 0 0 / 0.45));
+    }
+
+    /* The flap: the page's paper back, light at the fold and shading toward its tip; an ink hairline marks the fold. */
+    .fb-curl-flap {
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+      background: linear-gradient(225deg, transparent 50%, rgb(20 17 14 / 0.5) 50%, rgb(20 17 14 / 0.5) calc(50% + 1px), #fffcf5 calc(50% + 1px), #f1e9da 66%, #d4c7b1 100%);
+    }
+
+    .fb-curl-label {
+      position: absolute;
+      left: round(9%, 1px);
+      bottom: round(9%, 1px);
+      display: grid;
+      gap: 1px;
+      max-width: 62%;
+      color: var(--fb-ink);
+      text-align: start;
+      transform-origin: 0 100%;
+      transform: scale(calc(1 / var(--fb-pull, 1)));
+    }
+
+    .fb-curl-next {
+      /* 5.6:1 even where the flap shades to #d4c7b1 at its tip (#6b6155 measured 4.3:1 on the shaded paper). */
+      color: #4d453c;
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .fb-curl-title {
+      overflow: hidden;
+      font-size: 14px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fb-curl-button:focus-visible {
+      outline-offset: -4px;
+    }
+
+    :scope[data-fb-caption-over~="corner"] fb-curl {
+      visibility: hidden;
+    }
+
+    /* The plate is the paused moment's showpiece: while it's out the corner curl folds away (it comes back when the
+       plate goes) and the top keys return to their places. */
+    :scope[data-fb-plate] .fb-curl-button {
+      opacity: 0 !important;
+      transform: scale(0.3) !important;
+      pointer-events: none !important;
+    }
+
+    :scope[data-fb-plate]:has(.fb-curl[data-open]) .video-controls-top > .media-button {
+      translate: none;
+    }
+
+    /* ─── Sizes: the player's own width, not the page's ─────────────────── */
+
+    /* The corner only names the next chapter when it's big enough to set the name in full. */
+    @container media-root (width < 896px) {
+      .fb-curl-label {
+        display: none;
+      }
+    }
+
+    /* A phone's paused picture carries the print alone: the next chapter is its tab, a thumb's width away. */
+    :scope[data-fb-phone] .fb-curl {
+      display: none;
+    }
+
+    /* A phone on its side (a short player under a finger) too. */
+    @media (hover: none) and (pointer: coarse) {
+      :scope[data-fb-short] .fb-curl {
+        display: none;
+      }
+    }
+
+    /* ─── Preferences ───────────────────────────────────────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-curl-button {
+        transition-duration: 0ms !important;
+      }
+
+      .fb-curl-button,
+      .fb-curl[data-open]:not([data-pulling]) .fb-curl-button:hover {
+        transform: none !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-curl {
+        display: none;
+      }
+    }
+  }
+}
+
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── The corner curl's focus ring (#2) ─────────────────────────────── */
+
+    /*
+     * The button's own outline is painted under the fold and the page beneath it, which fill it. The ring is drawn
+     * above both instead, around the corner's square: the lifted page and the flap together.
+     */
+
+    /* Outside forced colours only: there the player's own focus outline (a11y.css) draws the ring, as before. */
+    @media not (forced-colors: active) {
+      .fb-curl-button:focus-visible {
+        outline: none;
+        box-shadow: none;
+      }
+    }
+
+    .fb-curl-button::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      z-index: 5;
+      border: 2px solid var(--fb-ring);
+      border-radius: 4px calc(var(--media-video-border-radius) - 3px) 4px 4px;
+      box-shadow:
+        0 0 0 2px var(--fb-ring-plate),
+        inset 0 0 0 2px var(--fb-ring-plate);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .fb-curl-button:focus-visible::after {
+      opacity: 1;
+    }
+
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    @media (forced-colors: active) {
+      .fb-curl-button::after {
+        border-color: Highlight;
+      }
+    }
+  }
+}

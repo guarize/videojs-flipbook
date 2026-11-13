@@ -1,0 +1,206 @@
+{
+  "measured": "2026-11-13T18:11:19.410Z",
+  "how": "node scripts/weights.mjs, on the production builds (dist, dist-lib); gzip -9; Chromium via Playwright, median of RUNS loads",
+  "units": "bytes (gzip -9) and ms",
+  "library": {
+    "core": {
+      "js": 103556,
+      "css": 20608,
+      "total": 124164,
+      "kib": {
+        "js": 101.1,
+        "css": 20.1
+      }
+    },
+    "extras": {
+      "turns": {
+        "file": "turns-BGPL-63E.js",
+        "gzip": 3755,
+        "css": 3288
+      },
+      "deck": {
+        "file": "deck-D99l9SAS.js",
+        "gzip": 18724,
+        "css": 6667
+      },
+      "contents": {
+        "file": "contents-BthEx4ny.js",
+        "gzip": 6493,
+        "css": 5160
+      },
+      "ribbons": {
+        "file": "ribbons-CQd101iQ.js",
+        "gzip": 3462,
+        "css": 2624
+      },
+      "plate": {
+        "file": "plate-baWGpOej.js",
+        "gzip": 9638,
+        "css": 5164
+      },
+      "curl": {
+        "file": "curl-CXasndM1.js",
+        "gzip": 3161,
+        "css": 3442
+      },
+      "cover": {
+        "file": "cover-K6_Lzo91.js",
+        "gzip": 10240,
+        "css": 6780
+      },
+      "pip": {
+        "file": "pip-Cl02dWAz.js",
+        "gzip": 7361,
+        "css": 3252
+      },
+      "hints": {
+        "file": "hints-CMYCkjdZ.js",
+        "gzip": 2410,
+        "css": 2138
+      },
+      "next": {
+        "file": "next-_dq1c3JN.js",
+        "gzip": 1954,
+        "css": 2119
+      },
+      "float": {
+        "file": "float-WBIv_sAK.js",
+        "gzip": 3846,
+        "css": 3370
+      },
+      "ear": {
+        "file": "ear-DDNuuL2I.js",
+        "gzip": 3280,
+        "css": 3181
+      },
+      "tear": {
+        "file": "tear-COcb2GtA.js",
+        "gzip": 7502,
+        "css": 3844
+      },
+      "intertitle": {
+        "file": "intertitle-GMS7hAi8.js",
+        "gzip": 5189,
+        "css": 2500
+      },
+      "paper": {
+        "file": "paper-Coc2BrUG.js",
+        "gzip": 4280,
+        "css": 208
+      },
+      "marks": {
+        "file": "marks-DVLTK6gm.js",
+        "gzip": 732,
+        "css": 0
+      },
+      "details": {
+        "file": "details-C60RWOZ_.js",
+        "gzip": 5075,
+        "css": 3738
+      }
+    },
+    "book": {
+      "total": 221266,
+      "extras": 97102,
+      "kib": 216.1
+    },
+    "before": {
+      "js": 128006,
+      "css": 22757,
+      "kib": {
+        "js": 125,
+        "css": 22.2
+      }
+    }
+  },
+  "showcase": {
+    "essential": {
+      "requests": 35,
+      "js": 123766,
+      "css": 24885,
+      "kib": {
+        "js": 120.9,
+        "css": 24.3
+      },
+      "extras": []
+    },
+    "book": {
+      "requests": 53,
+      "js": 224284,
+      "css": 24885,
+      "kib": {
+        "js": 219,
+        "css": 24.3
+      },
+      "extras": [
+        "contents",
+        "cover",
+        "curl",
+        "deck",
+        "details",
+        "ear",
+        "float",
+        "hints",
+        "intertitle",
+        "marks",
+        "next",
+        "paper",
+        "pip",
+        "plate",
+        "ribbons",
+        "tear",
+        "turns"
+      ]
+    }
+  },
+  "speed": {
+    "desktop": {
+      "essential": {
+        "fcp": 176,
+        "lcp": 252,
+        "tti": 679,
+        "ttiCpu": 176,
+        "tbt": 0,
+        "playerReady": 518,
+        "longTasks": 0,
+        "runs": 5,
+        "extrasLoaded": ""
+      },
+      "book": {
+        "fcp": 176,
+        "lcp": 252,
+        "tti": 1351,
+        "ttiCpu": 176,
+        "tbt": 0,
+        "playerReady": 522,
+        "longTasks": 0,
+        "runs": 5,
+        "extrasLoaded": "turns deck contents ribbons plate curl cover pip hints next float ear tear intertitle"
+      }
+    },
+    "mobile": {
+      "essential": {
+        "fcp": 572,
+        "lcp": 572,
+        "tti": 2450,
+        "ttiCpu": 2395,
+        "tbt": 157,
+        "playerReady": 2384,
+        "longTasks": 4,
+        "runs": 5,
+        "extrasLoaded": ""
+      },
+      "book": {
+        "fcp": 572,
+        "lcp": 572,
+        "tti": 6120,
+        "ttiCpu": 5252,
+        "tbt": 192,
+        "playerReady": 2360,
+        "longTasks": 6,
+        "runs": 5,
+        "extrasLoaded": "turns deck contents ribbons plate curl cover pip hints next float ear tear intertitle"
+      }
+    }
+  }
+}

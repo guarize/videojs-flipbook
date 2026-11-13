@@ -1,0 +1,287 @@
+/*
+ * The cover at rest (jacket.ts, scan.ts): the dust jacket's printed frame and title plate over the poster,
+ * and the scanimation cover. Loaded with their modules, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+
+    /* On the cover: the fore-edge fans, the painting standing up where the gilt was (as skin.css fans it on first sight). */
+    :scope[data-fb-jacket] .fb-edge[data-painted] .fb-edge-paint {
+      opacity: 1;
+      transform: none;
+    }
+
+    :scope[data-fb-jacket] .fb-edge[data-painted] .fb-edge-block {
+      opacity: 0;
+      transform: scaleY(0.2);
+    }
+
+    :scope[data-fb-jacket] .fb-edge-lift {
+      opacity: 0;
+    }
+
+    /* On the cover nothing is read yet: the painting shows the film in its own colours. */
+    :scope[data-fb-jacket] .fb-edge-paint-read {
+      clip-path: none;
+    }
+
+    /* ─── The dust jacket: the cover at rest ────────────────────────────── */
+
+    fb-jacket {
+      position: absolute;
+      inset: 0;
+      z-index: 23;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--fb-slow) var(--fb-ease);
+    }
+
+    fb-jacket[data-on] {
+      opacity: 1;
+    }
+
+    :scope[data-fb-scan] fb-jacket {
+      opacity: 0;
+    }
+
+    /* A soft vignette, so the plate and the frame read over any poster. */
+    fb-jacket::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(130% 110% at 50% 38%, transparent 48%, rgb(13 11 9 / 0.5));
+    }
+
+    /* The printed frame: a paper rule around the picture, as a cover's border. */
+    .fb-jacket-frame {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      bottom: calc(var(--fb-slab-top) + 22px);
+      border: 1.5px solid rgb(246 241 231 / 0.88);
+      border-radius: 8px;
+      box-shadow:
+        0 0 0 1px rgb(20 17 14 / 0.35),
+        inset 0 0 0 1px rgb(20 17 14 / 0.35);
+    }
+
+    /* The title plate: a bookplate in paper and ink, with a double rule. */
+    /* Placed by jacket.ts in the room the cover has (a translate from the cover's corner). */
+    .fb-jacket-plate {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      justify-items: center;
+      gap: 7px;
+      max-width: min(78%, 560px);
+      padding: 16px 30px 14px;
+      border-radius: 4px;
+      background: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow:
+        inset 0 0 0 5px var(--fb-paper),
+        inset 0 0 0 6px rgb(20 17 14 / 0.55),
+        0 2px 3px rgb(0 0 0 / 0.3),
+        0 18px 40px -14px rgb(0 0 0 / 0.65);
+    }
+
+    /* Not shown until jacket.ts has placed it (by translate, so its arrival moves nothing in the layout). */
+    /* Nothing to print (a film with no title and no chapters): no plate. */
+    fb-jacket[data-plain] .fb-jacket-plate {
+      display: none;
+    }
+
+    fb-jacket:not([data-arranged]) .fb-jacket-plate {
+      visibility: hidden;
+    }
+
+    /* Side by side with the disc: a cover's label, low on the left, set tighter. */
+    fb-jacket[data-side] .fb-jacket-plate {
+      justify-items: start;
+      gap: 4px;
+      max-width: min(44%, 300px);
+      padding: 10px 16px 9px;
+    }
+
+    fb-jacket[data-side] .fb-jacket-title {
+      font-size: clamp(16px, 3.2cqw, 24px);
+      text-align: start;
+    }
+
+    fb-jacket[data-side] .fb-jacket-rule {
+      display: none;
+    }
+
+    fb-jacket[data-tight] .fb-jacket-meta {
+      display: none;
+    }
+
+    fb-jacket[data-tiny] .fb-jacket-plate {
+      max-width: min(60%, 300px);
+      padding: 4px 9px;
+    }
+
+    fb-jacket[data-tiny] .fb-jacket-title {
+      max-width: 100%;
+      overflow: hidden;
+      font-size: 14px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    :scope:has(fb-jacket[data-no-disc]) .fb-cover-play {
+      visibility: hidden;
+    }
+
+    .fb-jacket-title {
+      max-width: 18ch;
+      font-size: clamp(18px, 3.6cqw, 40px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      text-align: center;
+      text-wrap: balance;
+    }
+
+    .fb-jacket-meta {
+      color: #4a4239;
+      font-family: var(--fb-mono);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .fb-jacket-rule {
+      width: 34px;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--fb-red-deep);
+    }
+
+    .fb-jacket-hint {
+      position: absolute;
+      top: calc(50% + 46px);
+      left: 50%;
+      padding: 5px 10px;
+      border-radius: 5px;
+      background: rgb(20 17 14 / 0.86);
+      color: var(--fb-paper);
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      translate: -50% 0;
+    }
+
+    .fb-jacket-hint:empty {
+      display: none;
+    }
+
+    /* The cover carries the title itself. */
+    :scope[data-fb-jacket] .media-title {
+      opacity: 0 !important;
+    }
+
+    :scope:has(.fb-resume:not([hidden])) .fb-jacket-hint {
+      display: none;
+    }
+
+    @container media-root (width < 720px) {
+      :scope:has(.fb-resume:not([hidden])) .fb-jacket-plate {
+        visibility: hidden;
+      }
+    }
+
+    /* ─── The scanimation cover ─────────────────────────────────────────── */
+
+    fb-scan {
+      position: absolute;
+      inset: 0;
+      z-index: 24;
+      overflow: hidden;
+      border-radius: inherit;
+      pointer-events: none;
+      visibility: hidden;
+      transition: opacity 300ms var(--fb-ease);
+    }
+
+    fb-scan[data-active] {
+      visibility: visible;
+    }
+
+    fb-scan[data-leaving] {
+      opacity: 0;
+    }
+
+    .fb-scan-window {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      transform: translate3d(100vw, 0, 0);
+    }
+
+    .fb-scan-print {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* The barrier: an acetate sheet of ink stripes with a lit leading edge, sliding in from the right. */
+    .fb-scan-barrier {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: calc(100% + var(--fb-period, 12px));
+      border-left: 2px solid rgb(246 241 231 / 0.75);
+      background: repeating-linear-gradient(90deg, transparent 0 var(--fb-slit, 3px), rgb(13 11 9 / 0.9) var(--fb-slit, 3px) var(--fb-period, 12px));
+      box-shadow: -12px 0 22px -8px rgb(0 0 0 / 0.65);
+      transform: translate3d(100vw, 0, 0);
+      will-change: transform;
+    }
+
+    @container media-root (width < 480px) {
+      /* A small cover's plate, set tighter (jacket.ts places it). */
+      .fb-jacket-plate {
+        justify-items: start;
+        gap: 3px;
+        /* Beside the disc (56 px), 16 px from it, 18 px from each side of the cover. */
+        max-width: calc(100% - 108px);
+        padding: 8px 14px 7px;
+      }
+
+      fb-jacket[data-side] .fb-jacket-plate {
+        max-width: calc(100% - 108px);
+      }
+
+      .fb-jacket-title {
+        text-align: start;
+      }
+
+      .fb-jacket-meta {
+        font-size: 12px;
+      }
+
+      .fb-jacket-rule {
+        display: none;
+      }
+
+      .fb-jacket-frame {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: calc(var(--fb-slab-top) + 8px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      fb-jacket,
+      fb-scan {
+        transition: none !important;
+      }
+    }
+  }
+}

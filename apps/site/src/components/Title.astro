@@ -1,0 +1,11 @@
+---
+import type { Title } from '../content/copy';
+
+interface Props {
+  title: Title;
+}
+
+const { title } = Astro.props;
+---
+
+{title.lead}{title.em && <em>{title.em}</em>}

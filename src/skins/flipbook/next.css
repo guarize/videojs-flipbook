@@ -1,0 +1,129 @@
+/*
+ * The next-chapter key in a chapter's last seconds (next.ts): a paper slip that fades and lifts 6 px, and under
+ * reduced motion only fades. Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* Keycaps on paper: ink on cream, as on the keymap card (labels.css). */
+    .fb-next-button .fb-keycap {
+      border-color: rgb(20 17 14 / 0.3);
+      background: rgb(20 17 14 / 0.05);
+      color: var(--fb-ink);
+      box-shadow: inset 0 -1px 0 rgb(20 17 14 / 0.16);
+    }
+
+    /* ─── Next chapter ──────────────────────────────────────────────────── */
+
+    fb-next {
+      position: absolute;
+      right: calc(var(--fb-inset) + 2px);
+      bottom: var(--fb-over-slab);
+      z-index: 32;
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+      transition:
+        opacity var(--fb-base) var(--fb-ease),
+        transform var(--fb-base) var(--fb-ease-out),
+        translate var(--fb-slow) var(--fb-ease-out);
+    }
+
+    fb-next[data-open] {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    /* With the controls away it settles to the picture's foot, where the slab was. */
+    :scope:not(:has(.video-controls-content[data-visible])) fb-next {
+      translate: 0 calc(var(--fb-over-slab) - var(--fb-inset) - 10px);
+    }
+
+    .fb-next-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: var(--fb-target);
+      padding: 0 10px 0 16px;
+      border: 1px solid transparent;
+      border-radius: var(--fb-radius-control);
+      background: linear-gradient(180deg, #fffdf8, var(--fb-paper) 60%, #e9e2d3);
+      color: var(--fb-ink);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.7),
+        0 1px 1px rgb(0 0 0 / 0.45),
+        0 8px 18px -6px rgb(0 0 0 / 0.6);
+      font-family: var(--fb-font);
+      font-size: 16px;
+      font-weight: 650;
+      white-space: nowrap;
+      cursor: pointer;
+      outline: none;
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-next-chevron {
+      width: var(--fb-icon);
+      height: var(--fb-icon);
+      margin-inline-start: -2px;
+    }
+
+    .fb-next-chevron:where(:dir(rtl), [dir="rtl"], [dir="rtl"] *) {
+      scale: -1 1;
+    }
+
+    .fb-next-button .fb-keycap {
+      margin-inline-start: 2px;
+    }
+
+    .fb-next-button:active {
+      transform: scale(0.96);
+    }
+
+    .fb-next-button:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgb(20 17 14 / 0.92);
+    }
+
+    /* A phone has no tabs over the slab: the key sits just above it (--fb-over-slab follows), clear of the top bar. */
+    @container media-root (width < 480px) {
+      .fb-next-button {
+        padding-inline: 12px 8px;
+      }
+
+      .fb-next-button .fb-keycap {
+        display: none;
+      }
+    }
+
+    /* Reduced motion: they fade, nothing travels (the durations are already 0 from the theme's tokens). */
+    @media (prefers-reduced-motion: reduce) {
+      fb-next,
+      .fb-next-button {
+        transform: none !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-next-button {
+        outline: 1px solid CanvasText;
+      }
+    }
+  }
+}
+
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    @media (forced-colors: active) {
+      .fb-next-button {
+        forced-color-adjust: auto;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+        color: ButtonText;
+      }
+    }
+  }
+}

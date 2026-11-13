@@ -1,0 +1,24 @@
+---
+import { copy } from '../content/copy';
+import { platePage } from '../lib/stills';
+import Demo from './Demo.astro';
+
+const { plate } = copy;
+const { folio } = plate;
+const page = platePage();
+---
+
+<Demo id="plate" kicker={plate.kicker} title={plate.title}>
+  <Fragment slot="copy">
+    {plate.body.map((text) => <p class="body" set:html={text} />)}
+    <div class="folio">
+      <p class="folio-big folio-range">{folio.range}<span class="of">{folio.of}</span></p>
+      <p class="folio-meta"><b>{folio.label}</b><br />{folio.meta}</p>
+    </div>
+  </Fragment>
+  <div class="plate-scene" aria-hidden="true">
+    <div class="plate-card" data-plate-card>
+      <img src={page.src} alt="" width={page.width} height={page.height} loading="lazy" decoding="async" />
+    </div>
+  </div>
+</Demo>

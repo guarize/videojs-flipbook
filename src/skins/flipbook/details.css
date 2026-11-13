@@ -1,0 +1,364 @@
+/*
+ * The book's details (details.ts): small touches on the controls, each behind its own token in `data-fb-details` on
+ * the container. Every rule here names its token, so a detail that is off leaves the control exactly as skin.css,
+ * keys.css and labels.css draw it. Loaded with the details' chunk (extras/details.ts), never by the core.
+ *
+ * What the round-1 system fixed stays fixed: radii nest (a keycap's corners are still 4 px inside its key's 8), one
+ * press (scale 0.96), one focus ring, one tooltip gap, motion on the theme's tokens (so reduced motion stills it), and
+ * nothing here takes text under 4.9:1 or a control's edge under 3.4:1 (tests/e2e/details.spec.ts measures each).
+ */
+/* Newsreader (SIL OFL 1.1, apps/preview/public/fonts/flipbook/newsreader-OFL.txt), for the folio: the Regular at the
+   16 pt optical size, the text master, cut for the 14 and 15 px it is set at. Latin. Fetched only once a folio is set
+   in it. */
+@font-face {
+  font-family: "Flipbook Newsreader";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/flipbook/newsreader-latin.woff2") format("woff2");
+}
+
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    :scope {
+      /* Gilt, as the fore-edge is (skin.css, .fb-edge-block): its middle tone, and the light it catches. */
+      --fb-gilt: #d6ae55;
+      --fb-gilt-hi: #f1dc96;
+      /* Type metal: the cool grey of a cast sort's face. Ink on its darkest point is over 6:1. */
+      --fb-metal-hi: #c9c8c3;
+      --fb-metal: #b1afa9;
+      --fb-metal-lo: #989690;
+      --fb-metal-edge: rgb(0 0 0 / 0.42);
+      --fb-metal-light: rgb(255 255 255 / 0.6);
+      /* The folio's face. Newsreader (SIL OFL 1.1, fonts/flipbook/newsreader-OFL.txt) ships with the skin, under the
+         skin's own name: a page's Newsreader may be a display cut, too fine for 15 px, so it is never borrowed.
+         Roman only: the skin bundles no italic, and never synthesises one. */
+      --fb-serif: "Flipbook Newsreader", "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      /* Bookcloth: two sets of threads, warp and weft, as noise drawn once into a 120 px tile (no request, no
+         animation). Light on the dark board, a few per cent, so what is printed on the board keeps its contrast. */
+      --fb-weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='w' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.09 1.1' numOctaves='2' seed='4' stitchTiles='stitch' result='a'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1 .09' numOctaves='2' seed='9' stitchTiles='stitch'/%3E%3CfeComposite in2='a' operator='arithmetic' k1='0' k2='.5' k3='.5' k4='0'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .97 0 0 0 0 .9 -.11 -.11 -.11 0 .185'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23w)'/%3E%3C/svg%3E");
+    }
+
+    /* ─── cloth: the slab as a bound cover ──────────────────────────────── */
+
+    /*
+     * Over the board's own two gradients (skin.css, .fb-bar, repeated here as they are): the weave, and a gilt hairline
+     * tooled along the top edge, on the slab's 1 px border, stopping where the corners start to turn and fading out
+     * at each end as foil does. One CSS pixel of a background layer on a box the browser snaps to the pixel grid.
+     */
+    :scope[data-fb-details~="cloth"] .fb-bar {
+      --fb-bar-turn: calc(var(--fb-radius-key-box) + 7px);
+      background:
+        linear-gradient(90deg, transparent, var(--fb-gilt) 14%, var(--fb-gilt-hi) 50%, var(--fb-gilt) 86%, transparent) top center / calc(100% - 2 * var(--fb-bar-turn)) 1px no-repeat border-box,
+        var(--fb-weave) 0 0 / 120px 120px repeat padding-box,
+        linear-gradient(180deg, rgb(255 248 235 / 0.06), transparent 40%),
+        linear-gradient(180deg, var(--fb-cover-hi), var(--fb-cover) 55%, var(--fb-cover-lo));
+    }
+
+    /* ─── type: keycaps as type sorts ───────────────────────────────────── */
+
+    /*
+     * A sort seen face on: a small block of type metal, its letter in ink with a line of light under it (cut into the
+     * face), one corner chamfered, and the nick every sort carries low on its body. The other three corners keep the
+     * keycap's 4 px, 4 px inside the key's plate. Its key pressed, it sinks (details-ui.ts sets data-fb-down from the
+     * real keydown): a pixel down and the house press, in 150 ms.
+     */
+    :scope[data-fb-details~="type"] .fb-keycap {
+      position: relative;
+      border: 0;
+      border-radius: 4px;
+      background: linear-gradient(180deg, var(--fb-metal-hi), var(--fb-metal) 45%, var(--fb-metal-lo));
+      color: var(--fb-ink);
+      box-shadow:
+        inset 0 1px 0 var(--fb-metal-light),
+        inset 0 -1px 0 var(--fb-metal-edge);
+      text-shadow: 0 1px 0 var(--fb-metal-light);
+      clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%);
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    :scope[data-fb-details~="type"] .fb-keycap::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      bottom: 0;
+      width: 4px;
+      height: 2px;
+      border-radius: 1px 1px 0 0;
+      background: var(--fb-metal-edge);
+    }
+
+    :scope[data-fb-details~="type"] .fb-keycap[data-fb-down] {
+      transform: translateY(1px) scale(0.96);
+    }
+
+    /* ─── folio: the page number as a folio ─────────────────────────────── */
+
+    /* In the serif, a size up from the mono it replaces (a Didone's hairlines need the pixels) and a tone up, still
+       behind the time. Each figure stands in a box of one width (details-ui.ts), so the line holds still as it counts. */
+    :scope[data-fb-details~="folio"] .fb-folio {
+      color: var(--fb-paper-soft);
+      font-family: var(--fb-serif);
+      font-size: 15px;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+
+    :scope[data-fb-details~="folio"] .fb-fig {
+      display: inline-block;
+      width: 0.62em;
+      text-align: center;
+    }
+
+    /* The same folio wherever the page is numbered: on the paused page's stamp and under the preview print. */
+    :scope[data-fb-details~="folio"] .fb-stamp,
+    :scope[data-fb-details~="folio"] .fb-peek-page {
+      font-family: var(--fb-serif);
+      font-weight: 400;
+    }
+
+    :scope[data-fb-details~="folio"] .fb-stamp {
+      font-size: 14px;
+    }
+
+    /* ─── sheaf: volume as the book's thickness ─────────────────────────── */
+
+    /*
+     * The fader, seen as the cut edge of a sheaf: pages lie in a tray (two rails and the board they rest on), one
+     * hairline a page, and the stack is as tall as the level. The knob is the top sheet. Under it the slider is the
+     * one skin.css draws: the same element, the same 48 px wide hit area, the same keys and the same ring on the knob.
+     */
+    :scope[data-fb-details~="sheaf"] .fb-volume-ticks {
+      display: none;
+    }
+
+    :scope[data-fb-details~="sheaf"] .media-volume-slider-track {
+      width: 22px;
+      overflow: visible;
+      border-radius: 0;
+      /* The places the pages would take: every third line, faint. */
+      background: repeating-linear-gradient(0deg, rgb(246 241 231 / 0.18) 0 1px, transparent 1px 3px) bottom / 100% 100% no-repeat, rgb(0 0 0 / 0.4);
+      box-shadow:
+        -1px 0 0 var(--fb-line-control-cover),
+        1px 0 0 var(--fb-line-control-cover),
+        0 2px 0 var(--fb-line-control-cover);
+    }
+
+    :scope[data-fb-details~="sheaf"] .media-volume-slider-fill {
+      background: repeating-linear-gradient(0deg, var(--fb-edge-paper) 0 1px, var(--fb-paper-mute) 1px 2px) bottom / 100% 100% no-repeat;
+    }
+
+    :scope[data-fb-details~="sheaf"] .media-volume-slider-thumb {
+      width: 30px;
+      height: 6px;
+      border-radius: 1px;
+      background: linear-gradient(180deg, #fffcf5, var(--fb-paper));
+      box-shadow:
+        inset 0 1px 0 #fff,
+        0 1px 1px rgb(0 0 0 / 0.6),
+        0 4px 7px -1px rgb(0 0 0 / 0.55);
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    /* The top sheet lifts under the pointer and lies flat again while it is held. */
+    @media (hover: hover) and (pointer: fine) {
+      :scope[data-fb-details~="sheaf"] .media-volume-slider:hover:not([data-dragging], [data-disabled]) .media-volume-slider-thumb {
+        transform: translateY(-1px);
+      }
+    }
+
+    :scope[data-fb-details~="sheaf"] .media-volume-slider[data-disabled] {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    /* Where the fader has left the slab (a phone: Volume is a page of four steps in Settings), each step carries its
+       own sheaf: four pages, three, two, one. */
+    :scope[data-fb-details~="sheaf"] .fb-menu-volume-group .media-menu-radio-item::before {
+      content: "";
+      flex-shrink: 0;
+      width: 16px;
+      height: 10px;
+      background: repeating-linear-gradient(0deg, currentColor 0 1px, transparent 1px 3px);
+    }
+
+    :scope[data-fb-details~="sheaf"] .fb-menu-volume-group .media-menu-radio-item {
+      justify-content: flex-start;
+    }
+
+    :scope[data-fb-details~="sheaf"] .fb-menu-volume-group .media-menu-radio-item:nth-child(2)::before {
+      clip-path: inset(3px 0 0);
+    }
+
+    :scope[data-fb-details~="sheaf"] .fb-menu-volume-group .media-menu-radio-item:nth-child(3)::before {
+      clip-path: inset(6px 0 0);
+    }
+
+    :scope[data-fb-details~="sheaf"] .fb-menu-volume-group .media-menu-radio-item:nth-child(4)::before {
+      clip-path: inset(9px 0 0);
+    }
+
+    /* ─── lift: a key's plate lifts under the pointer ───────────────────── */
+
+    /*
+     * A page corner lifting: under the pointer the key's raised plate, and what is printed on it, rise two pixels as
+     * the plate fades in with its shadow. `translate`, so the icons' own transforms (their state swaps) are left alone,
+     * and the key's box never moves: the pointer can't fall off a key it has just lifted. A press lays it flat again
+     * under the house press. Only where there is a real hover, and never under reduced motion.
+     */
+    @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+      :scope[data-fb-details~="lift"] .media-button:not(.fb-cover-play, .fb-rate, .media-dialog-close, .fb-error-retry)::after {
+        transition:
+          opacity var(--fb-fast) var(--fb-ease),
+          translate var(--fb-fast) var(--fb-ease-out);
+      }
+
+      :scope[data-fb-details~="lift"] .media-button:not(.fb-cover-play, .fb-rate, .media-dialog-close, .fb-error-retry) > :is(.media-button-icon, .fb-key-name) {
+        transition: translate var(--fb-fast) var(--fb-ease-out);
+      }
+
+      /* What rises takes no pointer of its own: the key under it does. (In Safari a glyph that moved out from under
+         a held pointer took the press with it, and the key rose again while still held.) */
+      :scope[data-fb-details~="lift"] .media-button > :is(.media-button-icon, .media-button-icon-base, .fb-key-name, .fb-keycap) {
+        pointer-events: none;
+      }
+
+      /* A keycap keeps its own press (the `type` detail's sink is a transform) beside the lift. */
+      :scope[data-fb-details~="lift"] .media-button > .fb-keycap {
+        transition:
+          transform var(--fb-fast) var(--fb-ease-out),
+          translate var(--fb-fast) var(--fb-ease-out);
+      }
+
+      /* The icons that swap with their key's state keep that swap (skin.css, keys.css) beside the lift. */
+      :scope[data-fb-details~="lift"] .media-button:not(.fb-cover-play) > .media-button-icon-base,
+      :scope[data-fb-details~="lift"] :is(.media-mute-button, .media-captions-button, .media-fullscreen-button, .media-pip-button, .media-airplay-button, .media-cast-button, .fb-bookmark) > .media-button-icon {
+        transition:
+          opacity var(--fb-base) var(--fb-ease-icon),
+          transform var(--fb-base) var(--fb-ease-icon),
+          filter var(--fb-base) var(--fb-ease-icon),
+          translate var(--fb-fast) var(--fb-ease-out);
+      }
+
+      :scope[data-fb-details~="lift"] .media-button:not(.fb-cover-play, .fb-rate, .media-dialog-close, .fb-error-retry, :disabled, [aria-disabled="true"]):hover:not(:active)::after,
+      :scope[data-fb-details~="lift"] .media-button:not(.fb-cover-play, .fb-rate, .media-dialog-close, .fb-error-retry, :disabled, [aria-disabled="true"]):hover:not(:active) > :is(.media-button-icon, .media-button-icon-base, .fb-key-name, .fb-keycap) {
+        translate: 0 -2px;
+      }
+    }
+
+    /* ─── states: the missing page, and a film with no captions ─────────── */
+
+    /*
+     * The error dialog as a page torn out at the spine: the same paper sheet, its spine side ragged (a strip of torn
+     * edge drawn as the sheet's own background, so the dark behind shows through the tear), the page's number printed
+     * where it stood, and beside the close key a way back: Try again (errors.ts).
+     */
+    :scope[data-fb-details~="states"] .media-dialog-popup {
+      padding-inline-start: 32px;
+      border-radius: 0 var(--fb-radius-card) var(--fb-radius-card) 0;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='176' viewBox='0 0 12 176'%3E%3Cpath fill='%23f6f1e7' d='M12 0H4L5.6 3L7.5 8.5L7.3 11.5L7.5 17L7.5 19L7.5 22L6.1 27.5L5.3 30.5L5.4 32L6 36L7.5 39L7.5 42L7.5 45L5.4 48L3.4 51L2.1 52.5L2.5 54.5L2.4 60L2.8 63L2.8 65L1.9 69L2.7 70.5L3.3 73.5L5.5 76.5L3.7 82L2.9 84.5L2.9 86.5L1 88L1 93.5L2.5 95L1 98L2.5 99.5L1.3 101L1.1 102.5L1 106.5L1.3 108L2.5 110L1.8 112.5L1.1 115L2.2 118L1 119.5L1 123.5L1 125L1 128L1 131L1 134L2.2 138L2.8 141L2.4 142.5L1 144.5L3.1 150L3.5 155.5L2.2 157L4.4 160L5 163L3 164.5L1.7 166.5L1 169L1 172L1 174.5L4 176H12z'/%3E%3C/svg%3E") left top / 12px 176px repeat-y,
+        linear-gradient(var(--fb-paper), var(--fb-paper)) 12px 0 / calc(100% - 12px) 100% no-repeat;
+      grid-template-columns: 1fr auto auto;
+    }
+
+    :scope[data-fb-details~="states"] :is(.media-dialog-title, .media-dialog-description) {
+      grid-column: 1 / -1;
+    }
+
+    /* The missing page's folio, at the sheet's outer corner. Nothing when the film stopped before it had a page. */
+    :scope[data-fb-details~="states"] .media-dialog-popup[data-fb-page]:not([data-fb-page=""])::before {
+      content: attr(data-fb-page);
+      grid-column: 1 / -1;
+      justify-self: end;
+      margin-bottom: -6px;
+      color: var(--fb-ink-soft);
+      font-family: var(--fb-serif);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    :scope[data-fb-details~="states"] .fb-error-retry {
+      grid-column: 2;
+      position: sticky;
+      bottom: 0;
+      width: auto;
+      padding-inline: 16px;
+      background-color: var(--fb-ink);
+      color: var(--fb-paper);
+      box-shadow: 0 0 0 6px var(--fb-paper);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    :scope[data-fb-details~="states"] .fb-error-retry::after,
+    :scope[data-fb-details~="states"] .fb-error-retry::before {
+      display: none;
+    }
+
+    /* With a retry beside it, closing is the second choice: an outlined key, ink on the paper. */
+    :scope[data-fb-details~="states"] .fb-error-retry ~ .media-dialog-close {
+      grid-column: 3;
+      background-color: transparent;
+      color: var(--fb-ink);
+      box-shadow:
+        inset 0 0 0 1px var(--fb-line-control),
+        0 0 0 6px var(--fb-paper);
+    }
+
+    :scope[data-fb-details~="states"] .media-dialog-popup:not(:has(.fb-error-retry)) .media-dialog-close {
+      grid-column: 1 / -1;
+    }
+
+    @container media-root (width < 480px) {
+      :scope[data-fb-details~="states"] .media-dialog-popup {
+        padding-inline-start: 26px;
+      }
+    }
+
+    /*
+     * A film with no captions: Settings says so, on a line where the Captions row stood, with "None" where the choice
+     * would be (details-ui.ts). Nothing opens from it, so it takes no highlight and keeps the arrow cursor, at full
+     * contrast (never greyed). Without this detail there is no such line.
+     */
+    .fb-menu-none {
+      cursor: default;
+    }
+
+    .fb-menu-none[hidden],
+    :scope:not([data-fb-details~="states"]) .fb-menu-none {
+      display: none;
+    }
+
+    @media (forced-colors: active) {
+      :scope[data-fb-details~="type"] .fb-keycap {
+        clip-path: none;
+        border: 1px solid ButtonText;
+        background: ButtonFace;
+        color: ButtonText;
+        text-shadow: none;
+      }
+
+      :scope[data-fb-details~="type"] .fb-keycap::after {
+        display: none;
+      }
+
+      :scope[data-fb-details~="sheaf"] .media-volume-slider-track {
+        background: Canvas;
+        box-shadow: 0 0 0 1px CanvasText;
+      }
+
+      :scope[data-fb-details~="sheaf"] .media-volume-slider-fill,
+      :scope[data-fb-details~="sheaf"] .media-volume-slider-thumb {
+        background: CanvasText;
+        box-shadow: none;
+      }
+
+      :scope[data-fb-details~="states"] .media-dialog-popup {
+        background: Canvas;
+        border: 1px solid CanvasText;
+      }
+    }
+  }
+}

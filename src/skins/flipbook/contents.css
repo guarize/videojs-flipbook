@@ -1,0 +1,593 @@
+/*
+ * The contents page (contents.ts): a book's table of contents set inside the player. Cream paper with the spine's
+ * shadow on its inner edge; chapter numbers on the same tabs the fore-edge carries; names run on a dotted leader to
+ * the time they start, set in tabular figures like page numbers. Red marks the chapter playing, as it does everywhere.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* Keycaps on paper: ink on cream, as on the keymap card (labels.css). */
+    .fb-contents-page .fb-keycap {
+      border-color: rgb(20 17 14 / 0.3);
+      background: rgb(20 17 14 / 0.05);
+      color: var(--fb-ink);
+      box-shadow: inset 0 -1px 0 rgb(20 17 14 / 0.16);
+    }
+
+    .fb-contents {
+      position: absolute;
+      inset: 0;
+      z-index: 45;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow: hidden;
+      border-radius: inherit;
+      color: var(--fb-ink);
+      font-family: var(--fb-font);
+    }
+
+    .fb-contents[hidden] {
+      display: none;
+    }
+
+    .fb-contents-scrim {
+      position: absolute;
+      inset: 0;
+      background: rgb(13 11 9 / 0.8);
+    }
+
+    /* The picture, turning over to uncover the page (drawn by paper.ts while it turns). */
+    .fb-contents .fb-paper {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .fb-contents-page {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      width: min(600px, 100%);
+      max-height: 100%;
+      overflow: hidden;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      background:
+        radial-gradient(130% 90% at 70% 0%, #fbf8f1, var(--fb-paper) 55%, #ece5d6),
+        var(--fb-paper);
+      box-shadow:
+        0 1px 1px rgb(0 0 0 / 0.3),
+        0 10px 24px -8px rgb(0 0 0 / 0.6),
+        0 30px 60px -20px rgb(0 0 0 / 0.65);
+      transform-origin: 0 50%;
+    }
+
+    /* The gutter: the page curves down into the spine on its inner edge. */
+    .fb-contents-page::before {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: 0;
+      z-index: 2;
+      width: 28px;
+      background: linear-gradient(90deg, rgb(70 48 25 / 0.2), rgb(70 48 25 / 0.06) 40%, transparent);
+      pointer-events: none;
+    }
+
+    .fb-contents-page:where(:dir(rtl), [dir="rtl"], [dir="rtl"] *)::before {
+      background: linear-gradient(270deg, rgb(70 48 25 / 0.2), rgb(70 48 25 / 0.06) 40%, transparent);
+    }
+
+    /* ─── Head ──────────────────────────────────────────────────────────── */
+
+    .fb-contents-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 6px 12px;
+      padding: 22px 14px 14px 40px;
+      border-bottom: 1px solid rgb(20 17 14 / 0.14);
+    }
+
+    .fb-contents-heading {
+      grid-column: 1;
+      margin: 0;
+      color: var(--fb-red-deep);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .fb-contents-book {
+      grid-column: 1;
+      margin: 0;
+      font-size: 26px;
+      font-weight: 650;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+
+    .fb-contents-close {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      display: grid;
+      place-items: center;
+      width: var(--fb-target);
+      height: var(--fb-target);
+      padding: 0;
+      border: 0;
+      border-radius: var(--fb-radius-control);
+      background: transparent;
+      color: var(--fb-ink);
+      cursor: pointer;
+      outline: none;
+      transition:
+        background-color var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-contents-close media-icon {
+      width: var(--fb-icon);
+      height: var(--fb-icon);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-contents-close:hover {
+        background-color: rgb(20 17 14 / 0.07);
+      }
+    }
+
+    .fb-contents-close:active {
+      transform: scale(0.96);
+    }
+
+    .fb-contents-close:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgb(20 17 14 / 0.92);
+    }
+
+    /* ─── The entries ───────────────────────────────────────────────────── */
+
+    .fb-contents-body {
+      min-height: 0;
+      padding: 10px 14px 16px 28px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(20 17 14 / 0.3) transparent;
+    }
+
+    .fb-contents-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      outline: none;
+    }
+
+    .fb-contents-list[hidden],
+    .fb-contents-subhead[hidden] {
+      display: none;
+    }
+
+    .fb-contents-option {
+      position: relative;
+      display: grid;
+      grid-template-columns: 30px 64px minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
+      min-height: 56px;
+      padding: 8px 12px 8px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      outline: none;
+      scroll-margin-block: 8px;
+      transition: background-color var(--fb-fast) var(--fb-ease);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-contents-option:hover {
+        background-color: rgb(20 17 14 / 0.05);
+      }
+    }
+
+    .fb-contents-option:active {
+      background-color: rgb(20 17 14 / 0.09);
+    }
+
+    /* The ring, drawn inside the row so the scroller never clips it: registration red on paper (3.6:1). */
+    .fb-contents-option:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: -2px;
+      background-color: rgb(20 17 14 / 0.04);
+    }
+
+    /* The chapter number, on the same tab the fore-edge carries for it. */
+    .fb-contents-number {
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      min-width: 26px;
+      height: 20px;
+      padding-inline: 5px;
+      border-radius: 5px 5px 0 0;
+      background: linear-gradient(180deg, #3a322a, var(--fb-cover-hi));
+      color: var(--fb-paper);
+      box-shadow: inset 0 1px 0 rgb(255 250 240 / 0.16), 0 1px 0 rgb(20 17 14 / 0.4);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .fb-contents-thumb {
+      position: relative;
+      display: block;
+      width: 64px;
+      height: 36px;
+      overflow: hidden;
+      border-radius: 2px;
+      background-color: #d9d2c4;
+      background-image: var(--fb-sprite);
+      background-size: var(--fb-sprite-size);
+      background-repeat: no-repeat;
+      box-shadow: 0 0 0 2px #fffdf8, 0 1px 3px 1px rgb(0 0 0 / 0.25);
+    }
+
+    .fb-contents-thumb img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      outline: 1px solid rgb(0 0 0 / 0.1);
+      outline-offset: -1px;
+    }
+
+    .fb-contents-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .fb-contents-name {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.3;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .fb-contents-now {
+      flex: none;
+      color: var(--fb-red-deep);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .fb-contents-now[hidden] {
+      display: none;
+    }
+
+    /* The leader: dots on the baseline, running from the name to its page. */
+    .fb-contents-leader {
+      flex: 1 1 24px;
+      min-width: 16px;
+      height: 4px;
+      background: radial-gradient(circle, #8a8073 0.9px, transparent 1.2px) 0 50% / 7px 4px repeat-x;
+    }
+
+    .fb-contents-folio {
+      flex: none;
+      font-family: var(--fb-mono);
+      font-size: 15px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    /* The chapter playing: a red tab, the name set bolder, and a hairline for how far through it you are. */
+    .fb-contents-option[data-current] {
+      background-color: rgb(168 49 26 / 0.07);
+    }
+
+    .fb-contents-option[data-current] .fb-contents-number {
+      background: linear-gradient(180deg, var(--fb-accent-mid), var(--fb-accent-deep));
+      box-shadow: inset 0 1px 0 rgb(from var(--fb-accent-glow) r g b / 0.35), 0 1px 0 rgb(20 17 14 / 0.4);
+    }
+
+    .fb-contents-option[data-current] .fb-contents-name {
+      font-weight: 650;
+    }
+
+    .fb-contents-progress {
+      position: absolute;
+      inset-inline: 128px 12px;
+      bottom: 7px;
+      display: none;
+      height: 2px;
+      overflow: hidden;
+      border-radius: 1px;
+      background: rgb(168 49 26 / 0.16);
+    }
+
+    .fb-contents-progress::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--fb-red-deep);
+      transform: scaleX(var(--fb-through, 0));
+      transform-origin: 0 50%;
+      transition: transform var(--fb-slow) linear;
+    }
+
+    .fb-contents-option[data-current] .fb-contents-progress {
+      display: block;
+    }
+
+    /* ─── Bookmarks ─────────────────────────────────────────────────────── */
+
+    .fb-contents-subhead {
+      margin: 18px 6px 6px;
+      padding-top: 14px;
+      border-top: 1px solid rgb(20 17 14 / 0.12);
+      color: #5b5249;
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .fb-contents-ribbon {
+      justify-self: center;
+      width: 10px;
+      height: 26px;
+      margin-top: -14px;
+      background:
+        repeating-linear-gradient(0deg, rgb(40 4 0 / 0.16) 0 1px, transparent 1px 2.5px),
+        var(--fb-cloth);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 4.5px), 0 100%);
+    }
+
+    .fb-contents-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 14px 6px 0;
+      color: #5b5249;
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+
+    /* The way to the shortcuts card, printed at the foot of the contents. */
+    .fb-contents-keys {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: var(--fb-target);
+      padding: 0 10px 0 12px;
+      border: 1px solid #8a8073;
+      border-radius: var(--fb-radius-control);
+      background: transparent;
+      color: var(--fb-ink);
+      font-family: var(--fb-font);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0;
+      cursor: pointer;
+      outline: none;
+      transition:
+        background-color var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-contents-keys media-icon {
+      width: var(--fb-icon);
+      height: var(--fb-icon);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-contents-keys:hover {
+        background-color: rgb(20 17 14 / 0.06);
+      }
+    }
+
+    .fb-contents-keys:active {
+      transform: scale(0.96);
+    }
+
+    .fb-contents-keys:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgb(20 17 14 / 0.92);
+    }
+
+    /* ─── The key on the slab and in the top bar ────────────────────────── */
+
+    :scope[data-fb-contents] .video-controls-content {
+      visibility: hidden;
+    }
+
+    /* ─── Sizes ─────────────────────────────────────────────────────────── */
+
+    /* Smaller players: the page fills the player, as a phone shows a book one page at a time. */
+    @container media-root (width < 720px) {
+      .fb-contents {
+        padding: 0;
+      }
+
+      .fb-contents-page {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border-radius: inherit;
+        box-shadow: none;
+      }
+
+      .fb-contents-head {
+        padding: 14px 8px 10px 30px;
+      }
+
+      .fb-contents-book {
+        font-size: 20px;
+      }
+
+      .fb-contents-body {
+        padding: 6px 8px 12px 18px;
+      }
+    }
+
+    @container media-root (width < 480px) {
+      .fb-contents-head {
+        align-items: center;
+        padding-block: 2px;
+        padding-inline-start: 22px;
+      }
+
+      .fb-contents-close {
+        grid-row: 1;
+      }
+
+      /* The heading alone names the page here; the book's title is on the cover. */
+      .fb-contents-book {
+        display: none;
+      }
+
+      .fb-contents-body {
+        padding-inline-start: 10px;
+      }
+
+      .fb-contents-option {
+        grid-template-columns: 26px 48px minmax(0, 1fr);
+        gap: 10px;
+        min-height: 48px;
+        padding-inline-end: 8px;
+      }
+
+      .fb-contents-thumb {
+        width: 48px;
+        height: 27px;
+      }
+
+      .fb-contents-progress {
+        inset-inline-start: 96px;
+        bottom: 5px;
+      }
+
+      .fb-contents-folio {
+        font-size: 14px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-contents-close,
+      .fb-contents-option,
+      .fb-contents-progress::after {
+        transition-duration: 0ms !important;
+      }
+
+      .fb-contents-close:active {
+        transform: none;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-contents-page {
+        background: Canvas;
+        color: CanvasText;
+        outline: 1px solid CanvasText;
+      }
+
+      .fb-contents-option[data-current] {
+        outline: 1px solid Highlight;
+      }
+
+      .fb-contents-option:focus-visible {
+        outline: 2px solid Highlight;
+      }
+    }
+  }
+}
+
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-contents-keys {
+      border-color: var(--fb-line-control);
+    }
+
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    @media (forced-colors: active) {
+      .fb-contents-close,
+      .fb-contents-keys {
+        forced-color-adjust: auto;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+        color: ButtonText;
+      }
+
+      .fb-contents-keys {
+        border: 1px solid ButtonText;
+      }
+
+      .fb-contents-option[aria-selected="true"] {
+        forced-color-adjust: none;
+        border-color: Highlight;
+        background-color: Highlight;
+        background-image: none;
+        color: HighlightText;
+      }
+
+      .fb-contents-number {
+        background-image: none;
+        box-shadow: none;
+      }
+
+      /* Everything inside the chosen chapter is set in the selection's text colour, its marks included. */
+      .fb-contents-option[aria-selected="true"] :is(*, ::before, ::after) {
+        border-color: HighlightText;
+        background-color: transparent;
+        color: HighlightText;
+      }
+
+      .fb-contents-option[aria-selected="true"] :is(*, ::before, ::after):not(.fb-contents-thumb) {
+        background-image: none;
+      }
+
+      .fb-contents-option[aria-selected="true"] .fb-contents-progress::after {
+        background-color: HighlightText;
+      }
+
+      .fb-contents-page {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      .fb-contents-option:focus-visible {
+        outline-offset: -2px;
+      }
+    }
+  }
+}

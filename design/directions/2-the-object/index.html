@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0c0b">
+<meta name="color-scheme" content="dark">
+<title>Flipbook · Direction 2 · The object</title>
+<link rel="preload" href="fonts/bodoni-moda-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/onest-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face { font-family: "Bodoni Moda"; src: url(fonts/bodoni-moda-latin.woff2) format("woff2"); font-weight: 400 900; font-style: normal; font-display: block; }
+@font-face { font-family: "Bodoni Moda"; src: url(fonts/bodoni-moda-italic-latin.woff2) format("woff2"); font-weight: 400 900; font-style: italic; font-display: block; }
+@font-face { font-family: "Onest"; src: url(fonts/onest-latin.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+
+:root {
+  /* Desk (fixed dark in both themes: it is a photograph of a desk) */
+  --desk: #0d0c0b;
+  --desk-lit: #2a2622;
+  --bone: #efe8da;        /* text on the desk, 16.0:1 */
+  --bone-2: #b3aa9a;      /* secondary text on the desk, 8.5:1 (6.4:1 inside the light pool) */
+  --hair-desk: rgb(239 232 218 / 0.16);
+
+  /* Paper and ink */
+  --paper: #f1eadb;
+  --paper-2: #e7decb;
+  --ink: #1a1712;         /* 14.9:1 on paper */
+  --ink-2: #4a4338;       /* 8.2:1 on paper */
+  --rule-control: #7a705e;/* control boundaries on paper, 4.1:1 */
+  --board: #24211d;       /* book-cloth tape and board edges */
+
+  --ribbon: #8f1d26;
+  --ribbon-hi: #b0313b;
+
+  --serif: "Bodoni Moda", "Didot", serif;
+  --sans: "Onest", system-ui, sans-serif;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --r-control: 10px;
+  --r-card: 18px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: var(--desk); -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+button, a, [role="button"], [role="slider"] { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+body { margin: 0; background: var(--desk); color: var(--bone); font: 400 1rem/1.5 var(--sans); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ribbon-hi); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Views: one per hash so each frame screenshots on its own */
+body[data-view] > .view { display: none; }
+body[data-view="rest"] > #rest,
+body[data-view="playing"] > #playing,
+body[data-view="page"] > #page,
+body[data-view="macrosrc"] > #macrosrc,
+body[data-view="moment"] > #page,
+body[data-view="phone"] > #phone { display: block; }
+body[data-view="moment"] #page > :not(#riffle) { display: none; }
+body[data-view="moment"] #riffle { border-top: 0; }
+.frame.macro-src { width: 1500px; height: 1000px; }
+.macro-src .stage { perspective: 1700px; perspective-origin: 50% -20%; }
+.macro-src .desk { background: radial-gradient(60% 80% at 48% 30%, #2c2824 0%, #171513 55%, var(--desk) 100%); }
+body:not([data-view]) > .view { margin-bottom: 64px; }
+
+/* ───────────────────────── The desk and the book ───────────────────────── */
+
+.frame { position: relative; width: 1280px; height: 720px; overflow: hidden; background: var(--desk); }
+
+.desk {
+  position: absolute; inset: 0;
+  /* One soft key light from back-left: the pool on the desk, falling off into the room */
+  background:
+    radial-gradient(60% 70% at 44% 46%, rgb(255 236 205 / 0.10), transparent 70%),
+    radial-gradient(90% 85% at 46% 48%, var(--desk-lit) 0%, #181614 46%, var(--desk) 100%);
+}
+.desk::after {
+  content: ""; position: absolute; inset: 0;
+  background: url(assets/grain.png); background-size: 128px;
+  opacity: 0.07; mix-blend-mode: overlay; pointer-events: none;
+}
+
+.stage { position: absolute; inset: 0; perspective: 2600px; perspective-origin: 50% 18%; }
+.book-anchor { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+.book { position: absolute; transform-style: preserve-3d; }
+.book > * { position: absolute; }
+
+/* Shadows on the desk: a soft cast shadow away from the key light, and contact darkness */
+.b-shadow { background: rgb(0 0 0 / 0.72); filter: blur(26px); border-radius: 30px; }
+.b-contact { background: rgb(0 0 0 / 0.85); filter: blur(5px); border-radius: 6px; }
+
+/* Cover */
+.b-cover { overflow: hidden; background: var(--paper); }
+.b-cover .plate { position: absolute; top: 0; }
+.b-cover .photo { position: absolute; left: 0; right: 0; top: 0; background: url(assets/cover.jpg) center 4% / cover; }
+.b-cover .photo::after { /* ink sits in the paper: a hair of warmth over the print */
+  content: ""; position: absolute; inset: 0; background: rgb(241 234 219 / 0.06); mix-blend-mode: multiply; }
+.b-cover .tape { position: absolute; left: 0; right: 0; top: 0; background: #34302a; box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.12), 0 1px 2px rgb(0 0 0 / 0.4); }
+.b-cover .tape::after {
+  content: ""; position: absolute; inset: 0;
+  background: url(assets/fibre.png); background-size: 96px; opacity: 0.18; mix-blend-mode: soft-light; }
+.b-cover .tape .stitch { position: absolute; top: 50%; width: 40px; height: 4px; margin-top: -2px; border-radius: 2px; background: linear-gradient(to bottom, #e6e2da, #8f8a80 70%, #5e5a52); box-shadow: 0 1px 1px rgb(0 0 0 / 0.7); }
+.b-cover .band { position: absolute; left: 0; right: 0; bottom: 0; background: var(--paper); }
+.b-cover .band::before { content: ""; position: absolute; inset: 0; background: url(assets/fibre.png); background-size: 140px; opacity: 0.22; mix-blend-mode: multiply; }
+.b-cover .rule { position: absolute; left: 36px; right: 36px; height: 1px; background: var(--ink); opacity: 0.85; }
+.b-cover .title { position: absolute; left: 36px; font: 400 54px/1 var(--serif); letter-spacing: -0.02em; color: var(--ink); white-space: nowrap; }
+.b-cover .title em { font-style: italic; }
+.b-cover .sub { position: absolute; left: 38px; font: 500 20px/1 var(--sans); letter-spacing: 0.01em; color: var(--ink-2); white-space: nowrap; }
+.b-cover .light { /* key light across the laminated board */
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(118deg, rgb(255 250 240 / 0.20) 0%, rgb(255 250 240 / 0.05) 34%, transparent 52%, rgb(0 0 0 / 0.10) 100%); }
+
+.seal {
+  position: absolute; display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 18px;
+  color: var(--ink); text-align: left;
+}
+.seal .disc { width: 96px; height: 96px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 0 5px rgb(241 234 219 / 0.55); }
+.seal .disc svg { width: 34px; height: 34px; margin-left: 6px; fill: var(--paper); }
+.seal .lbl { font: 600 26px/1.1 var(--sans); }
+.seal .dur { display: block; font: 500 21px/1.2 var(--sans); color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Fore-edge and its cuts */
+.edge-seg { overflow: hidden; transform-origin: 50% 100%; }
+.edge-full { position: absolute; left: 0; top: 0; background-color: #ddd3bf; }
+.edge-full .print { position: absolute; left: 0; right: 0; background: url(assets/edge-rest.png) 0 0 / 100% 100%; }
+.edge-full .board { position: absolute; left: 0; right: 0; background: var(--board); }
+.edge-full .board.top { top: 0; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25); }
+.edge-full .board.bottom { bottom: 0; }
+.edge-full::after { /* the face catches less light low down, near the desk */
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgb(255 248 236 / 0.12), transparent 35%, rgb(0 0 0 / 0.18)),
+              linear-gradient(to right, rgb(255 248 236 / 0.06), rgb(0 0 0 / 0.12)); }
+
+.wall { overflow: hidden; transform-origin: 50% 0; }
+.wall .pages { position: absolute; inset: 0;
+  background:
+    linear-gradient(to bottom, var(--board) 0 var(--b), transparent var(--b)),
+    repeating-linear-gradient(to bottom, #e9e0cb 0 1.5px, #cbbfa6 1.5px 2px);
+}
+.wall .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.42)); }
+
+.floor { overflow: hidden; background: var(--paper); }
+.floor::before { content: ""; position: absolute; inset: 0; background: url(assets/fibre.png); background-size: 120px; opacity: 0.2; mix-blend-mode: multiply; }
+.floor .ao { position: absolute; inset: 0; background: radial-gradient(circle at 50% 100%, transparent 54%, rgb(0 0 0 / 0.20) 82%, rgb(0 0 0 / 0.38) 100%); }
+.floor .lab { position: absolute; left: 0; right: 0; bottom: 9px; display: flex; justify-content: center; align-items: baseline; gap: 5px; color: var(--ink); }
+/* Sized for the longest names of "Locomotion" ("One Gallop", "Colophon") on one line inside the half-moon. */
+.floor .lab { white-space: nowrap; gap: 4px; }
+.floor .num { font: 500 20px/1 var(--serif); font-variant-numeric: lining-nums; }
+.floor .nm { font: 600 15px/1 var(--sans); letter-spacing: 0.005em; }
+
+.b-side { overflow: hidden; transform-origin: 0 50%; }
+.b-side.right { transform-origin: 100% 50%; }
+.b-side.right .shade { background: linear-gradient(to right, rgb(0 0 0 / 0.30), rgb(0 0 0 / 0.46)); }
+.b-side .pages { position: absolute; inset: 0;
+  background:
+    linear-gradient(to right, var(--board) 0 var(--b0), transparent var(--b0) calc(100% - var(--b1)), var(--board) calc(100% - var(--b1))),
+    repeating-linear-gradient(to right, #ddd3bd 0 1.5px, #b9ad94 1.5px 2px); }
+.b-side .tape { position: absolute; left: 0; right: 0; top: 0; background: var(--board); }
+.b-side .shade { position: absolute; inset: 0; background: linear-gradient(to left, rgb(255 248 236 / 0.10), rgb(0 0 0 / 0.22)), linear-gradient(to bottom, transparent 60%, rgb(0 0 0 / 0.12)); }
+
+/* The bottom line of the player at rest */
+.rest-caption {
+  position: absolute; left: 48px; right: 48px; bottom: 34px;
+  display: flex; justify-content: space-between; align-items: baseline;
+  font: 400 16px/1.4 var(--sans); color: var(--bone-2);
+}
+.rest-caption b { font-weight: 500; color: var(--bone); }
+.kbd { display: inline-block; min-width: 1.6em; padding: 0 6px; border: 1px solid var(--hair-desk); border-radius: 6px; text-align: center; color: var(--bone); font-size: 16px; line-height: 1.4; }
+
+/* ───────────────────────── Playing ───────────────────────── */
+
+.playing .picture { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.margin {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 138px;
+  background: var(--paper);
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 0.6), 0 -12px 30px rgb(0 0 0 / 0.18);
+  color: var(--ink);
+}
+.margin::before { content: ""; position: absolute; inset: 0; background: url(assets/fibre.png); background-size: 90px; opacity: 0.07; mix-blend-mode: multiply; pointer-events: none; }
+.ctrl-row { position: absolute; left: 16px; right: 16px; top: 8px; height: 48px; display: flex; align-items: center; justify-content: space-between; }
+.cluster { display: flex; align-items: center; gap: 2px; }
+.btn { position: relative; width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--r-control); color: var(--ink); transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: rgb(26 23 18 / 0.07); } .btn.primary:hover { background: #2c2720; } .chap:hover { color: var(--ink); } .nav a:hover { color: var(--bone); } }
+.btn:active { transform: scale(0.96); }
+.btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.btn.primary { width: 48px; height: 48px; border-radius: 50%; background: var(--ink); color: var(--paper); margin-right: 6px; }
+.btn.primary svg { fill: currentColor; stroke: none; }
+.btn .ten { position: absolute; font: 600 12px/1 var(--sans); top: 50%; left: 50%; transform: translate(-50%, -38%); font-variant-numeric: tabular-nums; }
+.btn.skip svg { width: 30px; height: 30px; stroke-width: 1.7; }
+.btn.text { width: auto; padding: 0 12px; font: 600 17px/1 var(--sans); font-variant-numeric: tabular-nums; }
+.vol { display: flex; align-items: center; gap: 4px; margin-right: 10px; }
+.vol-track { position: relative; width: 76px; height: 44px; display: flex; align-items: center; cursor: pointer; }
+.vol-track::before { content: ""; position: absolute; left: 0; right: 0; height: 4px; border-radius: 999px; background: var(--rule-control); }
+.vol-track .fill { position: absolute; left: 0; height: 4px; width: 70%; border-radius: 999px; background: var(--ink); }
+.vol-track .knob { position: absolute; left: 70%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 2px var(--paper); }
+.readout { display: flex; align-items: baseline; gap: 22px; padding-left: 14px; border-left: 1px solid rgb(26 23 18 / 0.18); height: 28px; align-items: center; }
+.time { font: 600 18px/1 var(--sans); font-variant-numeric: tabular-nums; letter-spacing: 0.005em; }
+.of { color: var(--ink-2); font-weight: 400; }
+.folio { font: 400 20px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+.folio i { font-style: italic; }
+.remain { font: 400 17px/1 var(--sans); color: var(--ink-2); margin-right: 10px; font-variant-numeric: tabular-nums; }
+.btn[aria-pressed="true"] { background: rgb(26 23 18 / 0.1); }
+
+/* The fore-edge, unfolded along the bottom: the timeline */
+.fe { position: absolute; left: 24px; right: 24px; bottom: 14px; height: 70px; }
+.fe .chapters { position: absolute; left: 0; right: 0; top: 0; height: 34px; }
+.chap {
+  position: absolute; top: -8px; height: 60px; padding: 8px 10px 0 26px; display: flex; align-items: flex-start;
+  font: 500 16px/1 var(--sans); color: var(--ink-2); border-radius: var(--r-control); white-space: nowrap;
+}
+.chap .t { display: block; padding-top: 6px; }
+.chap[aria-current="true"] { color: var(--ink); font-weight: 650; }
+
+.strip { position: absolute; left: 0; right: 0; top: 34px; height: 36px; }
+.strip::before { content: ""; position: absolute; left: 0; right: 0; top: -4px; bottom: -6px; } /* 46 px hit area */
+.slivers { position: absolute; inset: 0; }
+.sliver { position: absolute; top: 0; height: 100%; background-image: url(assets/edge-play.png); background-size: 1232px 36px; }
+.sliver.played { box-shadow: inset -1px 0 0 rgb(0 0 0 / 0.5), inset 0 2px 0 rgb(255 255 255 / 0.3); }
+.sliver.unplayed { filter: saturate(0.3) brightness(1.08); }
+.sliver.unplayed::after { content: ""; position: absolute; inset: 0; background: rgb(241 234 219 / 0.5); box-shadow: inset -1px 0 0 rgb(122 112 94 / 0.3); }
+.slivers .frame-line { position: absolute; inset: 0; box-shadow: inset 0 0 0 1px rgb(26 23 18 / 0.55); pointer-events: none; }
+/* thumb-index notch: a half-moon cut into the top of the edge, the number printed in it */
+.notch { position: absolute; top: 0; width: 36px; height: 18px; margin-left: -18px; border-radius: 0 0 18px 18px;
+  box-shadow: inset 0 -1px 0 rgb(26 23 18 / 0.55), inset 0 -3px 4px -1px rgb(0 0 0 / 0.18); pointer-events: none;
+  display: grid; place-items: start center; font: 500 16px/1 var(--serif); color: var(--ink); font-variant-numeric: lining-nums; padding-top: 1px; }
+.notch.current { background: var(--ink); color: var(--paper); box-shadow: none; }
+.ribbon {
+  position: absolute; top: -6px; width: 16px; height: 62px; margin-left: -8px;
+  background: linear-gradient(to right, #6f141c, var(--ribbon) 30%, var(--ribbon-hi) 52%, var(--ribbon) 70%, #6f141c);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 9px), 0 100%);
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.35));
+  cursor: grab;
+}
+.ribbon-wrap { position: absolute; top: 28px; filter: drop-shadow(0 0 0 var(--paper)) drop-shadow(1.5px 0 0 var(--paper)) drop-shadow(-1.5px 0 0 var(--paper)) drop-shadow(1px 2px 1.5px rgb(0 0 0 / 0.4)); }
+
+/* ───────────────────────── The showcase page ───────────────────────── */
+
+#page { width: 100%; max-width: 1280px; margin: 0 auto; background: var(--desk); position: relative; overflow: hidden; }
+.nav { position: relative; z-index: 3; height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; border-bottom: 1px solid var(--hair-desk); }
+.wordmark { font: 500 26px/1 var(--serif); letter-spacing: -0.01em; color: var(--bone); text-decoration: none; }
+.wordmark i { font-style: italic; }
+.nav ul { list-style: none; display: flex; gap: 4px; margin: 0; padding: 0; align-items: center; }
+.nav a { display: inline-flex; align-items: center; height: 44px; padding: 0 14px; border-radius: var(--r-control); color: var(--bone-2); text-decoration: none; font: 500 16px/1 var(--sans); }
+.nav a.pill { color: var(--desk); background: var(--bone); border-radius: 999px; padding: 0 18px; margin-left: 10px; font-weight: 600; }
+
+.hero { position: relative; text-align: center; padding: 76px 48px 0; }
+.eyebrow { font: 500 16px/1.4 var(--sans); color: var(--bone-2); letter-spacing: 0.01em; margin: 0 0 22px; }
+.eyebrow b { color: var(--bone); font-weight: 600; }
+.h1 { margin: 0 auto; max-width: 21ch; font: 400 88px/0.98 var(--serif); letter-spacing: -0.028em; color: var(--bone); text-wrap: balance; }
+.h1 em { display: block; font-style: italic; letter-spacing: -0.02em; margin-top: 0.06em; }
+.lede { margin: 26px auto 0; max-width: 37rem; font: 400 19px/1.55 var(--sans); color: var(--bone-2); text-wrap: pretty; }
+.ctas { display: flex; justify-content: center; gap: 12px; margin-top: 32px; }
+.cta { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 24px; border-radius: 999px; font: 600 17px/1 var(--sans); text-decoration: none; }
+.cta.primary { background: var(--bone); color: var(--desk); }
+.cta.primary svg { width: 14px; height: 14px; fill: currentColor; }
+.cta.primary .d { font-weight: 400; color: #5a5245; font-variant-numeric: tabular-nums; }
+.cta.secondary { color: var(--bone); box-shadow: inset 0 0 0 1px rgb(239 232 218 / 0.42); }
+
+.hero-stage { position: relative; height: 700px; margin: -10px -48px 0; }
+.hero-stage .desk { background:
+    radial-gradient(46% 56% at 50% 54%, rgb(255 236 205 / 0.08), transparent 72%),
+    radial-gradient(58% 62% at 50% 54%, var(--desk-lit) 0%, rgb(22 20 18 / 0.9) 52%, rgb(13 12 11 / 0) 100%); }
+.hero-stage .desk::after { display: none; }
+.hero-stage .stage { perspective: 2800px; perspective-origin: 50% 10%; }
+.hero-meta { position: relative; display: flex; justify-content: center; gap: 28px; padding: 0 48px 72px; margin-top: -24px; font: 400 16px/1.5 var(--sans); color: var(--bone-2); }
+.hero-meta span + span::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.6; margin-right: 28px; vertical-align: middle; transform: translateY(-1px); }
+
+/* First pinned section */
+.pinned { position: relative; border-top: 1px solid var(--hair-desk); }
+.chapters-nav { position: sticky; top: 0; display: flex; gap: 0; padding: 0 48px; height: 64px; align-items: center; border-bottom: 1px solid var(--hair-desk); background: var(--desk); z-index: 2; }
+.chapters-nav a { position: relative; display: inline-flex; align-items: center; gap: 10px; height: 64px; padding: 0 18px 0 0; margin-right: 26px; color: var(--bone-2); text-decoration: none; font: 500 16px/1 var(--sans); }
+.chapters-nav a .k { font: 400 17px/1 var(--serif); font-variant-numeric: lining-nums; }
+.chapters-nav a[aria-current="true"] { color: var(--bone); }
+.chapters-nav a[aria-current="true"]::after { content: ""; position: absolute; left: 0; right: 18px; bottom: -1px; height: 2px; background: var(--ribbon-hi); }
+.chapters-nav .count { margin-left: auto; color: var(--bone-2); font: 400 16px/1 var(--sans); font-variant-numeric: tabular-nums; }
+
+.sec-head { display: grid; grid-template-columns: 7fr 5fr; gap: 48px; padding: 72px 48px 0; align-items: end; }
+.kicker { font: 500 16px/1.4 var(--sans); color: var(--bone-2); margin: 0 0 18px; display: flex; gap: 12px; align-items: center; }
+.kicker .rib { width: 10px; height: 18px; background: var(--ribbon-hi); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%); }
+.h2 { margin: 0; font: 400 72px/1 var(--serif); letter-spacing: -0.026em; color: var(--bone); text-wrap: balance; }
+.h2 em { font-style: italic; }
+.sec-body p { margin: 0 0 14px; font: 400 18px/1.6 var(--sans); color: var(--bone-2); text-wrap: pretty; max-width: 34rem; }
+.sec-body p b { color: var(--bone); font-weight: 500; }
+
+.macro { position: relative; height: 560px; margin: 40px 0 0; overflow: hidden; background: var(--desk); }
+.macro img { position: absolute; width: calc(1500px * var(--k)); max-width: none; left: calc(var(--sx) * -1px * var(--k)); top: calc(var(--sy) * -1px * var(--k)); }
+.macro .dof { position: absolute; inset: 0; pointer-events: none; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  mask-image: linear-gradient(to right, #000 0%, transparent 16%, transparent 84%, #000 100%); }
+.macro .dof.top { backdrop-filter: blur(3px); mask-image: linear-gradient(to bottom, #000 0%, transparent 26%); }
+.macro::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, var(--desk), transparent 7%, transparent 93%, var(--desk)), linear-gradient(to bottom, transparent 72%, var(--desk)); }
+.callouts { position: absolute; inset: 0; margin: 0; z-index: 1; }
+.callout { --x: calc((var(--ax) - 380) * 1.347px); position: absolute; left: var(--x); top: calc(var(--ly) * 1px); transform: translateX(-12px);
+  padding-left: 12px; font: 500 16px/1.35 var(--sans); color: var(--bone); white-space: nowrap; }
+.callout small { display: block; font: 400 16px/1.35 var(--sans); color: var(--bone-2); }
+.callout::before { /* leader up to the point on the edge */
+  content: ""; position: absolute; left: 12px; width: 1px; bottom: 100%; margin-bottom: 8px;
+  height: calc(var(--ly) * 1px - (var(--ay) - 330) * 1.347px - 8px); background: rgb(239 232 218 / 0.6); }
+.callout::after { content: ""; position: absolute; left: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--bone);
+  top: calc((var(--ay) - 330) * 1.347px - var(--ly) * 1px - 3.5px); box-shadow: 0 0 0 3px rgb(13 12 11 / 0.55); }
+
+.specs { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0 48px 120px; margin-top: 8px; }
+.spec { padding: 30px 28px 0 0; border-top: 1px solid var(--hair-desk); margin-right: 28px; }
+.spec .big { font: 400 56px/1 var(--serif); letter-spacing: -0.02em; color: var(--bone); font-variant-numeric: lining-nums; }
+.spec .big small { font: italic 400 28px/1 var(--serif); color: var(--bone-2); margin-left: 4px; letter-spacing: 0; }
+.spec p { margin: 12px 0 0; font: 400 16px/1.5 var(--sans); color: var(--bone-2); max-width: 22rem; text-wrap: pretty; }
+
+
+/* ───────────────────────── The riffle (page moment) ───────────────────────── */
+.riffle { position: relative; height: 800px; overflow: hidden; border-top: 1px solid var(--hair-desk); }
+.riffle .desk { background:
+    radial-gradient(42% 58% at 63% 58%, rgb(255 236 205 / 0.08), transparent 70%),
+    radial-gradient(70% 90% at 62% 56%, var(--desk-lit) 0%, #161412 48%, var(--desk) 90%); }
+.riffle .stage { perspective: 2300px; perspective-origin: 62% 0%; }
+.riffle .book-anchor { left: 68%; top: 63%; }
+.riffle-copy { position: absolute; left: 48px; top: 96px; width: 400px; z-index: 2; }
+.riffle-copy .h2 { font-size: 64px; }
+.riffle-copy p.body { margin: 22px 0 0; font: 400 18px/1.6 var(--sans); color: var(--bone-2); text-wrap: pretty; }
+.readout-tag { margin-top: 40px; display: grid; grid-template-columns: auto 1fr; column-gap: 18px; align-items: end; padding-top: 22px; border-top: 1px solid var(--hair-desk); }
+.readout-tag .pg { font: 400 64px/0.9 var(--serif); letter-spacing: -0.02em; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
+.readout-tag .pg i { font-style: italic; font-size: 34px; color: var(--bone-2); margin-right: 4px; letter-spacing: 0; }
+.readout-tag .pg span { font-size: 30px; color: var(--bone-2); }
+.readout-tag .meta { font: 400 16px/1.5 var(--sans); color: var(--bone-2); padding-bottom: 4px; font-variant-numeric: tabular-nums; }
+.readout-tag .meta b { color: var(--bone); font-weight: 500; }
+.scrub { position: relative; margin-top: 22px; height: 2px; background: rgb(239 232 218 / 0.22); border-radius: 2px; }
+.scrub span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--bone); border-radius: 2px; }
+.scrub-label { margin-top: 12px; font: 400 16px/1.4 var(--sans); color: var(--bone-2); display: flex; justify-content: space-between; }
+
+.leaf, .leaf-b { position: absolute; left: 0; transform-style: preserve-3d; transform-origin: 50% 0; }
+.leaf { top: 0; }
+.pb .ghost { position: absolute; inset: 0; transform: scaleY(-1); opacity: 0.13; mix-blend-mode: multiply; filter: grayscale(0.3) contrast(0.9); }
+.pf, .pb { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.pb { transform: rotateX(180deg); background: #eee6d5; box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.18); }
+.pb::before, .pf .paper::before { content: ""; position: absolute; inset: 0; background: url(assets/fibre.png); background-size: 140px; opacity: 0.18; mix-blend-mode: multiply; }
+.pf .paper { position: absolute; left: 0; right: 0; bottom: 0; background: var(--paper); }
+.pf .paper .ch { position: absolute; left: 36px; top: 20px; font: 600 21px/1 var(--sans); color: var(--ink-2); }
+.pf .paper .fo { position: absolute; right: 36px; top: 16px; font: 400 28px/1 var(--serif); color: var(--ink); font-variant-numeric: lining-nums; }
+.pf .paper .fo i { font-style: italic; font-size: 22px; margin-right: 4px; color: var(--ink-2); }
+.pb .fo { position: absolute; right: 36px; font: italic 400 24px/1 var(--serif); color: var(--ink-2); }
+.shade-face { position: absolute; inset: 0; pointer-events: none; }
+
+
+/* ───────────────────────── Phone moment: the edge under the thumb ───────────────────────── */
+.phone { position: relative; width: 390px; height: 844px; margin: 0 auto; overflow: hidden; background: var(--desk); }
+.phone .nav { height: 56px; padding: 0 16px; }
+.phone .pic { position: relative; height: 219px; background: #000; }
+.phone .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.phone .sheet { position: absolute; left: 0; right: 0; top: 275px; bottom: 0; background: var(--paper); color: var(--ink); box-shadow: 0 -1px 0 rgb(255 255 255 / 0.5), 0 -10px 24px rgb(0 0 0 / 0.25); }
+.phone .sheet::before { content: ""; position: absolute; inset: 0; background: url(assets/fibre.png); background-size: 90px; opacity: 0.07; mix-blend-mode: multiply; pointer-events: none; }
+.p-row { position: absolute; left: 10px; right: 10px; display: flex; align-items: center; justify-content: space-between; }
+.p-row .time { font-size: 17px; }
+.p-row .remain { margin-right: 0; font-size: 16px; }
+.p-read { position: absolute; left: 16px; right: 16px; top: 132px; display: flex; align-items: flex-end; justify-content: space-between; padding-top: 16px; border-top: 1px solid rgb(26 23 18 / 0.16); }
+.p-read .big { font: 400 52px/0.9 var(--serif); letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
+.p-read .big i { font-size: 30px; font-style: italic; color: var(--ink-2); margin-right: 3px; letter-spacing: 0; }
+.p-read .big span { font-size: 26px; color: var(--ink-2); }
+.p-read .meta { text-align: right; font: 400 16px/1.4 var(--sans); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.p-read .meta b { display: block; color: var(--ink); font-weight: 650; font-size: 17px; }
+.p-hint { position: absolute; left: 16px; right: 16px; top: 214px; margin: 0; font: 400 16px/1.4 var(--sans); color: var(--ink-2); }
+.p-edge { position: absolute; left: 16px; width: 358px; top: 318px; height: 84px; touch-action: none; }
+.p-edge .base { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; }
+.p-sl { position: absolute; bottom: 0; height: 84px; transform-origin: 50% 100%; background-repeat: no-repeat; box-shadow: inset -1px 0 0 rgb(0 0 0 / 0.42); }
+.p-sl.unplayed::after { content: ""; position: absolute; inset: 0; background: rgb(241 234 219 / 0.5); }
+.p-sl.fan { box-shadow: inset -1px 0 0 rgb(0 0 0 / 0.5), 3px 0 5px -1px rgb(0 0 0 / 0.35); }
+.p-sl.fan::after { display: none; }
+.p-sl.here { outline: 2px solid var(--ink); outline-offset: 0; z-index: 2; }
+.p-edge .rim { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; box-shadow: inset 0 0 0 1px rgb(26 23 18 / 0.5); pointer-events: none; }
+.p-caret { position: absolute; width: 0; height: 0; border: 7px solid transparent; border-top: 8px solid var(--ink); margin-left: -7px; }
+.touch { position: absolute; width: 56px; height: 56px; margin-left: -28px; border-radius: 50%; background: rgb(26 23 18 / 0.12); box-shadow: inset 0 0 0 1.5px rgb(26 23 18 / 0.45), 0 4px 10px rgb(0 0 0 / 0.12); pointer-events: none; }
+.p-ribbon { position: absolute; width: 12px; height: 104px; margin-left: -6px; background: linear-gradient(to right, #6f141c, var(--ribbon) 30%, var(--ribbon-hi) 52%, var(--ribbon) 70%, #6f141c); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%); }
+.p-ribbon-wrap { position: absolute; top: -10px; filter: drop-shadow(1.5px 0 0 var(--paper)) drop-shadow(-1.5px 0 0 var(--paper)) drop-shadow(1px 2px 1.5px rgb(0 0 0 / 0.4)); }
+.p-index { position: absolute; left: 10px; right: 10px; bottom: 34px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
+.p-tab { height: 64px; display: grid; justify-items: center; align-content: start; gap: 3px; border-radius: var(--r-control); color: var(--ink-2); font: 500 13px/1.1 var(--sans); padding-top: 2px; }
+.p-tab .moon { width: 38px; height: 22px; border-radius: 0 0 19px 19px; display: grid; place-items: start center; font: 500 18px/1 var(--serif); color: var(--ink); box-shadow: inset 0 -1.5px 0 rgb(26 23 18 / 0.55), inset 0 -4px 5px -2px rgb(0 0 0 / 0.16); padding-top: 2px; font-variant-numeric: lining-nums; }
+.p-tab[aria-current="true"] { color: var(--ink); font-weight: 650; }
+.p-tab[aria-current="true"] .moon { background: var(--ink); color: var(--paper); box-shadow: none; }
+.p-index-rule { position: absolute; left: 10px; right: 10px; bottom: 100px; height: 1px; background: rgb(26 23 18 / 0.16); }
+
+/* Phone */
+@media (max-width: 600px) {
+  .nav { padding: 0 16px; height: 60px; }
+  .nav ul li:not(.keep) { display: none; }
+  .wordmark { font-size: 24px; }
+  .hero { padding: 44px 16px 0; }
+  .eyebrow { margin-bottom: 16px; }
+  .h1 { font-size: 46px; line-height: 1.02; letter-spacing: -0.024em; max-width: 12ch; }
+  .lede { font-size: 17px; margin-top: 18px; }
+  .ctas { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 26px; }
+  .cta { justify-content: center; }
+  .hero-stage { height: 430px; margin: 4px -16px 0; overflow: hidden; }
+  .hero-stage .book-anchor { transform: translate(-130px, -8px) scale(0.64); }
+  .hero-stage .stage { perspective-origin: 30% 0%; }
+  .hero-meta { flex-direction: column; align-items: center; gap: 2px; padding: 0 16px 64px; margin-top: 0; text-align: center; }
+  .hero-meta span + span::before { display: none; }
+  .chapters-nav { padding: 0 16px; overflow: hidden; }
+  .chapters-nav a { margin-right: 14px; padding-right: 0; }
+  .chapters-nav a:not([aria-current="true"]) .t { display: none; }
+  .chapters-nav a[aria-current="true"]::after { right: 0; }
+  .chapters-nav .count { display: none; }
+  .sec-head { grid-template-columns: 1fr; gap: 20px; padding: 52px 16px 0; }
+  .h2 { font-size: 44px; line-height: 1.02; }
+  .sec-body p { font-size: 17px; }
+  .macro { height: 300px; margin-top: 28px; }
+  .macro { height: 214px; }
+  .macro img { --k: 0.6 !important; --sx: 470 !important; --sy: 318 !important; }
+  .callouts { display: none; }
+  .specs { grid-template-columns: 1fr; padding: 0 16px 72px; }
+  .spec { margin-right: 0; padding: 22px 0 24px; }
+  .spec .big { font-size: 44px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ 1 · The player at rest ═══════════════ -->
+<section class="view" id="rest" aria-label="Player at rest">
+  <div class="frame player-rest">
+    <div class="desk"></div>
+    <div class="stage"><div class="book-anchor" data-book="rest"></div></div>
+    <div class="rest-caption">
+      <span><b>Then, and now</b> · six chapters · 52 pages · 1:02</span>
+      <span>Press the seal or <span class="kbd">Space</span> to play · <span class="kbd">?</span> for every key</span>
+    </div>
+  </div>
+</section>
+
+<!-- Source still for the macro: rendered once at 3× and cropped on the page -->
+<section class="view" id="macrosrc" aria-hidden="true">
+  <div class="frame macro-src">
+    <div class="desk"></div>
+    <div class="stage"><div class="book-anchor" data-book="macrosrc"></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════ 2 · Playing, controls up ═══════════════ -->
+<section class="view" id="playing" aria-label="Player playing">
+  <div class="frame playing">
+    <img class="picture" src="assets/f-16.jpg" alt="">
+    <div class="margin" role="group" aria-label="Video controls">
+      <div class="ctrl-row">
+        <div class="cluster">
+          <button class="btn primary" aria-label="Pause"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.2"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2"/></svg></button>
+          <button class="btn skip" aria-label="Back 10 seconds"><svg viewBox="0 0 30 30"><path d="M8.2 9.6A9.4 9.4 0 1 1 5.6 16"/><path d="M8.6 4.8v5.2h5.2"/></svg><span class="ten">10</span></button>
+          <button class="btn skip" aria-label="Forward 10 seconds"><svg viewBox="0 0 30 30"><path d="M21.8 9.6A9.4 9.4 0 1 0 24.4 16"/><path d="M21.4 4.8v5.2h-5.2"/></svg><span class="ten">10</span></button>
+          <div class="vol">
+            <button class="btn" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6"/><path d="M18 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></button>
+            <div class="vol-track" role="slider" aria-label="Volume" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" tabindex="0"><span class="fill"></span><span class="knob"></span></div>
+          </div>
+          <div class="readout">
+            <span class="time">0:20 <span class="of">/ 1:02</span></span>
+            <span class="folio"><i>p.</i> 17 <span class="of">/ 52</span></span>
+          </div>
+        </div>
+        <div class="cluster">
+          <span class="remain">Done in 0:43</span>
+          <button class="btn text" aria-label="Speed, 1×">1×</button>
+          <button class="btn" aria-label="Captions" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M10.4 10.4a2.3 2.3 0 1 0 0 3.2"/><path d="M16.6 10.4a2.3 2.3 0 1 0 0 3.2"/></svg></button>
+          <button class="btn" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+          <button class="btn" aria-label="Picture in picture"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.2"/><rect x="12.5" y="11.5" width="6" height="5" rx="1" fill="currentColor" stroke="none"/></svg></button>
+          <button class="btn" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></svg></button>
+        </div>
+      </div>
+      <div class="fe" data-edge></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════ 6 · Phone: the edge under the thumb ═══════════════ -->
+<section class="view" id="phone" aria-label="Player on a phone, mid-riffle">
+  <div class="phone">
+    <nav class="nav" aria-label="Site"><a class="wordmark" href="#page">Flip<i>book</i></a><ul><li class="keep"><a class="pill" href="#install">Install</a></li></ul></nav>
+    <div class="pic"><img src="assets/frames/f-22.webp" alt=""></div>
+    <div class="sheet" role="group" aria-label="Video controls">
+      <div class="p-row" style="top:10px">
+        <div class="cluster">
+          <button class="btn primary" aria-label="Pause"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.2"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2"/></svg></button>
+          <button class="btn skip" aria-label="Back 10 seconds"><svg viewBox="0 0 30 30"><path d="M8.2 9.6A9.4 9.4 0 1 1 5.6 16"/><path d="M8.6 4.8v5.2h5.2"/></svg><span class="ten">10</span></button>
+          <button class="btn skip" aria-label="Forward 10 seconds"><svg viewBox="0 0 30 30"><path d="M21.8 9.6A9.4 9.4 0 1 0 24.4 16"/><path d="M21.4 4.8v5.2h-5.2"/></svg><span class="ten">10</span></button>
+          <button class="btn" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6"/><path d="M18 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></button>
+        </div>
+        <span class="time">0:20 <span class="of">/ 1:02</span></span>
+      </div>
+      <div class="p-row" style="top:64px">
+        <span class="remain" style="padding-left:6px">Done in 0:43</span>
+        <div class="cluster">
+          <button class="btn text" aria-label="Speed, 1×">1×</button>
+          <button class="btn" aria-label="Captions" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M10.4 10.4a2.3 2.3 0 1 0 0 3.2"/><path d="M16.6 10.4a2.3 2.3 0 1 0 0 3.2"/></svg></button>
+          <button class="btn" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+          <button class="btn" aria-label="Picture in picture"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.2"/><rect x="12.5" y="11.5" width="6" height="5" rx="1" fill="currentColor" stroke="none"/></svg></button>
+          <button class="btn" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></svg></button>
+        </div>
+      </div>
+      <div class="p-read" aria-live="polite">
+        <div class="big"><i>p.</i>23<span> / 52</span></div>
+        <div class="meta"><b>4 Leap</b>0:27, under your thumb</div>
+      </div>
+      <p class="p-hint">Let go to open the book on this page.</p>
+      <div class="p-edge" data-phone-edge role="slider" aria-label="Fore-edge" aria-valuemin="1" aria-valuemax="52" aria-valuenow="23" aria-valuetext="Page 23 of 52, chapter 4, Leap, 0:27" tabindex="0"></div>
+      <div class="p-index-rule"></div>
+      <div class="p-index" aria-label="Chapters">
+        <button class="p-tab" aria-label="Chapter 1, Gallop, 0:00"><span class="moon">1</span><span class="nm">Gallop</span></button>
+        <button class="p-tab" aria-label="Chapter 2, Flight, 0:11"><span class="moon">2</span><span class="nm">Flight</span></button>
+        <button class="p-tab" aria-label="Chapter 3, Sprint, 0:17"><span class="moon">3</span><span class="nm">Sprint</span></button>
+        <button class="p-tab" aria-current="true" aria-label="Chapter 4, Leap, 0:22"><span class="moon">4</span><span class="nm">Leap</span></button>
+        <button class="p-tab" aria-label="Chapter 5, Spin, 0:34"><span class="moon">5</span><span class="nm">Spin</span></button>
+        <button class="p-tab" aria-label="Chapter 6, Rush, 0:45"><span class="moon">6</span><span class="nm">Rush</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 3 · The showcase page ═══════════════ -->
+<main class="view" id="page">
+  <nav class="nav" aria-label="Site">
+    <a class="wordmark" href="#page">Flip<i>book</i></a>
+    <ul>
+      <li><a href="#fore-edge">Fore-edge</a></li>
+      <li><a href="#contents">Contents</a></li>
+      <li><a href="#plate">The plate</a></li>
+      <li><a href="#keys">Keys</a></li>
+      <li class="keep"><a class="pill" href="#install">Install</a></li>
+    </ul>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow"><b>Flipbook</b> · a skin for Video.js 10</p>
+    <h1 class="h1">The first moving pictures were flipbooks. <em>This player is one.</em></h1>
+    <p class="lede">Fifty-two pages, six chapters, a fore-edge you can drag. I built it for the Video.js Skins Design Challenge, and the film inside is about where it comes from.</p>
+    <div class="ctas">
+      <a class="cta primary" href="#play"><svg viewBox="0 0 14 14"><path d="M3 1.6v10.8a.6.6 0 0 0 .9.5l8.6-5.4a.6.6 0 0 0 0-1L3.9 1.1a.6.6 0 0 0-.9.5z"/></svg>Play the film <span class="d">1:02</span></a>
+      <a class="cta secondary" href="#install">Install the skin</a>
+    </div>
+    <div class="hero-stage">
+      <div class="desk"></div>
+      <div class="stage"><div class="book-anchor" data-book="hero"></div></div>
+    </div>
+  </header>
+  <p class="hero-meta"><span>By Pedro Guarize</span><span>For Video.js 10</span><span>Apache 2.0</span></p>
+
+  <section class="pinned" id="fore-edge" aria-labelledby="fe-h">
+    <nav class="chapters-nav" aria-label="What the book does">
+      <a href="#fore-edge" aria-current="true"><span class="k">1</span><span class="t">Fore-edge</span></a>
+      <a href="#contents"><span class="k">2</span><span class="t">Contents</span></a>
+      <a href="#ribbons"><span class="k">3</span><span class="t">Ribbons</span></a>
+      <a href="#plate"><span class="k">4</span><span class="t">The plate</span></a>
+      <a href="#pocket"><span class="k">5</span><span class="t">Pocket</span></a>
+      <span class="count">1 of 5</span>
+    </nav>
+    <div class="sec-head">
+      <div>
+        <p class="kicker"><span class="rib" aria-hidden="true"></span>Fore-edge</p>
+        <h2 class="h2" id="fe-h">The fore-edge is <em>the&nbsp;timeline.</em></h2>
+      </div>
+      <div class="sec-body">
+        <p>Each page’s edge carries a sliver of its own frame, so the closed book shows the film’s colours in order: page 1 on top, page 52 at the desk.</p>
+        <p>The six chapters are cut into it as a thumb index, like a dictionary’s letters. <b>Drag along the edge and the pages riffle; put a thumb in a notch and the book opens there.</b></p>
+      </div>
+    </div>
+    <figure class="macro" aria-label="Close-up of the fore-edge and its thumb index">
+      <img src="assets/macro.jpg" alt="The book’s fore-edge in close-up: fifty-two page edges striped in the film’s colours, with half-moon notches for chapters 2 to 6." style="--sx:380;--sy:330;--k:1.347">
+      <div class="dof"></div>
+      <div class="dof top"></div>
+      <figcaption class="callouts">
+        <span class="callout" style="--ax:548;--ay:521;--ly:470">Page 1, 0:00<small>the top sheet</small></span>
+        <span class="callout" style="--ax:830;--ay:566;--ly:470">A sliver of each frame<small>printed on its page’s edge</small></span>
+        <span class="callout" style="--ax:1130;--ay:626;--ly:470">Page 52, 1:02<small>the sheet on the desk</small></span>
+      </figcaption>
+    </figure>
+    <div class="specs">
+      <div class="spec"><div class="big">52<small>pages</small></div><p>One sharp frame per page, a page every 1.23 seconds of film.</p></div>
+      <div class="spec"><div class="big">6<small>notches</small></div><p>Gallop, Flight, Sprint, Leap, Spin, Rush. <span class="kbd">N</span> turns to the next.</p></div>
+      <div class="spec"><div class="big">44<small>px</small></div><p>Every notch, button and ribbon is at least that big to hit, and keys work without focusing the player.</p></div>
+    </div>
+  </section>
+
+  <section class="riffle" id="riffle" aria-labelledby="rf-h">
+    <div class="desk"></div>
+    <div class="stage"><div class="book-anchor" data-riffle></div></div>
+    <div class="riffle-copy">
+      <p class="kicker"><span class="rib" aria-hidden="true"></span>Fore-edge, continued</p>
+      <h2 class="h2" id="rf-h">Drag the edge, and the pages <em>riffle.</em></h2>
+      <p class="body">Each page is one sharp frame, so riffling the book is watching the film by hand, as fast as your thumb moves. Let go and it stops on the page you’re on. Flick it and the pages keep turning on their own.</p>
+      <div class="readout-tag" aria-live="polite">
+        <div class="pg"><i>p.</i>10<span> / 52</span></div>
+        <div class="meta"><b>1 Gallop</b><br>0:11 of 1:02</div>
+      </div>
+      <div class="scrub" aria-hidden="true"><span style="width:19.2%"></span></div>
+      <div class="scrub-label"><span>Scroll to riffle</span><span>10 of 52 pages</span></div>
+    </div>
+  </section>
+</main>
+
+<script>
+// The film "Locomotion" (11 Nov 2026), so the macro the site ships can be rendered again (render-macro.mjs). The
+// stills written into the markup above are the direction as first drawn, with the first film.
+const CH = [
+  { n: 1, name: 'The Book',   page: 0,  t: '0:00' },
+  { n: 2, name: 'One Gallop', page: 7,  t: '0:12' },
+  { n: 3, name: 'The Herd',   page: 20, t: '0:36' },
+  { n: 4, name: 'Flight',     page: 36, t: '1:09' },
+  { n: 5, name: 'Torn Out',   page: 41, t: '1:18' },
+  { n: 6, name: 'Colophon',   page: 46, t: '1:28' },
+];
+const PAGES = 52;
+
+/* Build the book in its own units: footprint W × D on the desk, thickness T. */
+const W = 880, D = 495, B = 5, PH = 2, T = B * 2 + PAGES * PH, R = 58, BAND = 196, TAPE = 30;
+const cx = (k) => 94 + k * 138;
+const depth = (c) => B + c.page * PH;
+/* opts.cut: thickness already lifted off the top (cover and pages); opts.noCover */
+function buildBook(anchor, cam, opts = {}) {
+  const cut = opts.cut || 0, TT = T - cut;
+  const book = document.createElement('div');
+  book.className = 'book';
+  book.style.cssText = `width:${W}px;height:${D}px;left:${-W / 2}px;top:${-D / 2}px;transform:${cam}`;
+  const add = (cls, css, html = '') => { const e = document.createElement('div'); e.className = cls; e.style.cssText = css; e.innerHTML = html; book.appendChild(e); return e; };
+
+  // Shadows on the desk (key light from back-left, so the shadow falls front-right)
+  add('b-shadow', `left:10px;top:30px;width:${W + 40}px;height:${D + 30}px;transform:translateZ(0px)`);
+  add('b-contact', `left:-2px;top:-2px;width:${W + 6}px;height:${D + 6}px;transform:translateZ(0.5px)`);
+
+  // Fore-edge: segments between notches at full height; under each notch, only below its cut
+  const edgeInner = (x0, yOff) =>
+    `<div class="edge-full" style="width:${W}px;height:${T}px;left:${-x0}px;top:${-yOff}px">
+       <div class="board top" style="height:${B}px"></div>
+       <div class="print" style="top:${B}px;height:${PAGES * PH}px"></div>
+       <div class="board bottom" style="height:${B}px"></div></div>`;
+  let x = 0;
+  CH.forEach((c, k) => {
+    const a = cx(k) - R, b = cx(k) + R, d = Math.max(depth(c), cut);
+    add('edge-seg', `left:${x}px;top:${D - TT}px;width:${a - x + 1.5}px;height:${TT}px;transform:rotateX(-90deg)`, edgeInner(x, cut));
+    add('edge-seg', `left:${a}px;top:${D - (T - d)}px;width:${b - a + 1.5}px;height:${T - d}px;transform:rotateX(-90deg)`, edgeInner(a, d));
+    x = b;
+  });
+  add('edge-seg', `left:${x}px;top:${D - TT}px;width:${W - x}px;height:${TT}px;transform:rotateX(-90deg)`, edgeInner(x, cut));
+
+  // Right side: plain page edges, the binding tape at the back
+  const bt = cut ? 0 : B;
+  add('b-side left', `left:0;top:0;width:${TT}px;height:${D}px;transform:rotateY(-90deg);--b0:${B}px;--b1:${bt}px`,
+      `<div class="pages"></div><div class="tape" style="height:${TAPE}px"></div><div class="shade"></div>`);
+  add('b-side right', `left:${W - TT}px;top:0;width:${TT}px;height:${D}px;transform:rotateY(90deg);--b0:${bt}px;--b1:${B}px`,
+      `<div class="pages"></div><div class="tape" style="height:${TAPE}px"></div><div class="shade"></div>`);
+
+  // Notches: a curved wall of page edges and the exposed page with its label
+  const S = 14;
+  CH.forEach((c, k) => {
+    const d = depth(c) - cut, X = cx(k);
+    if (d <= 0) return;
+    add('floor', `left:${X - R}px;top:${D - R}px;width:${2 * R}px;height:${R}px;transform:translateZ(${TT - d}px);clip-path:circle(${R}px at 50% 100%)`,
+        `<div class="ao"></div><div class="lab"><span class="num">${c.n}</span><span class="nm">${c.name}</span></div>`);
+    for (let j = 0; j < S; j++) {
+      const p0 = Math.PI * j / S, p1 = Math.PI * (j + 1) / S, pm = (p0 + p1) / 2;
+      const P = (p) => [X + R * Math.cos(p), D - R * Math.sin(p)];
+      const [x0, y0] = P(p0), [x1, y1] = P(p1);
+      const chord = Math.hypot(x1 - x0, y1 - y0);
+      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+      const theta = 90 - pm * 180 / Math.PI;
+      // light from the left: walls that face left (right side of the cut) are lit
+      const lit = 0.5 + 0.5 * Math.cos(pm); // 1 at the right end, 0 at the left end
+      const dark = (0.42 - lit * 0.3).toFixed(3);
+      add('wall', `left:${mx - chord / 2 - 0.4}px;top:${my}px;width:${chord + 0.8}px;height:${d}px;transform:translateZ(${TT}px) rotateZ(${theta}deg) rotateX(-90deg);--b:${cut ? 0 : B}px`,
+          `<div class="pages"></div><div class="shade" style="background:linear-gradient(to bottom, rgb(0 0 0 / ${dark * 0.5}), rgb(0 0 0 / ${Math.min(0.7, +dark + 0.25)}))"></div>`);
+    }
+  });
+
+  // Cover, with the notches cut through it
+  // Cover in two plates (photo and band) so neither layer gets too big to raster in close-up
+  let path = `M0 0 H${W} V${BAND}`;
+  for (let k = CH.length - 1; k >= 0; k--) path += ` H${cx(k) + R} A${R} ${R} 0 0 0 ${cx(k) - R} ${BAND}`;
+  path += ` H0 Z`;
+  const stitches = [0.2, 0.8].map(f => `<span class="stitch" style="left:${f * W - 20}px"></span>`).join('');
+  const light = (y) => `<div class="light" style="background-size:${W}px ${D}px;background-position:0 ${-y}px"></div>`;
+  const photoHTML = `<div class="photo" style="bottom:0"></div><div class="tape" style="height:${TAPE}px">${stitches}</div>${light(0)}`;
+  const bandHTML = `<div class="band" style="height:${BAND}px"></div>
+     <div class="title" style="bottom:${BAND - 70}px">Locomotion</div>
+     <div class="sub" style="bottom:${BAND - 104}px">A flipbook in fifty-two pages</div>
+     <button class="seal" style="right:40px;bottom:${BAND - 134}px" aria-label="Play Locomotion, 1 minute 38 seconds">
+       <span class="disc"><svg viewBox="0 0 24 24"><path d="M6 3.8v16.4a1 1 0 0 0 1.5.86l13.2-8.2a1 1 0 0 0 0-1.72L7.5 2.94A1 1 0 0 0 6 3.8z"/></svg></span>
+       <span class="lbl">Play<span class="dur">1:38</span></span>
+     </button>${light(D - BAND)}`;
+  // Plates are cut into vertical slices: one big 3D layer is dropped by the compositor in close-up
+  const SL = 4, sw = W / SL;
+  for (let i = 0; i < SL && !opts.noCover; i++) {
+    const x0 = i * sw, wdt = sw + (i < SL - 1 ? 1 : 0);
+    const label = i === SL - 1 ? '' : ' aria-hidden="true" inert';
+    add('b-cover', `left:${x0}px;top:0;width:${wdt}px;height:${D - BAND + 0.5}px;transform:translateZ(${T}px)`,
+      `<div class="plate" style="left:${-x0}px;width:${W}px;height:${D - BAND + 0.5}px">${photoHTML}</div>`);
+    add('b-cover band-slice', `left:${x0}px;top:${D - BAND}px;width:${wdt}px;height:${BAND}px;transform:translateZ(${T}px);background:none`,
+      `<div class="plate"${label} style="left:${-x0}px;width:${W}px;height:${BAND}px;clip-path:path('${path}');background:var(--paper)">${bandHTML}</div>`);
+  }
+  anchor.appendChild(book);
+  return book;
+}
+
+const cams = {
+  rest:  'translate3d(-64px, 4px, 0) scale(0.86) rotateX(52deg) rotateZ(20deg)',
+  hero:  'translate3d(-58px, 0px, 0) scale(0.94) rotateX(52deg) rotateZ(20deg)',
+  riffle: 'translate3d(0, 0px, 0) scale(0.6) rotateX(56deg) rotateZ(-24deg)',
+  macrosrc: 'translate3d(0, 60px, 0) scale(1.3) rotateX(63deg) rotateZ(5deg) translate3d(-20px, -200px, 0)',
+  macro: 'translate3d(0, 150px, 0) scale(1.6) rotateX(58deg) rotateZ(6deg) translate3d(-30px, -215px, 0)',
+};
+document.querySelectorAll('[data-book]').forEach(a => buildBook(a, cams[a.dataset.book]));
+/* The riffle: the stack below page 10, page 10 flat on top, pages 2–9 caught mid-turn */
+function buildRiffle(anchor, cam) {
+  const cur = 9, cut = B + cur * PH, TT = T - cut, MB = 112, DA = 300, DB = D - DA, IMG = 495, OFF = -(IMG - (D - MB)) / 2;
+  const book = buildBook(anchor, cam, { cut, noCover: true });
+  const notchPath = (h, front, idx) => {
+    // half-moons cut through every page above a chapter's first page
+    const ks = CH.map((c, k) => k).filter(k => k > 0 && idx < CH[k].page);
+    if (!ks.length) return 'none';
+    let d = front ? `M0 0 H${W} V${h}` : `M0 ${h} H${W} V0`;
+    for (let i = ks.length - 1; i >= 0; i--) { const k = ks[i]; d += front ? ` H${cx(k) + R} A${R} ${R} 0 0 0 ${cx(k) - R} ${h}` : ` H${cx(k) + R} A${R} ${R} 0 0 1 ${cx(k) - R} 0`; }
+    d += front ? ' H0 Z' : ' H0 Z';
+    return `path('${d}')`;
+  };
+  const chOf = (idx) => [...CH].reverse().find(c => idx >= c.page);
+  const page = (idx, angle, z, curl) => {
+    const src = `assets/frames/f-${String(idx).padStart(2, '0')}.webp`;
+    const lift = Math.sin(angle * Math.PI / 180);
+    const frontShade = `rgb(0 0 0 / ${(0.04 + 0.22 * Math.max(0, (angle - 60) / 120)).toFixed(3)})`;
+    const k = (0.06 + 0.16 * (1 - angle / 180)).toFixed(3);
+    const backShade = `linear-gradient(to bottom, rgb(0 0 0 / ${k}), rgb(0 0 0 / ${(+k + 0.14).toFixed(3)}))`;
+    const c = chOf(idx);
+    const el = document.createElement('div');
+    el.className = 'leaf';
+    el.style.cssText = `width:${W}px;height:${DA}px;transform:translateZ(${z}px) rotateX(${angle}deg)`;
+    el.innerHTML = `
+      <div class="pf" style="background:url(${src}) 0 ${OFF}px / ${W}px ${IMG}px no-repeat"><div class="shade-face" style="background:${frontShade}"></div></div>
+      <div class="pb"><div class="ghost" style="background:url(${src}) 0 ${OFF + (DB - 0)}px / ${W}px ${IMG}px no-repeat"></div><div class="shade-face" style="background:${backShade}"></div></div>
+      <div class="leaf-b" style="top:${DA - 0.5}px;width:${W}px;height:${DB + 0.5}px;transform:rotateX(${curl}deg)">
+        <div class="pf" style="clip-path:${notchPath(DB + 0.5, true, idx)};background:url(${src}) 0 ${OFF - DA}px / ${W}px ${IMG}px no-repeat">
+          <div class="paper" style="height:${MB}px"><span class="ch">${c.n} ${c.name}</span><span class="fo"><i>p.</i>${idx + 1}</span></div>
+          <div class="shade-face" style="background:${frontShade}"></div></div>
+        <div class="pb" style="clip-path:${notchPath(DB + 0.5, false, idx)}"><div class="ghost" style="background:url(${src}) 0 ${OFF}px / ${W}px ${IMG}px no-repeat;opacity:0.06"></div><span class="fo" style="top:${MB - 52}px">${idx + 1}</span><div class="shade-face" style="background:${backShade}"></div></div>
+      </div>`;
+    book.appendChild(el);
+  };
+  page(cur, 0, TT + 0.3, 0);
+  const fan = [34, 49, 65, 82, 100, 118, 136, 152, 167];
+  fan.forEach((a, i) => page(cur - 1 - i, a, TT + 0.6 + i * 0.4, -Math.round(18 * Math.sin(a * Math.PI / 180))));
+  return book;
+}
+
+document.querySelectorAll('[data-riffle]').forEach(a => buildRiffle(a, cams.riffle));
+
+
+/* The fore-edge unfolded: the timeline of the playing state */
+(function buildEdge() {
+  const fe = document.querySelector('[data-edge]');
+  const w = 1232, pw = w / PAGES, current = 16, t = 20, per = 62.9 / 52, R = 18;
+  let html = '<div class="chapters">';
+  CH.forEach((c) => {
+    const x0 = c.page * pw;
+    html += `<button class="chap" style="left:${(c.page ? x0 : R) - R}px" ${c.n === 3 ? 'aria-current="true"' : ''} aria-label="Chapter ${c.n}, ${c.name}, ${c.t}"><span class="t">${c.name}</span></button>`;
+  });
+  const holes = CH.filter(c => c.page > 0).map(c => `radial-gradient(circle at ${(c.page * pw).toFixed(2)}px 0, transparent ${R - 0.5}px, #000 ${R + 0.5}px)`);
+  holes.push(`radial-gradient(circle at ${R}px 0, transparent ${R - 0.5}px, #000 ${R + 0.5}px)`);
+  const mask = holes.join(',');
+  html += `</div><div class="strip" role="slider" aria-label="Timeline" aria-valuemin="0" aria-valuemax="62" aria-valuenow="20" aria-valuetext="0:20, page 17 of 52, chapter 3, Sprint" tabindex="0"><div class="slivers" style="-webkit-mask-image:${mask};mask-image:${mask};mask-composite:intersect;-webkit-mask-composite:source-in">`;
+  for (let i = 0; i < PAGES; i++) {
+    const cls = i <= current ? 'played' : 'unplayed';
+    html += `<div class="sliver ${cls}" style="left:${(i * pw).toFixed(2)}px;width:${(pw + 0.3).toFixed(2)}px;background-position:${(-i * pw).toFixed(2)}px 0"></div>`;
+  }
+  html += '<div class="frame-line"></div></div>';
+  CH.forEach((c) => { html += `<div class="notch ${c.n === 3 ? 'current' : ''}" style="left:${(c.page ? c.page * pw : R).toFixed(2)}px" aria-hidden="true">${c.n}</div>`; });
+  html += '</div>';
+  const rx = (t / per) * pw;
+  html += `<div class="ribbon-wrap" style="left:${rx.toFixed(1)}px"><div class="ribbon"></div></div>`;
+  fe.innerHTML = html;
+})();
+
+
+/* Phone: the fore-edge under a thumb at page 23; pages around it fan open */
+(function buildPhoneEdge() {
+  const el = document.querySelector('[data-phone-edge]');
+  const N = PAGES, thumb = 22, played = 16, E = 30, SIG = 2.2, H = 84, IW = H * 16 / 9;
+  const g = (i) => Math.exp(-(((i - thumb) / SIG) ** 2));
+  const total = 358, sumG = [...Array(N).keys()].reduce((a, i) => a + g(i), 0);
+  const b = (total - E * sumG) / N;
+  let x = 0, html = '';
+  const xs = [];
+  for (let i = 0; i < N; i++) {
+    const w = b + E * g(i), lift = -22 * Math.exp(-(((i - thumb) / 2.8) ** 2));
+    const tilt = Math.max(-9, Math.min(9, (i - thumb) * 2.4)) * g(i) * 1.6;
+    const fan = g(i) > 0.08;
+    const cls = ['p-sl', fan ? 'fan' : (i > played ? 'unplayed' : ''), i === thumb ? 'here' : ''].join(' ');
+    const src = `assets/frames/f-${String(i).padStart(2, '0')}.webp`;
+    html += `<div class="${cls}" style="left:${x.toFixed(2)}px;width:${(w + 0.4).toFixed(2)}px;transform:translateY(${lift.toFixed(1)}px) rotate(${tilt.toFixed(2)}deg);background-image:url(${src});background-size:${IW}px ${H}px;background-position:${(-(IW - w) / 2).toFixed(1)}px 0;z-index:${fan ? 1 : 0}"></div>`;
+    xs.push(x); x += w;
+  }
+  const xr = (p) => { const i = Math.floor(p); return xs[i] + (p - i) * (b + E * g(i)); };
+  const rx = xr(20 / (62.9 / 52));
+  const hx = xs[thumb] + (b + E * g(thumb)) / 2;
+  html += `<div class="rim"></div>`;
+  html += `<div class="p-ribbon-wrap" style="left:${rx.toFixed(1)}px"><div class="p-ribbon"></div></div>`;
+  html += `<div class="p-caret" style="left:${hx.toFixed(1)}px;top:-40px"></div>`;
+  html += `<div class="touch" style="left:${hx.toFixed(1)}px;top:${H - 22}px"></div>`;
+  el.innerHTML = html;
+})();
+
+function applyView() {
+  const v = location.hash.replace('#', '');
+  if (['rest', 'playing', 'page', 'macrosrc', 'moment', 'phone'].includes(v)) document.body.dataset.view = v; else delete document.body.dataset.view;
+}
+addEventListener('hashchange', applyView); applyView();
+</script>
+</body>
+</html>

@@ -1,0 +1,1665 @@
+/*
+ * The book page: the flipbook on a dark desk under one key light, demonstrated section by section as you scroll.
+ * The player in it is the real skin (src/site/player.ts). Tokens extend the showcase's (src/site/site.css): the same
+ * desk, paper and registration red. Type is the page's own (Newsreader and Familjen Grotesk); the player keeps Onest.
+ */
+
+/* Type: Newsreader for display, Familjen Grotesk for text and UI, both self-hosted (OFL), subset to Latin and the
+   punctuation the page sets. The roles are --book-display and --book-text; a swap is two lines below. The player keeps
+   its own face, Onest. Each fallback is a local face sized to the webfont's metrics, so the swap moves nothing.
+
+   Newsreader is one cut, roman and italic: the Medium at the 60 pt optical size (the display master; every display
+   role here is set between 28 and 66 px). It is the family's only weight on the page, so a rule asking for 400 gets
+   it, and nothing is ever synthesised. Emphasis in a headline is the italic, in the same paper as the rest. */
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/book/fonts/newsreader.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/book/fonts/newsreader-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Familjen Grotesk";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/book/fonts/familjen-grotesk.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Familjen Grotesk";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/book/fonts/familjen-grotesk-italic.woff2") format("woff2");
+}
+
+/* Georgia and its italic, sized to Newsreader's: the mean advance of English text, and its ascent and descent
+   (1470 and 530 on 2000 units) over that adjustment. The italic's is a point over its mean (92.6%): there every
+   headline on the page breaks as the webfont breaks it, at 360 to 1728 px (design/directions/type-r2/tools/verify.mjs). */
+@font-face {
+  font-family: "Book Display Fallback";
+  font-style: normal;
+  src: local("Georgia");
+  size-adjust: 101.7%;
+  ascent-override: 72.3%;
+  descent-override: 26.1%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Book Display Fallback";
+  font-style: italic;
+  src: local("Georgia Italic"), local("Georgia-Italic");
+  size-adjust: 93.6%;
+  ascent-override: 78.5%;
+  descent-override: 28.3%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Book Text Fallback";
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans");
+  size-adjust: 93.8%;
+  ascent-override: 109.3%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+:root {
+  /* The desk, and type on it: 17.4, 13.1 and 9.2 to 1 on --desk. */
+  --desk: #0d0b09;
+  --desk-lit: #29241f;
+  --paper: #f6f1e7;
+  --paper-soft: #d9d2c4;
+  --paper-mute: #b9b1a2;
+  --rule: rgb(245 240 230 / 0.14);
+  --rule-strong: rgb(245 240 230 / 0.42);
+  /* Registration red: the ribbon beside a label, the watermark's ribbon, and focus. Marks only, never text: it is
+     4.88:1 on --desk and 3.82:1 on the lit desk. A headline's emphasis is its italic. */
+  --red: #e2492b;
+  --red-deep: #a8311a;
+
+  /* The book's card and its ink: 14.9 and 8.2 to 1 on --card. */
+  --card: #f1eadb;
+  --card-back: #e9e1cf;
+  --card-ink: #1a1712;
+  --card-ink-2: #4a4338;
+  --board: #24211d;
+
+  --book-display: "Newsreader", "Book Display Fallback", Georgia, serif;
+  --book-text: "Familjen Grotesk", "Book Text Fallback", Arial, sans-serif;
+  --book-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Display sizes. The hero's headline is the largest text on the page at every width; chapter and section heads
+     and the big figures (folios, evidence) stay under it. */
+  --type-hero: clamp(42px, 10.8vw, 66px);
+  --type-head: clamp(40px, 4.6vw, 64px);
+  /* A chapter head that is a whole sentence (the riffle's): a step smaller, so its three lines weigh what its
+     neighbours' two do. Its longest line, "The first moving pictures", is 10.8 em and the copy column 34vw. */
+  --type-head-long: clamp(28px, 2.9vw, 40px);
+  --type-figure: clamp(44px, 4.4vw, 60px);
+  /* The small display lines: a chapter's name in the list, a proof's head, the colophon's title. */
+  --type-sub: 30px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --fast: 150ms;
+  --target: 44px;
+  --radius-control: 10px;
+  --radius-player: 14px;
+
+  --gutter: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+
+  color-scheme: dark;
+  accent-color: var(--red);
+  scrollbar-color: var(--paper-mute) var(--desk);
+}
+
+@media (max-width: 960px) {
+  :root {
+    --type-head: clamp(44px, 6.6vw, 60px);
+    --type-head-long: clamp(36px, 5.3vw, 48px);
+    --type-figure: 48px;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --type-head: clamp(34px, 9.6vw, 44px);
+    --type-head-long: clamp(30px, 7.6vw, 40px);
+    --type-figure: 40px;
+  }
+}
+
+/* Phones keep the headline's size: "Your hand is / the frame rate." is 5.9 em at its longest, 246 px of a 320 px
+   phone's 288 at 42 px. Chapter heads, figures and the small display lines step down, so the headline stays the
+   largest text on the page. */
+@media (max-width: 479.98px) {
+  :root {
+    --type-head: clamp(26px, 7.4vw, 31px);
+    --type-head-long: clamp(24px, 7vw, 30px);
+    --type-figure: 28px;
+    --type-sub: 24px;
+  }
+}
+
+/* A phone on its side (under 500 px of height): the headline in one line of a smaller size (11.4 em), so the player
+   starts in the first screen and is not a screen and a half down. Heads and figures step down with it, as on an
+   upright phone. */
+@media (max-height: 500px) and (min-width: 480px) and (orientation: landscape) {
+  :root {
+    --type-hero: clamp(34px, 5vw, 42px);
+    --type-head: 27px;
+    --type-head-long: 27px;
+    --type-figure: 26px;
+    --type-sub: 22px;
+  }
+}
+
+/* Wide screens set the headline in two lines (see the hero). */
+@media (min-width: 1024px) and (min-aspect-ratio: 5 / 4) {
+  :root {
+    --type-hero: clamp(48px, 4.7vw, 66px);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--desk);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  background: var(--desk);
+  color: var(--paper);
+  font: 400 17px / 1.6 var(--book-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: #a8311a;
+  color: var(--paper);
+}
+
+a:not(.media-skin *) {
+  color: inherit;
+  text-decoration-color: var(--rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color var(--fast) var(--ease);
+  touch-action: manipulation;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a:not(.media-skin *):hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+cite {
+  font-style: italic;
+}
+
+:focus-visible:not(.media-skin, .media-skin *) {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* The page's own key hints. The skin's keycaps are kbd too, and its styles sit in a layer, so an unscoped rule here
+   would win over them. */
+kbd:not(.media-skin *) {
+  display: inline-block;
+  min-width: 1.7em;
+  padding: 0 0.4em;
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  font: 500 16px / 1.45 var(--book-text);
+  color: var(--paper);
+  text-align: center;
+}
+
+a.skip {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  display: inline-grid;
+  place-items: center;
+  min-height: var(--target);
+  padding-inline: 16px;
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  color: var(--desk);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 16px));
+}
+
+a.skip:focus-visible {
+  transform: none;
+}
+
+/* ─── Masthead ─────────────────────────────────────────────────────────── */
+
+.masthead {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  padding-inline: var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--target);
+  color: var(--paper);
+  font-weight: 600;
+  text-decoration: none !important;
+}
+
+.brand svg {
+  width: 22px;
+  height: 22px;
+}
+
+.links {
+  display: flex;
+  gap: 8px;
+}
+
+.links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding-inline: 10px;
+  color: var(--paper-soft);
+  text-decoration: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .links a:hover {
+    color: var(--paper);
+  }
+}
+
+/* ─── Pinned sections ──────────────────────────────────────────────────── */
+
+.pin {
+  position: relative;
+  height: calc(var(--len, 200) * 1svh);
+}
+
+#riffle {
+  --len: 380;
+}
+#edge {
+  --len: 280;
+}
+#plate {
+  --len: 200;
+}
+#corner {
+  --len: 240;
+}
+#pip {
+  --len: 220;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.desk {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(44% 58% at var(--lx, 64%) var(--ly, 58%), rgb(255 236 205 / 0.075), transparent 70%),
+    radial-gradient(72% 90% at var(--lx, 64%) var(--ly, 56%), var(--desk-lit) 0%, #151210 48%, var(--desk) 92%);
+}
+
+.demo + .demo .stage,
+.demo .stage {
+  border-top: 1px solid var(--rule);
+}
+
+/* Type */
+
+/* The page's own headings: the skin's pages (Contents, Shortcuts) have h2 and h3 too, and its styles sit in a layer,
+   so an unscoped rule here would set them in the page's face and colour. */
+h1,
+h2:not(.media-skin *) {
+  margin: 0;
+  font-family: var(--book-display);
+  font-weight: 400;
+  color: var(--paper);
+  text-wrap: balance;
+}
+
+/* The stressed phrase: Newsreader's own italic, in the headline's paper. No colour. */
+h1 em,
+h2 em {
+  font-style: italic;
+}
+
+/* One weight, roman and italic: never let the browser fake another. */
+h1,
+h2:not(.media-skin *),
+h3:not(.media-skin *),
+.folio-big,
+.ev-num,
+.ch-num,
+.colophon-title {
+  font-synthesis: none;
+}
+
+.eyebrow,
+.kicker {
+  margin: 0;
+  font: 500 16px / 1.4 var(--book-text);
+  color: var(--paper-mute);
+}
+
+.eyebrow span {
+  color: var(--paper);
+  font-weight: 600;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.rib {
+  width: 10px;
+  height: 18px;
+  background: var(--red);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+
+/* ─── Hero: the headline, then the player itself ───────────────────────── */
+
+/* The first screen is the headline and the working player, on the desk. The player's width comes from the room the
+   screen has: as wide as the column, never taller than what the headline leaves, so headline, picture, fore-edge and
+   keys are all in view without scrolling. Loose pages of the film lie under the player's edges; they are print, not
+   controls, and take no pointer. Nothing here is measured by script, so nothing moves when the script arrives. */
+
+.hero {
+  --player-w: min(100% - 2 * var(--gutter), 1160px);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  align-content: start;
+  padding: 80px 0 48px;
+  /* The loose pages run off the screen's sides. (clip, not hidden: no scroll container, and nothing fixed inside is
+     held to this box.) */
+  overflow-x: clip;
+}
+
+.hero .desk {
+  --lx: 50%;
+  --ly: 58%;
+}
+
+.hero-head {
+  position: relative;
+  z-index: 3;
+  width: calc(100% - 2 * var(--gutter));
+  text-align: center;
+}
+
+.hero-head .eyebrow {
+  margin-bottom: 12px;
+}
+
+.hero h1 {
+  max-width: 21ch;
+  margin-inline: auto;
+  font-size: var(--type-hero);
+  line-height: 1.04;
+  letter-spacing: -0.028em;
+}
+
+.hero h1 em {
+  display: block;
+  letter-spacing: -0.025em;
+}
+
+.hero-plate {
+  position: relative;
+  z-index: 2;
+  width: var(--player-w);
+  margin-top: 24px;
+}
+
+.player-host {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-player);
+  background: var(--board);
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 0.5),
+    0 24px 64px rgb(0 0 0 / 0.55);
+  outline: none;
+  /* The skip link lands here: with the player already on the first screen, the page stays where it is. */
+  scroll-margin-top: 50svh;
+}
+
+.player-host:empty,
+.player-poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+/* The page's poster fills the host's box from behind, so the player mounts over it (site/player.ts) and takes its
+   place without a frame between them. */
+.player-poster {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+/* Loose pages: under the player's foot in a row here, fanned from behind its sides on a wide screen. */
+
+.hero-leaves {
+  --leaf-w: clamp(132px, 36vw, 220px);
+  position: relative;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  margin-top: calc(var(--leaf-w) * -0.12);
+  pointer-events: none;
+  user-select: none;
+}
+
+.leaf {
+  flex: none;
+  width: var(--leaf-w);
+  height: auto;
+  /* A plate's proportions: the page's wide margins are cropped away, so what shows is the picture. */
+  aspect-ratio: 5 / 4;
+  object-fit: cover;
+  margin-inline: -4px;
+  background: var(--card);
+  /* Lying on the desk: a tight contact shadow under the sheet, a soft one around it. */
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.6),
+    0 3px 6px rgb(0 0 0 / 0.45),
+    0 14px 28px -6px rgb(0 0 0 / 0.5);
+  /* Out of the key light: the player is the brightest thing on the desk. */
+  filter: brightness(0.74);
+  rotate: var(--r);
+  translate: 0 var(--y, 0px);
+  animation: leaf-out 720ms var(--ease) backwards;
+  animation-delay: calc(120ms + var(--i) * 60ms);
+}
+
+.leaf-1 {
+  --i: 2;
+  --r: -5deg;
+  --y: 6px;
+}
+
+.leaf-2 {
+  --i: 1;
+  --r: 3deg;
+  --y: -2px;
+}
+
+.leaf-3 {
+  --i: 0;
+  --r: -2deg;
+  --y: 4px;
+}
+
+.leaf-4 {
+  --i: 0;
+  --r: 4deg;
+  --y: 0px;
+}
+
+.leaf-5 {
+  --i: 1;
+  --r: -3deg;
+  --y: 6px;
+}
+
+.leaf-6 {
+  --i: 2;
+  --r: 5deg;
+  --y: 2px;
+}
+
+/* The one arrival: the pages slide out from under the player, once, and lie still. The headline and the player are
+   there from the first paint. */
+@keyframes leaf-out {
+  from {
+    opacity: 0;
+    rotate: calc(var(--r) * 0.4);
+    translate: var(--from-x, 0px) calc(var(--y, 0px) - 12px);
+  }
+}
+
+@keyframes foot-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.hero-foot {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  width: calc(100% - 2 * var(--gutter));
+  max-width: 1160px;
+  margin-top: 24px;
+  font: 400 16px / 1.5 var(--book-text);
+  color: var(--paper-mute);
+  text-align: center;
+  animation: foot-in 480ms var(--ease) 360ms backwards;
+}
+
+.hero-caption {
+  max-width: 44ch;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.hero-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.hero-cue svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+/* Phones: the player from edge to edge, square to the screen. */
+@media (max-width: 700px) {
+  .hero {
+    --player-w: 100%;
+    padding-top: 64px;
+  }
+
+  .player-host {
+    --media-border-radius: 0px;
+    border-radius: 0;
+  }
+}
+
+/* A phone's player (under 480 px) carries its controls as a pad under the picture, not on it (the skin's phone.css;
+   220 px is its --fb-pad-h). The pad's room is held from the first paint, in the cover's cloth with its gilt line, so
+   nothing below moves when the player takes the poster's place. (min-height: the 16:9 box stays the picture's.) */
+@media (max-height: 500px) and (min-width: 480px) and (orientation: landscape) {
+  /* One line, with the leading and tracking of a smaller size (at 42 px and up it is set tighter). */
+  .hero h1 {
+    max-width: none;
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+  }
+
+  .hero h1 em {
+    display: inline;
+    letter-spacing: -0.02em;
+  }
+}
+
+@media (max-width: 479.98px) {
+  .player-host {
+    min-height: 0;
+    margin-bottom: 220px;
+  }
+
+  .player-host::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: -1;
+    height: 220px;
+    background:
+      linear-gradient(90deg, rgb(214 174 85 / 0.2), rgb(241 220 150 / 0.75) 50%, rgb(214 174 85 / 0.2)) top / 100% 1px no-repeat,
+      linear-gradient(180deg, #29231c, #1b1713 55%, #13100d);
+  }
+}
+
+/* Wide screens: headline in two lines, its label up in the masthead's row, the player as wide as the height allows
+   with room kept at each side, and the loose pages laid down that room, three to a side, each a square plate tucked
+   a little under the player's edge. Caption and cue share one line under it. */
+@media (min-width: 1024px) and (min-aspect-ratio: 5 / 4) {
+  .hero {
+    --side: max(var(--gutter), 8.4vw);
+    --above: calc(68px + 2 * 1.04 * var(--type-hero) + 20px);
+    --below: 48px;
+    --player-w: min(100vw - 2 * var(--side), 1160px, max(640px, (100svh - var(--above) - var(--below)) * 16 / 9));
+    --player-h: calc(var(--player-w) * 9 / 16);
+    /* The desk at each side of the player. */
+    --m: calc((100vw - var(--player-w)) / 2);
+    align-content: center;
+    min-height: 100svh;
+    padding: 68px 0 12px;
+  }
+
+  /* The label is the masthead's centre line, whatever room the screen leaves above the headline. */
+  .hero-head {
+    position: static;
+  }
+
+  .hero-head .eyebrow {
+    position: absolute;
+    z-index: 3;
+    inset: 0 0 auto;
+    margin: 0;
+    /* The masthead's height: one line, centred in it. */
+    line-height: 72px;
+  }
+
+  .hero h1 {
+    max-width: none;
+  }
+
+  .hero-plate {
+    margin-top: 20px;
+  }
+
+  .hero-leaves {
+    /* As wide as the side room, and three of them never taller than the player. */
+    --leaf-w: clamp(88px, min(var(--m) * 0.98, var(--player-h) * 0.3), 240px);
+    /* What the side room has beyond one page: on a very wide screen the pages spread into it. */
+    --spare: max(0px, var(--m) - var(--leaf-w) - 24px);
+    position: absolute;
+    inset: 0;
+    display: block;
+    margin: 0;
+  }
+
+  .leaf {
+    position: absolute;
+    width: var(--leaf-w);
+    aspect-ratio: 1;
+    margin: 0;
+    translate: none;
+  }
+
+  /* --t: how much of the page lies outside the player's edge; --u: its share of the spare room. */
+  .leaf-1,
+  .leaf-2,
+  .leaf-3 {
+    left: calc(var(--leaf-w) * var(--t) * -1 - var(--spare) * var(--u));
+    --from-x: 14px;
+  }
+
+  .leaf-4,
+  .leaf-5,
+  .leaf-6 {
+    right: calc(var(--leaf-w) * var(--t) * -1 - var(--spare) * var(--u));
+    --from-x: -14px;
+  }
+
+  .leaf-1 {
+    top: 3%;
+    --r: -6deg;
+    --t: 0.86;
+    --u: 0.6;
+    --i: 0;
+  }
+
+  .leaf-2 {
+    top: 36%;
+    --r: 4deg;
+    --t: 0.7;
+    --u: 0.1;
+    --i: 2;
+  }
+
+  .leaf-3 {
+    top: 68%;
+    --r: -3deg;
+    --t: 0.86;
+    --u: 0.4;
+    --i: 4;
+  }
+
+  .leaf-6 {
+    top: 5%;
+    --r: 5deg;
+    --t: 0.74;
+    --u: 0.15;
+    --i: 1;
+  }
+
+  .leaf-4 {
+    top: 37%;
+    --r: -4deg;
+    --t: 0.86;
+    --u: 0.65;
+    --i: 3;
+  }
+
+  .leaf-5 {
+    top: 69%;
+    --r: 6deg;
+    --t: 0.8;
+    --u: 0.3;
+    --i: 5;
+  }
+
+  @keyframes leaf-out {
+    from {
+      opacity: 0;
+      rotate: calc(var(--r) * 0.4);
+      translate: var(--from-x, 0px) 0;
+    }
+  }
+
+  .hero-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    width: var(--player-w);
+    margin-top: 12px;
+    text-align: left;
+  }
+
+  .hero-caption {
+    max-width: none;
+  }
+}
+
+.scene3d {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  perspective: 2600px;
+  perspective-origin: 50% 30%;
+  pointer-events: none;
+}
+
+.anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+/* ─── Demonstrations ───────────────────────────────────────────────────── */
+
+.copy {
+  position: absolute;
+  z-index: 3;
+  left: var(--gutter);
+  top: 50%;
+  width: min(480px, 34vw);
+  transform: translateY(-50%);
+}
+
+.copy h2 {
+  font-size: var(--type-head);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+
+/* A head that is a whole sentence: smaller, a little more open, its italic sentence on a line of its own. */
+.copy h2.long {
+  font-size: var(--type-head-long);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.copy h2.long em {
+  display: block;
+}
+
+.copy .body {
+  margin: 22px 0 0;
+  font: 400 18px / 1.6 var(--book-text);
+  color: var(--paper-mute);
+  text-wrap: pretty;
+}
+
+.copy .body + .body {
+  margin-top: 12px;
+}
+
+.folio {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 18px;
+  align-items: end;
+  margin-top: 34px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+
+.folio p {
+  margin: 0;
+}
+
+.folio-big {
+  font: 400 var(--type-figure) / 1.02 var(--book-display);
+  letter-spacing: -0.025em;
+  color: var(--paper);
+  font-variant-numeric: lining-nums tabular-nums;
+  white-space: nowrap;
+}
+
+.folio-big i {
+  margin-right: 6px;
+  font-size: 30px;
+  font-style: normal;
+  color: var(--paper-mute);
+  letter-spacing: 0;
+}
+
+.folio-big .of {
+  font-size: 30px;
+  color: var(--paper-mute);
+}
+
+.folio-range {
+  font-size: calc(var(--type-figure) * 0.8);
+}
+
+.folio-meta {
+  padding-bottom: 4px;
+  font: 400 16px / 1.5 var(--book-text);
+  color: var(--paper-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.folio-meta b {
+  color: var(--paper);
+  font-weight: 500;
+}
+
+.scrub {
+  position: relative;
+  height: 2px;
+  margin-top: 22px;
+  border-radius: 2px;
+  background: rgb(245 240 230 / 0.22);
+}
+
+.scrub span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--paper);
+  transform-origin: 0 50%;
+  transform: scaleX(0.02);
+}
+
+.scrub-label {
+  display: flex;
+  justify-content: space-between;
+  margin: 12px 0 0;
+  font: 400 16px / 1.4 var(--book-text);
+  color: var(--paper-mute);
+}
+
+.on-touch {
+  display: none;
+}
+
+/* ─── The book, in 3D ──────────────────────────────────────────────────── */
+
+.bk-book {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.bk-book > * {
+  position: absolute;
+}
+
+.bk-shadow {
+  background: rgb(0 0 0 / 0.72);
+  filter: blur(26px);
+  border-radius: 30px;
+}
+
+
+/* ─── Riffle: the flipbook ─────────────────────────────────────────────── */
+
+/* A pad of card pages lying on the desk, bound at the head with cloth tape. Everything but two things is still: the
+   photograph (a canvas, drawn from bitmaps decoded beforehand) and the one page in the air, which alone carries
+   will-change. A flip lays out and paints nothing. */
+
+.fk-book {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.fk-book > * {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* A box-shadow, not a blur filter: a rounded rectangle's shadow is drawn directly, where a filter blurs a picture of
+   the element, tens of milliseconds of raster the first time the pad scrolls into view. */
+.fk-shadow {
+  border-radius: 28px;
+  background: rgb(0 0 0 / 0.62);
+  box-shadow: 0 0 44px 22px rgb(0 0 0 / 0.62);
+  transform: scale(0.94);
+}
+
+.fk-page,
+.fk-leaf {
+  background: var(--card) url("/book/paper.webp") 0 0 / 128px;
+}
+
+.fk-page {
+  box-shadow: inset 0 0 0 1px rgb(26 23 18 / 0.08);
+}
+
+/* The page in the air: hinged under the tape, shown from its face only. */
+.fk-leaf {
+  transform-origin: 50% 0;
+  opacity: 0;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  box-shadow: 0 0 0 1px rgb(26 23 18 / 0.1);
+}
+
+.fk-pic {
+  position: absolute;
+  overflow: hidden;
+  background: #9c9a94 0 0 / cover no-repeat;
+  box-shadow: 0 0 0 1px rgb(26 23 18 / 0.5);
+}
+
+.fk-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fk-print {
+  position: absolute;
+  left: 40px;
+  bottom: 14px;
+  font: 500 19px / 1 var(--book-text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--card-ink-2);
+}
+
+.fk-tape {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: #34302a;
+  box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.12), 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+.fk-tape span {
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 4px;
+  margin: -2px 0 0 -20px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #e6e2da, #8f8a80 70%, #5e5a52);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.7);
+}
+
+/* The pad's cut edges: its pages, a line each. */
+.fk-edge {
+  transform-origin: 0 0;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.02), rgb(0 0 0 / 0.3)),
+    repeating-linear-gradient(to bottom, #e7dfcd 0 1.4px, #bfb6a2 1.4px 2px);
+}
+
+.fk-edge-side {
+  background:
+    linear-gradient(to right, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.42)),
+    repeating-linear-gradient(to right, #e7dfcd 0 1.4px, #bfb6a2 1.4px 2px);
+}
+
+.fk-edge-left {
+  transform-origin: 0 0;
+  margin-left: 0;
+}
+
+/* The folio's number rolls to the page in view: a column of the numbers, moved by a transform. */
+.fk-roll {
+  display: inline-block;
+  height: 1.02em;
+  overflow: hidden;
+  vertical-align: bottom;
+  text-align: right;
+}
+
+.fk-roll-col {
+  display: block;
+  will-change: transform;
+}
+
+.fk-roll-col span {
+  display: block;
+  height: 1.02em;
+}
+
+#riffle .scrub span {
+  will-change: transform;
+}
+
+/* ─── Fore-edge ────────────────────────────────────────────────────────── */
+
+.edge-scene {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 62%;
+  margin: 0;
+}
+
+.macro {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+}
+
+.macro img {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: auto;
+  max-width: none;
+  transform-origin: 0 0;
+  /* Its top and bottom fade too: the macro is a close look at the book, never a box with a hard edge. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+}
+
+.real-edge {
+  position: absolute;
+  left: 6%;
+  right: 8%;
+  top: 50%;
+  opacity: 0;
+}
+
+/* The foot of the player, as it stands paused at 0:20: its tabs, its edge and its bar, the picture above them fading
+   into the desk. */
+.real-crop {
+  position: relative;
+  aspect-ratio: 1200 / 330;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 40%);
+  mask-image: linear-gradient(to bottom, transparent, #000 40%);
+}
+
+.real-crop img {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.real-label {
+  display: block;
+  margin-top: 14px;
+  font: 400 16px / 1.4 var(--book-text);
+  color: var(--paper-mute);
+}
+
+.body-2 {
+  opacity: 0;
+}
+
+/* ─── Plate ────────────────────────────────────────────────────────────── */
+
+.plate-scene {
+  position: absolute;
+  inset: 0 0 0 38%;
+  perspective: 1800px;
+  perspective-origin: 50% 0%;
+}
+
+.plate-card {
+  /* The player's paused page down to its strip (book/plate-page.webp), at two thirds of the size it was taken at. */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 760px;
+  translate: -50% -50%;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 24px 50px rgb(0 0 0 / 0.5), 0 2px 4px rgb(0 0 0 / 0.35);
+  transform-origin: 50% 100%;
+}
+
+.plate-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ─── Corner ───────────────────────────────────────────────────────────── */
+
+.corner-scene {
+  perspective: 2200px;
+  perspective-origin: 60% 20%;
+}
+
+.cn-page,
+.cn-under {
+  position: absolute;
+  background-size: cover;
+  background-position: center;
+}
+
+.cn-page {
+  transform-style: preserve-3d;
+  transform-origin: 50% 0;
+}
+
+.cn-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background: #000 center / cover;
+}
+
+.cn-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(180deg);
+  backface-visibility: hidden;
+  background: var(--card-back) url("/book/paper-back.webp") 0 0 / 128px;
+}
+
+.cn-flap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform-style: preserve-3d;
+}
+
+.cn-flap-f,
+.cn-flap-b,
+.cn-hole {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.cn-flap-f {
+  backface-visibility: hidden;
+  background: #000 no-repeat;
+}
+
+.cn-flap-b {
+  backface-visibility: hidden;
+  transform: rotateY(180deg);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  background: linear-gradient(225deg, #fbf7ee, var(--card) 40%, #d9cfba);
+}
+
+.cn-label {
+  position: absolute;
+  left: 46%;
+  top: 6%;
+  margin: 0;
+  transform: rotate(90deg);
+  transform-origin: 0 0;
+  color: var(--card-ink);
+  font: 500 12px / 1.3 var(--book-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cn-label b {
+  display: block;
+  font: 600 20px / 1.15 var(--book-text);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.cn-hole {
+  background: #000 no-repeat;
+}
+
+.cn-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(225deg, transparent 50%, rgb(0 0 0 / 0.38) 50.5%, transparent 62%);
+}
+
+/* ─── Picture-in-picture ───────────────────────────────────────────────── */
+
+.pip-scene {
+  position: absolute;
+  inset: 0 0 0 38%;
+}
+
+.pip-place {
+  position: absolute;
+  left: 6%;
+  right: 8%;
+  top: 50%;
+  aspect-ratio: 16 / 9;
+  transform: translateY(-58%);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 30px 60px rgb(0 0 0 / 0.5);
+}
+
+.waiting {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(20 17 14 / 0.16), rgb(20 17 14 / 0.05) 2.5%, rgb(20 17 14 / 0) 7%), var(--card);
+  color: var(--card-ink);
+  opacity: 0;
+}
+
+.w-ribbon {
+  position: absolute;
+  left: 9%;
+  top: 0;
+  width: 14px;
+  height: 34%;
+  background: var(--red);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+}
+
+.w-plate {
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  width: 46%;
+  aspect-ratio: 16 / 9;
+  transform: translateX(-50%);
+  padding: 6px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(26 23 18 / 0.2), 0 6px 14px rgb(0 0 0 / 0.15);
+}
+
+.w-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.w-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 64%;
+  margin: 0;
+  text-align: center;
+  font: 600 18px / 1.3 var(--book-text);
+}
+
+.w-edge {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 8%;
+  height: 12px;
+  background: repeating-linear-gradient(to right, #c9bea6 0 3px, #e8dfcb 3px 6px);
+  border-radius: 2px;
+}
+
+.pip-window {
+  position: absolute;
+  left: 6%;
+  right: 8%;
+  top: 50%;
+  aspect-ratio: 16 / 9;
+  transform-origin: 100% 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 1px rgb(245 240 230 / 0.16), 0 30px 70px rgb(0 0 0 / 0.6);
+}
+
+.pip-window img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pip-bar {
+  display: none;
+}
+
+/* ─── Evidence ─────────────────────────────────────────────────────────── */
+
+.holds,
+.film {
+  position: relative;
+  padding: clamp(80px, 12vw, 160px) var(--gutter) 0;
+  border-top: 1px solid var(--rule);
+}
+
+.sec-head h2 {
+  font-size: var(--type-head);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+
+.evidence {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0 48px;
+  margin: 64px 0 0;
+}
+
+/* Three numbers, then two, then the two words: no row left with one. */
+.ev {
+  grid-column: span 2;
+}
+
+.ev:nth-child(n + 4) {
+  grid-column: span 3;
+}
+
+@media (max-width: 900px) {
+  .evidence {
+    grid-template-columns: 1fr;
+  }
+
+  .ev,
+  .ev:nth-child(n + 4) {
+    grid-column: auto;
+  }
+}
+
+.ev {
+  padding: 28px 0 32px;
+  border-top: 1px solid var(--rule);
+}
+
+.ev dt {
+  display: grid;
+  gap: 6px;
+}
+
+.ev-num {
+  font: 400 var(--type-figure) / 1.02 var(--book-display);
+  letter-spacing: -0.025em;
+  color: var(--paper);
+  font-variant-numeric: lining-nums;
+}
+
+.ev-num small {
+  font: 400 var(--type-sub) / 1 var(--book-display);
+  color: var(--paper-mute);
+  letter-spacing: 0;
+}
+
+.ev-word {
+  color: var(--red);
+}
+
+.ev-what {
+  font: 600 17px / 1.4 var(--book-text);
+  color: var(--paper);
+}
+
+.ev dd {
+  margin: 10px 0 0;
+  max-width: 36rem;
+  font: 400 16px / 1.6 var(--book-text);
+  color: var(--paper-mute);
+  text-wrap: pretty;
+}
+
+/* ─── The film ─────────────────────────────────────────────────────────── */
+
+.film-lead {
+  max-width: 40rem;
+  margin: 28px 0 0;
+  font: 400 19px / 1.6 var(--book-text);
+  color: var(--paper-soft);
+  text-wrap: pretty;
+}
+
+.chapters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 0 48px;
+  margin: 56px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chapters li {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  align-content: start;
+  padding: 26px 0 30px;
+  border-top: 1px solid var(--rule);
+}
+
+.ch-num {
+  grid-row: span 2;
+  font: 400 min(48px, var(--type-figure)) / 0.9 var(--book-display);
+  color: var(--paper);
+  font-variant-numeric: lining-nums;
+}
+
+.chapters h3 {
+  margin: 0 0 8px;
+  font: 400 var(--type-sub) / 1.1 var(--book-display);
+  color: var(--paper);
+}
+
+.chapters p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--paper-mute);
+}
+
+.sources {
+  max-width: 46rem;
+  margin: 40px 0 0;
+  padding-bottom: clamp(80px, 10vw, 140px);
+  font-size: 16px;
+  color: var(--paper-mute);
+}
+
+.sources p {
+  margin: 0 0 14px;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.colophon {
+  padding: 48px var(--gutter) calc(64px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--rule);
+  color: var(--paper-mute);
+  font-size: 16px;
+}
+
+.colophon-title {
+  margin: 0 0 10px;
+  font: 400 var(--type-sub) / 1.1 var(--book-display);
+  color: var(--paper);
+}
+
+.colophon p {
+  max-width: 44rem;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.colophon p + p {
+  margin-top: 12px;
+}
+
+/* ─── Tablet and phone: copy above, the scene below ────────────────────── */
+
+@media (max-width: 960px) {
+  .copy {
+    top: calc(56px + 2svh);
+    right: var(--gutter);
+    width: auto;
+    max-width: 640px;
+    transform: none;
+  }
+
+  .copy .body {
+    margin-top: 14px;
+  }
+
+  .folio {
+    margin-top: 18px;
+    padding-top: 14px;
+  }
+
+  .folio-big i {
+    font-size: 26px;
+  }
+
+  .folio-big .of {
+    font-size: 24px;
+  }
+
+  .edge-scene,
+  .plate-scene,
+  .pip-scene {
+    inset: 50% 0 0 0;
+    width: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .masthead {
+    height: 60px;
+  }
+
+  .stage {
+    min-height: 600px;
+  }
+
+  .copy .body {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .copy .body-2,
+  .demo .copy .body + .body {
+    display: none;
+  }
+
+  .scrub,
+  .scrub-label {
+    display: none;
+  }
+
+  .on-scroll {
+    display: none;
+  }
+
+  .on-touch {
+    display: inline;
+  }
+
+  .edge-scene,
+  .plate-scene,
+  .pip-scene {
+    inset: 52% 0 0 0;
+  }
+
+  /* The player's edge, close enough to read: its first chapters and the thumb, not the whole run in miniature. */
+  .real-edge {
+    left: var(--gutter);
+    right: var(--gutter);
+  }
+
+  .real-crop {
+    aspect-ratio: 640 / 330;
+  }
+
+  .real-crop img {
+    width: 187.5%;
+  }
+}
+
+/* ─── Reduced motion: each section is a still ──────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .pin {
+    height: auto;
+  }
+
+  .stage {
+    position: relative;
+    height: 100svh;
+  }
+
+  .scrub,
+  .scrub-label {
+    display: none;
+  }
+
+  /* The hero is already a still: its one arrival doesn't run. */
+  .leaf,
+  .hero-foot {
+    animation: none;
+  }
+}

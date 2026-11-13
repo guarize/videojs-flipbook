@@ -1,0 +1,718 @@
+/*
+ * The Muybridge plate (plate.ts): the paused moment's frames set out as a plate, and the key that brings it.
+ * Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── The Muybridge plate ───────────────────────────────────────────── */
+
+    fb-plate {
+      position: absolute;
+      inset: 0;
+      z-index: 29;
+      pointer-events: none;
+    }
+
+    /*
+     * The page's foot (plate.ts places it): across the picture, from just over the chapter tabs and the slab down to
+     * the picture's bottom edge. The Plate key stands at its head. Where the page is printed and has room
+     * (`fb-plate[data-strip]`) the foot is paper, the page's own margin, and the twelve frames around the moment are
+     * printed in it as one row: the picture's edge is drawn along its top, and the key is its title, set quietly.
+     */
+    .fb-strip {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      box-sizing: border-box;
+      width: 100%;
+      height: calc(var(--fb-over-slab) + var(--fb-target));
+      display: grid;
+      /* The key, the row, and as much again as the key takes: the row stands centred on the picture while there is
+         room for that, and gives the room up, the far side first, when there isn't. */
+      grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(0, 1fr);
+      grid-template-rows: var(--fb-target);
+      column-gap: 12px;
+      padding-inline: 16px;
+      pointer-events: none;
+    }
+
+    fb-plate[data-strip] .fb-strip {
+      /* Start and end apart: Safari 26 drops a logical shorthand that holds var() under the armour's revert-layer. */
+      padding-inline-start: var(--fb-print-margin, 16px);
+      padding-inline-end: var(--fb-print-margin, 16px);
+      /* The margin is the page's, not the picture's: a click on it does nothing to the film. */
+      pointer-events: auto;
+    }
+
+    .fb-strip::before,
+    .fb-strip::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: var(--fb-paper);
+      pointer-events: none;
+    }
+
+    /* The picture's edge, where the foot begins: a real hairline, as the print's other three sides have. */
+    .fb-strip::after {
+      inset: 0 var(--fb-print-margin, 0px) auto;
+      height: 1px;
+      background-color: rgb(20 17 14 / 0.3);
+    }
+
+    /* It comes with the print's margin and goes with it (flip.css): 250 ms in, 200 ms out, opacity only. */
+    .fb-strip::before,
+    .fb-strip::after,
+    .fb-strip-window {
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity var(--fb-base) var(--fb-ease-out),
+        visibility 0s linear var(--fb-base);
+    }
+
+    fb-plate[data-strip] .fb-strip::before,
+    fb-plate[data-strip] .fb-strip::after,
+    fb-plate[data-strip] .fb-strip-window {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity var(--fb-slow) var(--fb-ease-out),
+        visibility 0s;
+    }
+
+    .fb-plate-toggle {
+      position: relative;
+      z-index: 1;
+      justify-self: start;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      height: var(--fb-target);
+      padding: 0 8px 0 14px;
+      border: 0;
+      border-radius: var(--fb-radius-control);
+      background: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow: var(--fb-shadow-card);
+      font-family: var(--fb-font);
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      pointer-events: auto;
+      outline: none;
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    /* At the head of the strip it is the strip's title, in the mono, on the page's own paper. */
+    fb-plate[data-strip] .fb-plate-toggle {
+      min-width: var(--fb-target);
+      padding: 0;
+      background: none;
+      box-shadow: none;
+      color: var(--fb-ink-soft);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      fb-plate[data-strip] .fb-plate-toggle:hover {
+        color: var(--fb-ink);
+      }
+    }
+
+    /* ─── The strip's row ───────────────────────────────────────────────── */
+
+    /* Its window: all twelve in sight where they fit; where they don't, it scrolls, the frame you're on in the middle. */
+    .fb-strip-window {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      height: var(--fb-target);
+      overflow: auto hidden;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      touch-action: pan-x;
+    }
+
+    .fb-strip-window::-webkit-scrollbar {
+      display: none;
+    }
+
+    .fb-strip-track,
+    .fb-strip-row {
+      display: flex;
+      width: max-content;
+    }
+
+    /* A frame: a whole target tall and its place in the row wide, with the picture drawn small in its middle. */
+    .fb-strip-cell {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: var(--fb-strip-pitch, 52px);
+      height: var(--fb-target);
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      outline: none;
+      scroll-snap-align: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .fb-strip-thumb {
+      position: relative;
+      display: block;
+      width: calc(var(--fb-strip-pitch, 52px) - 4px);
+      aspect-ratio: 16 / 9;
+      border-radius: 2px;
+      background-color: rgb(20 17 14 / 0.14);
+      box-shadow: 0 0 0 1px rgb(20 17 14 / 0.34);
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-strip-thumb canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      opacity: 0;
+      transition: opacity var(--fb-fast) var(--fb-ease);
+    }
+
+    .fb-strip-cell[data-ready] canvas {
+      opacity: 1;
+    }
+
+    /* The frame you're on: a hairline in the accent, a pixel clear of the picture, and its number. */
+    .fb-strip-cell[data-current] .fb-strip-thumb {
+      box-shadow:
+        0 0 0 1px var(--fb-paper),
+        0 0 0 2px var(--fb-accent);
+    }
+
+    .fb-strip-number {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: none;
+      min-width: 14px;
+      padding: 0 3px;
+      border-radius: 2px 0;
+      background-color: var(--fb-accent-mid);
+      color: var(--fb-paper);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      line-height: 14px;
+      text-align: center;
+    }
+
+    .fb-strip-cell[data-current] .fb-strip-number {
+      display: block;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-strip-cell:hover .fb-strip-thumb {
+        transform: translateY(-2px);
+      }
+    }
+
+    .fb-strip-cell:active .fb-strip-thumb {
+      transform: scale(0.96);
+    }
+
+    .fb-strip-cell:focus-visible .fb-strip-thumb,
+    fb-plate[data-strip] .fb-plate-toggle:focus-visible {
+      outline: 2px solid var(--fb-ring);
+      outline-offset: 2px;
+      box-shadow: none;
+    }
+
+    fb-plate[data-strip] .fb-plate-toggle:focus-visible {
+      outline-offset: -2px;
+    }
+
+    /* A frame's number and time, over the frame under the pointer or the keyboard's focus: one slip, set by plate.ts. */
+    .fb-strip-tip {
+      position: absolute;
+      top: -6px;
+      left: 0;
+      z-index: 2;
+      padding: 4px 7px;
+      border-radius: 3px;
+      background-color: var(--fb-ink);
+      color: var(--fb-paper);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      translate: calc(var(--fb-strip-tip-x, 0px) - 50%) -100%;
+      transition: opacity var(--fb-fast) var(--fb-ease-out);
+    }
+
+    fb-plate[data-strip] .fb-strip-tip[data-open] {
+      opacity: 1;
+    }
+
+    fb-plate[data-paused]:not([data-open]) .fb-plate-toggle {
+      display: flex;
+    }
+
+    :scope[data-fb-caption-over~="plate"] .fb-plate-toggle {
+      visibility: hidden;
+    }
+
+    :scope:is([data-fb-deck], [data-fb-turning], [data-fb-contents], [data-fb-cover]) .fb-plate-toggle {
+      display: none !important;
+    }
+
+    .fb-plate-toggle:active {
+      transform: scale(0.96);
+    }
+
+    .fb-plate-key {
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgb(20 17 14 / 0.1);
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .fb-plate-sheet {
+      position: absolute;
+      top: var(--fb-plate-top, 54px);
+      left: 50%;
+      display: flex;
+      flex-direction: column;
+      max-height: var(--fb-plate-room, none);
+      padding: var(--fb-plate-pad, 14px);
+      border-radius: 6px;
+      background: linear-gradient(180deg, #f3ecdd, #e6dcc8);
+      box-shadow:
+        inset 0 0 0 1px rgb(255 255 255 / 0.5),
+        0 2px 3px rgb(0 0 0 / 0.3),
+        0 24px 50px -18px rgb(0 0 0 / 0.75);
+      pointer-events: auto;
+      translate: -50% 0;
+    }
+
+    .fb-plate-sheet[hidden] {
+      display: none;
+    }
+
+    /* The strip, enlarged: the plate grows from the foot of the page, where the strip was, as one sheet. */
+    .fb-plate-sheet {
+      transform-origin: 50% 100%;
+    }
+
+    /* The head is a target tall from the sheet's edge, so its close key is a whole 44 px clear of the frames. */
+    .fb-plate-head {
+      display: flex;
+      flex: none;
+      align-items: center;
+      gap: 8px;
+      height: var(--fb-target);
+      margin: calc(-1 * var(--fb-plate-pad, 14px)) calc(-1 * var(--fb-plate-pad, 14px)) 0;
+      padding-inline-start: var(--fb-plate-pad, 14px);
+      color: #3d352c;
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .fb-plate-head {
+      position: relative;
+      justify-content: space-between;
+    }
+
+    /* Close: a 44 px target, drawn as a small cross in the head's corner. */
+    .fb-plate-close {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: var(--fb-target);
+      height: var(--fb-target);
+      padding: 0;
+      border: 0;
+      border-radius: var(--fb-radius-control);
+      background: none;
+      color: #3d352c;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .fb-plate-close-mark {
+      position: relative;
+      width: 14px;
+      height: 14px;
+    }
+
+    .fb-plate-close-mark::before,
+    .fb-plate-close-mark::after {
+      content: "";
+      position: absolute;
+      top: 6.25px;
+      left: 0;
+      width: 14px;
+      height: 1.5px;
+      border-radius: 1px;
+      background: currentColor;
+      transform: rotate(45deg);
+    }
+
+    .fb-plate-close-mark::after {
+      transform: rotate(-45deg);
+    }
+
+    .fb-plate-close:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: -4px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-plate-close:hover {
+        color: var(--fb-ink);
+      }
+    }
+
+    /* The deck borrows the picture: the plate stands aside, a step back and faded, and returns when the deck goes. */
+    .fb-plate-sheet {
+      transition:
+        opacity var(--fb-base) var(--fb-ease-out),
+        scale var(--fb-base) var(--fb-ease-out);
+    }
+
+    fb-plate[data-compact] .fb-plate-time {
+      display: none;
+    }
+
+    fb-plate[data-yield] .fb-plate-sheet {
+      opacity: 0;
+      scale: 0.97;
+      pointer-events: none;
+    }
+
+    /* Away: where the plate comes from and where it goes (plate.ts `open`, `close`), a step back towards the page's
+       foot and clear. It comes and it leaves by the one transition above, so it can turn round midway. Leaving, it
+       is closed already: nothing on it takes the pointer, and the page under it does. */
+    .fb-plate-sheet[data-away] {
+      opacity: 0;
+      scale: 0.96;
+      pointer-events: none;
+    }
+
+    /* The plate takes the picture: a caption or a passing hint has no place clear of it, and both stand down until it
+       is put away, as they do under the Contents page. */
+    :scope[data-fb-plate] :is(fb-captions, fb-hints) {
+      visibility: hidden;
+    }
+
+    /* From 480 to 560 px the picture (270 to 315 px tall, over a two-row slab) has no line of its own for the page
+       stamp under the top row: the plate key stands there. The stamp stands beside the key, on its line, and gives
+       that up to a caption as it does on a phone. */
+    @container media-root (480px <= width < 560px) {
+      .fb-stamp {
+        top: auto;
+        bottom: calc(var(--fb-over-slab) + 11px);
+        left: 112px;
+      }
+
+      :scope[data-fb-print]:has(fb-captions[data-open]) .fb-stamp {
+        opacity: 0;
+      }
+    }
+
+    /* While the plate is out, the cover's play disc stands aside (play still works from the bar and the keys). */
+    :scope[data-fb-plate] .fb-cover-play {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    /* Small players: the plate takes the picture, above the bar. */
+    fb-plate[data-full] {
+      z-index: 33;
+    }
+
+    /* Where even the whole picture is too short for three rows, the frames scroll under the head (the next row
+       peeks), held inside the plate. Its 6 px padding keeps the focus ring's plate inside the scroller's clip; the sides
+       and foot reach into the sheet's padding, the top stays clear of the head (its close key keeps all 44 px). */
+    .fb-plate-grid {
+      display: grid;
+      grid-template-columns: repeat(4, var(--fb-plate-cell, 160px));
+      gap: var(--fb-plate-gap, 8px);
+      min-height: 0;
+      margin: 0 -6px -6px;
+      padding: 6px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scroll-padding-block: 6px;
+    }
+
+    .fb-plate-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .fb-plate-cell {
+      position: relative;
+      width: var(--fb-plate-cell, 160px);
+      height: var(--fb-plate-cell-h, 90px);
+      padding: 0;
+      border: 0;
+      border-radius: 2px;
+      background: var(--fb-ink);
+      box-shadow: 0 0 0 1px rgb(20 17 14 / 0.5);
+      cursor: pointer;
+      outline: none;
+      transition:
+        transform var(--fb-fast) var(--fb-ease-out),
+        scale var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-plate-cell:active {
+      scale: 0.96;
+    }
+
+    .fb-plate-cell canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      opacity: 0;
+      transition: opacity var(--fb-fast) var(--fb-ease);
+    }
+
+    .fb-plate-cell[data-ready] canvas {
+      opacity: 1;
+    }
+
+    .fb-plate-cell[data-current] {
+      box-shadow:
+        0 0 0 2px var(--fb-red),
+        0 0 0 3px rgb(20 17 14 / 0.6);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-plate-cell:hover {
+        transform: translateY(-2px);
+      }
+    }
+
+    .fb-plate-number,
+    .fb-plate-time {
+      position: absolute;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.35;
+    }
+
+    .fb-plate-number {
+      top: 4px;
+      left: 4px;
+      background: var(--fb-paper);
+      color: var(--fb-ink);
+      font-weight: 700;
+    }
+
+    .fb-plate-time {
+      right: 4px;
+      bottom: 4px;
+      background: rgb(20 17 14 / 0.86);
+      color: var(--fb-paper);
+    }
+
+    .fb-plate-cell:focus-visible,
+    .fb-plate-toggle:focus-visible {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgb(20 17 14 / 0.92);
+    }
+
+    @container media-root (width < 720px) {
+      .fb-plate-time {
+        display: none;
+      }
+    }
+
+    @container media-root (width < 480px) {
+      .fb-strip {
+        column-gap: 4px;
+        padding-inline: 8px;
+      }
+
+      .fb-plate-number {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-plate-cell,
+      .fb-plate-cell canvas,
+      .fb-plate-toggle,
+      .fb-plate-sheet,
+      .fb-strip::before,
+      .fb-strip::after,
+      .fb-strip-window,
+      .fb-strip-thumb,
+      .fb-strip-thumb canvas,
+      .fb-strip-tip {
+        transition: none !important;
+      }
+
+      .fb-strip-cell:hover .fb-strip-thumb,
+      .fb-strip-cell:active .fb-strip-thumb {
+        transform: none;
+      }
+
+      .fb-plate-cell,
+      .fb-plate-cell:hover {
+        transform: none !important;
+      }
+
+      .fb-plate-cell:active {
+        scale: none;
+      }
+    }
+
+    /* No keyboard, no keycap (as phone.css does for the core's keys). */
+    @media (hover: none) and (pointer: coarse) {
+      .fb-plate-toggle .fb-plate-key {
+        display: none;
+      }
+    }
+
+    /* A phone's paused picture carries the print alone: its margin, its folio and the strip, which has the foot's
+       whole width. The Plate key is Settings' "Plate" there (menu.ts). */
+    :scope[data-fb-phone] fb-plate[data-paused] .fb-plate-toggle {
+      display: none;
+    }
+
+    :scope[data-fb-phone] .fb-strip {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* A phone on its side (a short player under a finger) too: the key is Settings' "Plate". */
+    @media (hover: none) and (pointer: coarse) {
+      :scope[data-fb-short] fb-plate[data-paused] .fb-plate-toggle {
+        display: none;
+      }
+    }
+
+    /* On a small picture a slip over the middle meets the plate key: one thing at a time, and P still works. */
+    @container media-root (width < 720px) {
+      :scope:has(fb-hints[data-open]) .fb-plate-toggle {
+        visibility: hidden;
+      }
+    }
+  }
+}
+
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    @media (forced-colors: active) {
+      .fb-plate-toggle,
+      .fb-plate-close,
+      .fb-plate-cell {
+        forced-color-adjust: auto;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+        color: ButtonText;
+      }
+
+      .fb-plate-toggle {
+        border: 1px solid ButtonText;
+      }
+
+      .fb-plate-key {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      .fb-strip::before {
+        background-color: Canvas;
+      }
+
+      .fb-strip::after {
+        background-color: CanvasText;
+      }
+
+      fb-plate[data-strip] .fb-plate-toggle {
+        border: 0;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      .fb-strip-thumb {
+        box-shadow: none;
+        outline: 1px solid CanvasText;
+      }
+
+      .fb-strip-cell[data-current] .fb-strip-thumb {
+        box-shadow: none;
+        outline: 2px solid Highlight;
+      }
+
+      .fb-strip-number {
+        forced-color-adjust: none;
+        background-color: Highlight;
+        color: HighlightText;
+      }
+
+      .fb-strip-cell:focus-visible .fb-strip-thumb {
+        outline: 2px solid Highlight;
+        outline-offset: 3px;
+      }
+
+      .fb-strip-tip {
+        border: 1px solid CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      .fb-plate-cell[data-current] {
+        forced-color-adjust: none;
+        border-color: Highlight;
+        background-color: Highlight;
+        background-image: none;
+        color: HighlightText;
+      }
+
+      .fb-plate-sheet {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      .fb-plate-cell:focus-visible {
+        outline-offset: -2px;
+      }
+    }
+  }
+}

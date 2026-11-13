@@ -1,0 +1,26 @@
+---
+import { copy } from '../content/copy';
+import SectionHead from './SectionHead.astro';
+
+const { film } = copy;
+---
+
+<section class="film" id="film" aria-labelledby="film-title">
+  <SectionHead id="film-title" kicker={film.kicker} title={film.title} />
+  <p class="film-lead" set:html={film.lead} />
+  <ol class="chapters">
+    {
+      film.chapters.map((chapter, i) => (
+        <li>
+          <span class="ch-num" aria-hidden="true">{i + 1}</span>
+          <h3>{chapter.name}</h3>
+          <p set:html={chapter.shows} />
+        </li>
+      ))
+    }
+  </ol>
+  <div class="sources">
+    <p>{film.source}</p>
+    <p><a href={film.credits.href}>{film.credits.label}</a></p>
+  </div>
+</section>

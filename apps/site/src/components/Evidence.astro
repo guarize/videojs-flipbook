@@ -1,0 +1,99 @@
+---
+/**
+ * How it holds up: the measured numbers with their sources, the two frames the contrast was measured over (each a key
+ * that takes the player there), a still of every state, and the visitor's own settings read live. Every figure comes
+ * from the audit files at build time (lib/audit.ts); the script is src/scripts/proof.ts.
+ */
+import { copy } from '../content/copy';
+import { frameTimes, measured } from '../lib/measured';
+import SectionHead from './SectionHead.astro';
+import Still from './Still.astro';
+
+const { holds } = copy;
+const { frames, states, prefs } = holds;
+const items = holds.items(measured);
+const frameKeys = [
+  { id: 'bright', time: frameTimes.bright, clock: measured.bright.clock, name: frames.bright, meta: frames.meta(measured.bright) },
+  { id: 'dark', time: frameTimes.dark, clock: measured.dark.clock, name: frames.dark, meta: frames.meta(measured.dark) },
+];
+/** The sheet's columns: three from 961 px, two from 701 px, and a strip of cards on a phone. */
+const stillSizes = '(max-width: 700px) 78vw, (max-width: 960px) 46vw, 30vw';
+---
+
+<section class="holds" id="holds" aria-labelledby="holds-title">
+  <SectionHead id="holds-title" kicker={holds.kicker} title={holds.title} />
+  <dl class="evidence">
+    {
+      items.map((item) => (
+        <div class="ev">
+          <dt>
+            <span class="ev-num">{item.figure}{item.unit && <small>&nbsp;{item.unit}</small>}</span>
+            <span class="ev-what">{item.what}</span>
+          </dt>
+          <dd set:html={item.detail} />
+          <dd class="ev-source">{item.source}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <div class="proof" aria-labelledby="frames-title" role="group">
+    <div class="proof-head">
+      <h3 id="frames-title">{frames.title}</h3>
+      <p>{frames.lead}</p>
+    </div>
+    <div class="frame-keys">
+      {
+        frameKeys.map((key) => (
+          <button class="frame-key" type="button" data-frame={key.time}>
+            <span class="frame-thumb"><Still id={`frame-${key.id}`} alt="" sizes="144px" /></span>
+            <span class="frame-text">
+              <span class="frame-name">{key.name} <span class="frame-time">{key.clock}</span></span>
+              <span class="frame-meta">{key.meta.map((fact) => <span>{fact}</span>)}</span>
+            </span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="proof" aria-labelledby="states-title" role="group">
+    <div class="proof-head">
+      <h3 id="states-title">{states.title}</h3>
+      <p>{states.lead}</p>
+    </div>
+    <ul class="states" aria-labelledby="states-title" data-states>
+      {
+        states.items.map((state) => (
+          <li class:list={['state', { 'state-tall': state.tall }]}>
+            <figure>
+              <Still id={state.id} alt={state.alt} sizes={stillSizes} />
+              <figcaption>
+                <b>{state.name}</b>
+                <span set:html={state.line} />
+              </figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="proof" aria-labelledby="prefs-title" role="group">
+    <div class="proof-head">
+      <h3 id="prefs-title">{prefs.title}</h3>
+      <p>{prefs.lead}</p>
+    </div>
+    <dl class="prefs" data-prefs data-values={JSON.stringify(prefs.values)} data-unknown={prefs.unknown}>
+      {
+        prefs.items.map((item) => (
+          <div class="pref" data-pref={item.id}>
+            <dt>{item.name}</dt>
+            <dd class="pref-value" data-pref-value>{prefs.waiting}</dd>
+            <dd class="pref-does">{item.does}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

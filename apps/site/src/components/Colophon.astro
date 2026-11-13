@@ -1,0 +1,11 @@
+---
+import { copy } from '../content/copy';
+
+const { colophon } = copy;
+---
+
+<footer class="colophon">
+  <h2 class="colophon-title">{colophon.title}</h2>
+  <p set:html={colophon.body} />
+  <p class="colophon-film" set:html={colophon.film} />
+</footer>

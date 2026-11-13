@@ -1,0 +1,326 @@
+/*
+ * A page built with Tailwind CSS 4, as the skin meets it on someone else's site (tests/e2e/hostile.spec.ts).
+ *
+ * Tailwind 4 puts everything it writes in four cascade layers, in this order, three of them named as a Video.js
+ * skin's are (`base`, `components`, `utilities`). What is here is what such a page really carries: Tailwind's
+ * preflight (abridged from tailwindcss@4 `preflight.css`, every rule that reaches an element the skin uses), a theme
+ * in two schemes (`.dark` on the root, the class strategy), and the things people add to each layer: element rules in
+ * `base` (`@layer base { h1 { … } button { … } kbd { … } }` is ordinary Tailwind practice), component classes, and
+ * utilities, with the descendant and universal variants (`[&_button]:…`, `*:…`) that reach inside whatever a page
+ * puts in them.
+ *
+ * The `kbd` and `:disabled` rules are the shapes measured on a live Tailwind 4 page that carried the player: a
+ * keycap of the skin's, given no colour of its own, was lettered in the page's ink (white, in the page's dark
+ * scheme, on the skin's paper), bordered and 24 px tall; a disabled radio group took the page's cursor.
+ */
+@layer theme, base, components, utilities;
+
+@layer theme {
+  :root,
+  :host {
+    --font-sans: ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    --color-brand: oklch(62% 0.21 25);
+    --ink: #1d2433;
+    --paper: #f7f7f2;
+    --line: #c8c8c0;
+    --spacing: 0.25rem;
+    --default-transition-duration: 150ms;
+    --default-font-family: var(--font-sans);
+    --default-mono-font-family: var(--font-mono);
+  }
+}
+
+@layer theme {
+  .dark {
+    --ink: rgb(238 240 246);
+    --paper: #0b0c10;
+    --line: #3a3d48;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  /* ── Preflight ── */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+
+  html,
+  :host {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: var(--default-font-family);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+  }
+
+  abbr:where([title]) {
+    -webkit-text-decoration: underline dotted;
+    text-decoration: underline dotted;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  a {
+    color: inherit;
+    -webkit-text-decoration: inherit;
+    text-decoration: inherit;
+  }
+
+  b,
+  strong {
+    font-weight: bolder;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--default-mono-font-family);
+    font-size: 1em;
+  }
+
+  small {
+    font-size: 80%;
+  }
+
+  sub,
+  sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+
+  table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+  }
+
+  progress {
+    vertical-align: baseline;
+  }
+
+  summary {
+    display: list-item;
+  }
+
+  ol,
+  ul,
+  menu {
+    list-style: none;
+  }
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  button,
+  input,
+  select,
+  optgroup,
+  textarea,
+  ::file-selector-button {
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    opacity: 1;
+  }
+
+  ::placeholder {
+    opacity: 1;
+    color: color-mix(in oklab, currentcolor 50%, transparent);
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  button,
+  input:where([type="button"], [type="reset"], [type="submit"]),
+  ::file-selector-button {
+    appearance: button;
+  }
+
+  [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
+
+  /* ── What a project adds to its base: element rules, the house style ── */
+  body {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  a {
+    color: var(--color-brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  button,
+  [role="button"] {
+    cursor: pointer;
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    text-transform: uppercase;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+    transition: all 300ms ease;
+  }
+
+  kbd {
+    display: inline-grid;
+    place-items: center;
+    height: 1.5rem;
+    padding: 2px 6px;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 2px 0 var(--line);
+  }
+
+  :disabled {
+    cursor: not-allowed;
+  }
+
+  h3 {
+    font-size: 1.17em;
+    font-weight: 700;
+  }
+
+  input {
+    line-height: 20px;
+  }
+
+  svg {
+    stroke-width: 3;
+    fill: currentColor;
+  }
+
+  span {
+    hyphens: auto;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 4px;
+  }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--color-brand);
+    color: #fff;
+  }
+
+  .card {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.3);
+  }
+
+  /* A typography plugin's reach into whatever a container holds. */
+  .prose :where(p, span, button, kbd, time) {
+    font-size: 1.125rem;
+    line-height: 1.75;
+    margin-block: 1.25em;
+  }
+
+  .prose :where(svg, img, video) {
+    margin-block: 2em;
+    border-radius: 0.375rem;
+  }
+}
+
+@layer utilities {
+  .flex {
+    display: flex;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .p-4 {
+    padding: calc(var(--spacing) * 4);
+  }
+
+  .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  /* `*:rounded-full`, `[&_button]:opacity-50`, `[&_svg]:size-8`: variants that reach every child, or every button
+     or icon, inside the element that carries them. */
+  .\*\:rounded-full > * {
+    border-radius: calc(infinity * 1px);
+  }
+
+  .\[\&_button\]\:opacity-50 button {
+    opacity: 50%;
+  }
+
+  .\[\&_svg\]\:size-8 svg {
+    width: calc(var(--spacing) * 8);
+    height: calc(var(--spacing) * 8);
+  }
+
+  .\[\&_\*\]\:tracking-widest * {
+    letter-spacing: 0.1em;
+  }
+}

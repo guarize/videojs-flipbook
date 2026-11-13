@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Flipbook on someone else's page</title>
+    <!--
+      A stranger's site, for tests/e2e/hostile.spec.ts: the player mounted with the drop-in call (mountFlipbook) into
+      a page that is not ours. `?host=clean` is a quiet page; `?host=hostile` adds ./host/hostile.css, the ordinary
+      global CSS real sites ship (element rules, a reset, a preflight, theme rules under classes and ids).
+      Also: `dir=rtl`, `root=20` (the root font size, px), `zoom=1.25`, `important` (./host/important.css),
+      `late` (the host's stylesheet arrives after the skin's), `noskin` (the page alone, for the leak check).
+      The player's box is pinned inline, so the two pages differ only in what the host's CSS does to the skin.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+        background: #111;
+      }
+
+      body {
+        margin: 0;
+        font: 16px/1.5 system-ui, sans-serif;
+        color: #ddd;
+      }
+
+      /* The one thing a host does to the player: give it a shape. */
+      #player .media-skin {
+        aspect-ratio: 16 / 9;
+      }
+    </style>
+    <script>
+      (function () {
+        var params = new URLSearchParams(location.search);
+        var root = document.documentElement;
+        var host = params.get('host') || 'clean';
+        root.dataset.host = host;
+        if (params.get('dir')) root.dir = params.get('dir');
+        if (params.get('root')) root.style.fontSize = params.get('root') + 'px';
+        if (params.get('zoom')) root.style.zoom = params.get('zoom');
+        if (host === 'hostile' && !params.has('late')) document.write('<link rel="stylesheet" href="./host/hostile.css">');
+        if (params.has('important')) document.write('<link rel="stylesheet" href="./host/important.css">');
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="page">
+      <div id="content" class="entry-content prose">
+        <div
+          id="player"
+          data-fb-float
+          style="position: absolute; top: 24px; left: 24px; box-sizing: border-box; width: calc(100vw - 48px); max-width: 1200px; margin: 0; padding: 0; border: 0"
+        ></div>
+        <!-- The page's own content, outside the player: the leak check reads these with and without the skin. -->
+        <section id="outside" style="position: absolute; top: 1600px; left: 24px; width: 600px">
+          <h1>A heading</h1>
+          <h2>A second heading</h2>
+          <h3>A third heading</h3>
+          <p>A paragraph with <a href="#outside">a link</a>, <kbd>K</kbd>, <code>code</code>, <span>a span</span>, <strong>strong</strong> and <em>emphasis</em>.</p>
+          <ul>
+            <li>One</li>
+            <li>Two</li>
+          </ul>
+          <ol>
+            <li>First</li>
+          </ol>
+          <label for="outside-text">A label</label>
+          <input id="outside-text" type="text" placeholder="Text" />
+          <input type="range" aria-label="A range" />
+          <button type="button">A button</button>
+          <div role="slider" tabindex="0" aria-label="A slider" aria-valuenow="1" aria-valuemin="0" aria-valuemax="2"></div>
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 4h16v16H4z" /></svg>
+          <img alt="" width="40" height="30" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+          <video width="160" height="90" muted></video>
+          <canvas width="40" height="30"></canvas>
+          <dl>
+            <dt>Term</dt>
+            <dd>Definition</dd>
+          </dl>
+          <fieldset>
+            <legend>A legend</legend>
+          </fieldset>
+          <time datetime="2026-11-10">10 Nov</time>
+          <div class="media-button fb-keycap fb-bar">A page's own class names</div>
+        </section>
+      </div>
+    </div>
+    <script type="module" src="/src/pages/host.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "Duração": "1:38.000 (2.352 quadros, 24 qps constantes)",
+  "Capítulos": "6: The Book · One Gallop · The Herd (32,4 s, ativa o “Next”) · Flight · Torn Out · Colophon",
+  "Flash (WCAG 2.3.1, estimativa)": "máximo de 2 por segundo no filme inteiro (limite 3); cada plano medido também",
+  "Quadro mais claro": "1:28.292, luminância média 0,42 (o colofão em papel)",
+  "Quadro mais escuro": "0:00.000, 0,000 (a abertura sai do escuro); depois da abertura, 1:20.875 ≈ 0,09 (Torn Out, luz baixa)",
+  "Loudness": "−16,0 LUFS integrado, pico verdadeiro −1,5 dBTP, faixa 6,7 LU",
+  "Keyframes": "a cada 1 s (98 no total), faststart, BT.709 gravado",
+  "Arquivos": "film-mezzanine-2160.mov (ProRes 422, 3840×2160) 6,11 GB · film-1080.mp4 133 MB · film-720.mp4 38 MB, os dois reduzidos do mesmo master 2160p",
+  "Abertura (v1.1)": "borda dourada refeita: metal que reflete a sala, linhas das folhas, quina com brilho; moiré de sombra no topo das folhas corrigido no filme inteiro",
+  "Colofão (v1.2)": "texto igual ao CREDITS.md: “Rendered with three.js” e a música dita editada (“edited and mixed with page sounds”, CC BY 4.0); só o plano 13 mudou de conteúdo; flash, loudness, quadros e capítulos medidos de novo, iguais",
+  "Pôsteres": "poster-1/2/3 em 1920 px e poster-1/2/3-2160 em 3840 px, nos mesmos três momentos (0:24.0, 0:33.5, 1:23.0)",
+  "2160p (v1.3)": "render nativo em 3840×2160: páginas e dourado impressos em 2×, grão gerado na escala de 1080p; mesmos 2.352 quadros, tempos, capítulos, gradação e áudio; cada quadro comparado com a v1.2 em miniatura: diferença média de 1 nível em 255, sem página faltando"
+}

@@ -1,0 +1,37 @@
+Flipbook
+Copyright 2026 Pedro Guarize
+
+The source code in this repository is licensed under the Apache License,
+Version 2.0. The full text is in LICENSE.
+
+That licence covers the source code only. The following are in the
+repository or are shown by it, and keep their own terms.
+
+The film "Locomotion" and the stills taken from it
+  apps/preview/public/media/film/, apps/preview/public/book/, docs/images/
+  Copyright 2026 Pedro Guarize. Licensed under the Creative Commons
+  Attribution 4.0 International licence (CC BY 4.0).
+  https://creativecommons.org/licenses/by/4.0/
+  Sources, edits and licences: media-src/film/CREDITS.md
+
+The photographs in the film
+  Eadweard Muybridge, "The Horse in Motion" (1878), Library of Congress,
+  and "Animal Locomotion" (1887), plates 683, 700, 720 and 759, University
+  of Southern California Digital Library. Public domain.
+
+The film's music
+  "Origami" by Scott Buckley, released under CC BY 4.0,
+  www.scottbuckley.com.au. Edited and mixed with page sounds.
+
+The fonts
+  Onest, Newsreader, Familjen Grotesk and Bodoni Moda, each under the
+  SIL Open Font License 1.1. The licence text sits beside the font files:
+  apps/preview/public/fonts/flipbook/OFL.txt (Onest)
+  apps/preview/public/fonts/flipbook/newsreader-OFL.txt (Newsreader)
+  apps/preview/public/book/fonts/newsreader-OFL.txt (Newsreader)
+  apps/preview/public/book/fonts/familjen-grotesk-OFL.txt (Familjen Grotesk)
+  design/directions/2-the-object/fonts/bodoni-moda-OFL.txt (Bodoni Moda)
+  design/directions/2-the-object/fonts/onest-OFL.txt (Onest)
+
+Video.js 10 (@videojs/html) is a dependency, not part of this repository.
+It is licensed under the Apache License, Version 2.0.

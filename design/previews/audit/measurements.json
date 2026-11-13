@@ -1,0 +1,347 @@
+{
+  "generated": "2026-11-13T18:43:46.583Z",
+  "target": "http://127.0.0.1:4410",
+  "run": "passed",
+  "browsers": [
+    "chromium",
+    "webkit"
+  ],
+  "contrast": {
+    "note": "Minimum contrast ratio per category and theme, measured on the composited pixels behind each element, over the film paused at its brightest and darkest frames; the lowest across browsers.",
+    "thresholds": {
+      "text": 4.9,
+      "large": 3.4,
+      "graphics": 3.4,
+      "boundary": 3.4
+    },
+    "flipbook": {
+      "bright": {
+        "time": 88.56,
+        "text": {
+          "ratio": 5.15,
+          "element": "7 · .fb-strip-number in \"Frame 7 of 12, 1:28.5\"",
+          "size": 12,
+          "color": "#f6f1e7",
+          "ground": "#b8381e",
+          "value": 5.15,
+          "browser": "chromium"
+        },
+        "large": {
+          "ratio": 14.08,
+          "element": "[the music returns] · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#25221d",
+          "value": 14.08,
+          "browser": "webkit"
+        },
+        "graphics": {
+          "ratio": 12.87,
+          "element": "Seek forward 10 seconds · .media-button-icon",
+          "size": 20,
+          "color": "#f6f1e7",
+          "ground": "#2c2924",
+          "value": 12.87,
+          "browser": "chromium"
+        },
+        "boundary": {
+          "ratio": 10.14,
+          "element": "playhead (its edge) · .media-time-slider-thumb",
+          "size": 32,
+          "color": "#f6f1e7",
+          "ground": "#3f3930",
+          "value": 10.14,
+          "browser": "chromium"
+        },
+        "captions": {
+          "ratio": 14.08,
+          "element": "[the music returns] · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#25221d",
+          "value": 14.08,
+          "browser": "webkit"
+        }
+      },
+      "dark": {
+        "time": 0.5,
+        "text": {
+          "ratio": 5.15,
+          "element": "4 · .fb-strip-number in \"Frame 4 of 12, 0:00.5\"",
+          "size": 12,
+          "color": "#f6f1e7",
+          "ground": "#b8381e",
+          "value": 5.15,
+          "browser": "chromium"
+        },
+        "large": {
+          "ratio": 16.78,
+          "element": "♪ “Origami” by Scott Buckley · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#12110d",
+          "value": 16.78,
+          "browser": "chromium"
+        },
+        "graphics": {
+          "ratio": 12.87,
+          "element": "Seek forward 10 seconds · .media-button-icon",
+          "size": 20,
+          "color": "#f6f1e7",
+          "ground": "#2c2924",
+          "value": 12.87,
+          "browser": "chromium"
+        },
+        "boundary": {
+          "ratio": 8.96,
+          "element": "playhead (its edge) · .media-time-slider-thumb",
+          "size": 32,
+          "color": "#f6f1e7",
+          "ground": "#474138",
+          "value": 8.96,
+          "browser": "webkit"
+        },
+        "captions": {
+          "ratio": 16.78,
+          "element": "♪ “Origami” by Scott Buckley · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#12110d",
+          "value": 16.78,
+          "browser": "chromium"
+        }
+      },
+      "undefined": {}
+    },
+    "rebranded": {
+      "bright": {
+        "time": 88.56,
+        "text": {
+          "ratio": 5.49,
+          "element": "P · .fb-plate-key",
+          "size": 12,
+          "color": "#5b5249",
+          "ground": "#dfdad0",
+          "value": 5.49,
+          "browser": "chromium"
+        },
+        "large": {
+          "ratio": 14.08,
+          "element": "[the music returns] · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#25221d",
+          "value": 14.08,
+          "browser": "webkit"
+        },
+        "graphics": {
+          "ratio": 12.87,
+          "element": "Seek forward 10 seconds · .media-button-icon",
+          "size": 20,
+          "color": "#f6f1e7",
+          "ground": "#2c2924",
+          "value": 12.87,
+          "browser": "chromium"
+        },
+        "boundary": {
+          "ratio": 10.14,
+          "element": "playhead (its edge) · .media-time-slider-thumb",
+          "size": 32,
+          "color": "#f6f1e7",
+          "ground": "#3f3930",
+          "value": 10.14,
+          "browser": "chromium"
+        },
+        "captions": {
+          "ratio": 14.08,
+          "element": "[the music returns] · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#25221d",
+          "value": 14.08,
+          "browser": "webkit"
+        }
+      },
+      "dark": {
+        "time": 0.5,
+        "text": {
+          "ratio": 5.49,
+          "element": "P · .fb-plate-key",
+          "size": 12,
+          "color": "#5b5249",
+          "ground": "#dfdad0",
+          "value": 5.49,
+          "browser": "chromium"
+        },
+        "large": {
+          "ratio": 16.78,
+          "element": "♪ “Origami” by Scott Buckley · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#12110d",
+          "value": 16.78,
+          "browser": "chromium"
+        },
+        "graphics": {
+          "ratio": 12.87,
+          "element": "Seek forward 10 seconds · .media-button-icon",
+          "size": 20,
+          "color": "#f6f1e7",
+          "ground": "#2c2924",
+          "value": 12.87,
+          "browser": "chromium"
+        },
+        "boundary": {
+          "ratio": 8.96,
+          "element": "playhead (its edge) · .media-time-slider-thumb",
+          "size": 32,
+          "color": "#f6f1e7",
+          "ground": "#474138",
+          "value": 8.96,
+          "browser": "webkit"
+        },
+        "captions": {
+          "ratio": 16.78,
+          "element": "♪ “Origami” by Scott Buckley · .fb-captions-line in \"Media player\"",
+          "size": 26,
+          "color": "#f6f1e7",
+          "ground": "#12110d",
+          "value": 16.78,
+          "browser": "chromium"
+        }
+      }
+    },
+    "flipbook, 390 px": {
+      "bright": {
+        "time": 88.56,
+        "text": {
+          "ratio": 5.15,
+          "element": "7 · .fb-strip-number in \"Frame 7 of 12, 1:28.5\"",
+          "size": 12,
+          "color": "#f6f1e7",
+          "ground": "#b8381e",
+          "value": 5.15,
+          "browser": "chromium"
+        },
+        "graphics": {
+          "ratio": 13.39,
+          "element": "Enter fullscreen · .media-fullscreen-button-enter-icon",
+          "size": 24,
+          "color": "#f6f1e7",
+          "ground": "#292621",
+          "value": 13.39,
+          "browser": "chromium"
+        },
+        "boundary": {
+          "ratio": 7.05,
+          "element": "playhead (its edge) · .media-time-slider-thumb",
+          "size": 42,
+          "color": "#f6f1e7",
+          "ground": "#5a503c",
+          "value": 7.05,
+          "browser": "chromium"
+        }
+      },
+      "dark": {
+        "time": 0.5,
+        "text": {
+          "ratio": 5.15,
+          "element": "4 · .fb-strip-number in \"Frame 4 of 12, 0:00.5\"",
+          "size": 12,
+          "color": "#f6f1e7",
+          "ground": "#b8381e",
+          "value": 5.15,
+          "browser": "chromium"
+        },
+        "graphics": {
+          "ratio": 13.39,
+          "element": "Enter fullscreen · .media-fullscreen-button-enter-icon",
+          "size": 24,
+          "color": "#f6f1e7",
+          "ground": "#292621",
+          "value": 13.39,
+          "browser": "chromium"
+        },
+        "boundary": {
+          "ratio": 13.84,
+          "element": "playhead (its edge) · .media-time-slider-thumb",
+          "size": 42,
+          "color": "#f6f1e7",
+          "ground": "#28231c",
+          "value": 13.84,
+          "browser": "chromium"
+        }
+      }
+    }
+  },
+  "keyboard": {
+    "pageStops.chromium": 34,
+    "playerStops.chromium": 15,
+    "ringless.chromium": 0,
+    "plateStops.chromium": 11,
+    "contentsStops.chromium": 3,
+    "plateStops.webkit": 11,
+    "contentsStops.webkit": 3,
+    "pageStops.webkit": 34,
+    "playerStops.webkit": 15,
+    "ringless.webkit": 0
+  },
+  "targets": {
+    "360": {
+      "label": "1 The Book, chapter, 0:00 · .fb-tab",
+      "width": 44,
+      "height": 44,
+      "state": "cover",
+      "value": 44,
+      "browser": "chromium"
+    },
+    "768": {
+      "label": "Contents T · .fb-contents-key",
+      "width": 44,
+      "height": 44,
+      "state": "cover",
+      "value": 44,
+      "browser": "chromium"
+    },
+    "1280": {
+      "label": "Contents T · .fb-contents-key",
+      "width": 108,
+      "height": 44,
+      "state": "cover",
+      "value": 44,
+      "browser": "chromium"
+    },
+    "note": "Smallest hit area (CSS px, the shorter side) among the player and the width presets, measured on the element that receives the click, with a coarse pointer; the lowest across browsers.",
+    "minimum": 44
+  },
+  "cls": {
+    "value": 0,
+    "browser": "chromium",
+    "shiftsIncludingInput": 0,
+    "note": "Load and first play, Chromium (layout-shift entries are Chromium-only)."
+  },
+  "axe": {
+    "scans": 10,
+    "nodesChecked": 8777,
+    "smallestScan": 788,
+    "violations": 0,
+    "tags": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa"
+    ]
+  },
+  "horizontalOverflow": {
+    "showcase@360": 0,
+    "showcase@390": 0,
+    "showcase@768": 0,
+    "showcase@1024": 0,
+    "showcase@1280": 0,
+    "flipbook@360": 0,
+    "flipbook@390": 0,
+    "flipbook@768": 0,
+    "flipbook@1024": 0,
+    "flipbook@1280": 0
+  }
+}

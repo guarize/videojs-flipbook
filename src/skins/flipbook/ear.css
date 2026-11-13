@@ -1,0 +1,300 @@
+/*
+ * The dog-ear (ear.ts): the page's top-left corner, folded down on a bookmarked page. The top-right corner is the
+ * curl's. Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-ear {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 28;
+      /* The fold itself; the key around it is a full target. */
+      --fb-ear-fold: 36px;
+      pointer-events: none;
+    }
+
+    .fb-ear:not([data-on]) {
+      display: none;
+    }
+
+    .fb-ear-button {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--fb-target);
+      height: var(--fb-target);
+      padding: 0;
+      border: 0;
+      border-top-left-radius: var(--media-video-border-radius);
+      background: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      pointer-events: auto;
+      /* An unmarked page keeps its corner flat until the controls are asked for. */
+      opacity: 0;
+      transition: opacity var(--fb-fast) var(--fb-ease);
+    }
+
+    :scope[data-controls-visible] .fb-ear-button,
+    .fb-ear[data-marked] .fb-ear-button,
+    .fb-ear-button:focus-visible {
+      opacity: 1;
+    }
+
+    /* The fold grows from the corner's tip: a hint of a corner on a plain page, the whole ear on a marked one. */
+    .fb-ear-fold {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--fb-ear-fold);
+      height: var(--fb-ear-fold);
+      transform-origin: 0 0;
+      transform: scale(0.4);
+      transition: transform var(--fb-base) var(--fb-ease-out);
+    }
+
+    .fb-ear[data-marked] .fb-ear-fold {
+      transform: scale(1);
+    }
+
+    .fb-ear[data-pulling] .fb-ear-fold {
+      transition: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-ear:not([data-marked], [data-pulling]) .fb-ear-button:hover .fb-ear-fold {
+        transform: scale(0.56);
+      }
+
+      .fb-ear[data-marked]:not([data-pulling]) .fb-ear-button:hover .fb-ear-fold {
+        transform: scale(0.9);
+      }
+    }
+
+    .fb-ear:not([data-marked], [data-pulling]) .fb-ear-button:active .fb-ear-fold {
+      transform: scale(0.66);
+    }
+
+    .fb-ear[data-marked]:not([data-pulling]) .fb-ear-button:active .fb-ear-fold {
+      transform: scale(0.84);
+    }
+
+    /* Where the corner was: the page beneath, shaded along the crease by the flap lying over it. */
+    .fb-ear-under {
+      position: absolute;
+      inset: 0;
+      border-top-left-radius: var(--media-video-border-radius);
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+      background: linear-gradient(135deg, #e9e2d3 0%, #ded6c5 34%, #b9b0a0 50%);
+    }
+
+    /* The flap's shadow on the picture. */
+    .fb-ear-shade {
+      position: absolute;
+      inset: 0;
+      filter: drop-shadow(2px 3px 4px rgb(0 0 0 / 0.5));
+    }
+
+    .fb-ear-shade::before,
+    .fb-ear-flap {
+      content: "";
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+
+    .fb-ear-shade::before {
+      background: var(--fb-ink);
+    }
+
+    /* The page's back: paper, with an ink hairline at the crease, lightest just past it and shading to its tip. */
+    .fb-ear-flap {
+      background: linear-gradient(
+        135deg,
+        transparent 50%,
+        rgb(20 17 14 / 0.55) 50%,
+        rgb(20 17 14 / 0.55) calc(50% + 1px),
+        #fffcf5 calc(50% + 1px),
+        #f1e9da 68%,
+        #d9cdb8 100%
+      );
+    }
+
+    /* The ring, drawn above the fold (the key's own outline would sit under it). */
+    .fb-ear-button:focus-visible {
+      outline: none;
+    }
+
+    .fb-ear-button::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      z-index: 5;
+      border: 2px solid var(--fb-ring);
+      border-radius: calc(var(--media-video-border-radius) - 3px) 4px 4px 4px;
+      box-shadow:
+        0 0 0 2px var(--fb-ring-plate),
+        inset 0 0 0 2px var(--fb-ring-plate);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .fb-ear-button:focus-visible::after {
+      opacity: 1;
+    }
+
+    /* The title stands clear of the corner for as long as the page has one. */
+    :scope:not([data-fb-phone]):has(.fb-ear[data-on]) .media-title {
+      max-width: calc(min(var(--fb-title-room, 60%), 420px) - 32px);
+      translate: 32px 0;
+    }
+
+    /* ─── Undo, where the ear was ───────────────────────────────────────── */
+
+    .fb-ear-undo {
+      position: absolute;
+      top: 6px;
+      left: calc(var(--fb-target) + 2px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: var(--fb-target);
+      padding: 0 14px;
+      border: 0;
+      border-radius: var(--fb-radius-control);
+      background: none;
+      color: var(--fb-ink);
+      font-family: var(--fb-font);
+      font-size: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      pointer-events: auto;
+      isolation: isolate;
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-ear-undo[hidden] {
+      display: none;
+    }
+
+    /* The slip it's printed on: a paper chip, smaller than its target. */
+    .fb-ear-undo::before {
+      content: "";
+      position: absolute;
+      inset: 5px 0;
+      z-index: -1;
+      border-radius: 8px;
+      background-color: var(--fb-paper);
+      box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.35),
+        0 8px 18px -8px rgb(0 0 0 / 0.55);
+    }
+
+    .fb-ear-undo-what {
+      color: var(--fb-ink-soft);
+    }
+
+    .fb-ear-undo-do {
+      font-weight: 650;
+      text-decoration: underline;
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-ear-undo:hover::before {
+        background-color: #fffdf8;
+      }
+    }
+
+    .fb-ear-undo:active {
+      transform: scale(0.96);
+    }
+
+    .fb-ear-undo:focus-visible {
+      outline: 2px solid var(--fb-ring);
+      outline-offset: -3px;
+    }
+
+    .fb-ear-undo {
+      @starting-style {
+        opacity: 0;
+      }
+
+      transition:
+        opacity var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    /* The offer takes the title's place while it stands. */
+    :scope[data-fb-ear-undo] .media-title {
+      visibility: hidden;
+    }
+
+    /* Under 832 px the book's keys share the top row (named from 720 px), and the whole offer would run under
+       them: there is room for the word that matters. */
+    @container media-root (width < 832px) {
+      .fb-ear-undo-what {
+        display: none;
+      }
+    }
+
+    /* A phone's picture carries no corner to fold: the bookmark is Settings' "Bookmark this moment", and the ribbon
+       on the fore-edge shows the mark. ("Undo" still stands here for its few seconds after one is removed.) */
+    :scope[data-fb-phone] .fb-ear-button {
+      display: none;
+    }
+
+    :scope[data-fb-phone] .fb-ear-undo {
+      left: 8px;
+    }
+
+    /* A phone on its side (a short player under a finger) too. */
+    @media (hover: none) and (pointer: coarse) {
+      :scope[data-fb-short] .fb-ear-button {
+        display: none;
+      }
+
+      :scope[data-fb-short]:has(.fb-ear[data-on]) .media-title {
+        translate: none;
+      }
+    }
+
+    /* ─── When the page is covered, the corner waits ────────────────────── */
+
+    :scope:is([data-fb-deck], [data-fb-riffle], [data-fb-turning], [data-fb-plate], [data-fb-contents], [data-fb-sheet], [data-fb-tearing]) .fb-ear {
+      visibility: hidden;
+    }
+
+    /* ─── Preferences ───────────────────────────────────────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-ear-fold,
+      .fb-ear-undo {
+        transition-duration: 0ms !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-ear-under {
+        background: Canvas;
+      }
+
+      .fb-ear-flap {
+        background: linear-gradient(135deg, transparent 50%, CanvasText 50%);
+        forced-color-adjust: none;
+      }
+
+      .fb-ear-button::after {
+        border-color: Highlight;
+      }
+
+      .fb-ear-undo::before {
+        border: 1px solid ButtonText;
+      }
+    }
+  }
+}

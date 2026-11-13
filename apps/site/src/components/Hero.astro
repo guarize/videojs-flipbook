@@ -1,0 +1,111 @@
+---
+/**
+ * The first screen: the headline, then the player itself, working, on the desk. Headline and poster paint from this
+ * HTML alone; the poster holds the player's 16:9 box until the skin takes its place (load-player.ts), so nothing
+ * moves. The loose pages under the player's edges are six of the film's own pages, print and nothing else: no
+ * pointer, no name, out of the tab order. Under the player: the one thing to try, and the switch between the core
+ * alone and the full book (src/scripts/proof.ts).
+ */
+import posters from '../../../preview/public/media/film/posters.json';
+import { copy } from '../content/copy';
+import { asset } from '../lib/asset';
+import { presetWeights } from '../lib/measured';
+import Title from './Title.astro';
+
+const { hero } = copy;
+const { preset } = hero;
+/** The switch under the player: `features` on it, live. Each weight is the audit's (lib/audit.ts), never typed. */
+const presets = (['essential', 'book'] as const).map((id) => ({ id, ...preset[id], weight: presetWeights[id] }));
+/** The film's pages that lie loose (0-based, as public/book/pages names them): Muybridge's plates, one per study. */
+const leaves = [9, 23, 28, 32, 39, 45];
+const page = (i: number, width = '') => asset(`book/pages/p-${String(i).padStart(2, '0')}${width}.webp`);
+/**
+ * The poster is the page's largest paint: each screen is offered the width it shows (scripts/hero-images.mjs), AVIF
+ * first. `sizes` follows the stylesheet's --player-w: the screen's width on a phone, the column elsewhere.
+ */
+/** The widths the script made (2560, for a wide screen of two to the pixel, only from a poster delivered at 3840 px). */
+const posterWidths: number[] = posters.widths;
+const poster = (type: string) => posterWidths.map((w) => `${asset(`media/film/poster-${w}.${type}`)} ${w}w`).join(', ');
+const posterSizes = '(max-width: 700px) 100vw, min(1160px, 92vw)';
+/**
+ * A loose page shows the middle of a 16:9 picture as a 5:4 or square plate, so it needs a file about 1.4 to 1.8 times
+ * as wide as the plate: the 400 px copy on most phones, the 800 px one on dense or wide screens.
+ */
+const leafSizes = '(min-width: 1024px) and (min-aspect-ratio: 5/4) 430px, min(313px, max(188px, 51vw))';
+---
+
+<section class="hero" id="hero" aria-labelledby="title">
+  <div class="desk" aria-hidden="true"></div>
+  <div class="hero-head">
+    <p class="eyebrow" set:html={hero.eyebrow} />
+    <h1 id="title"><Title title={hero.title} /></h1>
+  </div>
+  <div class="hero-plate">
+    <div class="player-host" id="player" tabindex="-1" data-fb-float>
+      <picture>
+        <source type="image/avif" srcset={poster('avif')} sizes={posterSizes} />
+        <img
+          class="player-poster"
+          src={asset('media/film/poster-1280.webp')}
+          srcset={poster('webp')}
+          sizes={posterSizes}
+          alt=""
+          width="1920"
+          height="1080"
+          fetchpriority="high"
+          decoding="async"
+        />
+      </picture>
+    </div>
+    <div class="hero-leaves" aria-hidden="true">
+      {
+        leaves.map((i, n) => (
+          <img
+            class={`leaf leaf-${n + 1}`}
+            src={page(i)}
+            srcset={`${page(i, '-400')} 400w, ${page(i)} 800w`}
+            sizes={leafSizes}
+            alt=""
+            width="800"
+            height="450"
+            decoding="async"
+            fetchpriority="low"
+          />
+        ))
+      }
+    </div>
+  </div>
+  <div class="hero-foot">
+    <p class="hero-try">
+      <b>{hero.try.label}</b>{' '}<span class="try-wide">{hero.try.wide}</span><span class="try-phone">{hero.try.phone}</span>
+    </p>
+    <div class="preset" role="radiogroup" aria-label={preset.label} data-loads data-value="book">
+      <span class="preset-thumb" aria-hidden="true"><span class="rib"></span></span>
+      {
+        presets.map((item) => (
+          <button
+            class="preset-key"
+            type="button"
+            role="radio"
+            aria-checked={item.id === 'book' ? 'true' : 'false'}
+            aria-describedby={`preset-${item.id}`}
+            tabindex={item.id === 'book' ? 0 : -1}
+            data-value={item.id}
+          >
+            <span class="preset-name">{item.name}</span>
+            <span class="preset-weight">{item.weight}&nbsp;{preset.unit}</span>
+          </button>
+        ))
+      }
+    </div>
+    <p class="preset-lines">
+      {presets.map((item) => <span class="preset-line" id={`preset-${item.id}`} data-for={item.id}>{item.line(item.weight)}</span>)}
+    </p>
+    <p class="hero-cue" aria-hidden="true">
+      {hero.cue}
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+        ><path d="M8 2.75v10.5M3.75 9 8 13.25 12.25 9"></path></svg
+      >
+    </p>
+  </div>
+</section>

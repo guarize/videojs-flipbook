@@ -1,0 +1,431 @@
+/*
+ * Tear out the page (tear.ts): the sheet that lifts off the paused page and follows the hand, "Keep this page" on the
+ * paused page, and the slip that says what was kept and offers its link. Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-tear {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    /* ─── The pull ──────────────────────────────────────────────────────── */
+
+    /* The paused page can be taken hold of. The pointer says so only where a pull would start: on the picture. */
+    @media (hover: hover) and (pointer: fine) {
+      :scope[data-fb-print]:not([data-fb-tearing]) :is(video, media-controls, .video-controls-backdrop) {
+        cursor: grab;
+      }
+    }
+
+    :scope[data-fb-tearing],
+    :scope[data-fb-tearing] * {
+      cursor: grabbing !important;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* A finger resting on the paused page brings up no callout, so a hold can become a pull. */
+    :scope[data-fb-print] {
+      -webkit-touch-callout: none;
+    }
+
+    /* Under the lifted sheet, the book: the page beneath stands a little in its shade. */
+    .fb-tear-well {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: rgb(13 11 9 / 0.42);
+      box-shadow: inset 0 0 0 1px rgb(13 11 9 / 0.5);
+      opacity: 0;
+    }
+
+    /* What a torn page leaves at the spine: a stub of paper, its edge the row of perforations. */
+    .fb-tear-stub {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 7px;
+      background: linear-gradient(90deg, #e3dccd, var(--fb-paper));
+      mask: radial-gradient(circle at 100% 50%, transparent 2.4px, #000 2.9px) 0 0 / 100% 9px repeat-y;
+      opacity: 0;
+      transition: opacity var(--fb-slow) var(--fb-ease);
+    }
+
+    .fb-tear[data-torn] .fb-tear-stub {
+      opacity: 1;
+      transition-duration: 0ms;
+    }
+
+    .fb-tear-sheet {
+      position: absolute;
+      inset: 0;
+      will-change: transform;
+      /* The lift: nothing at rest, a soft throw of shadow once it's off the page. */
+      --fb-tear-up: 0;
+    }
+
+    .fb-tear-sheet::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 3px;
+      box-shadow:
+        0 2px 4px rgb(0 0 0 / 0.3),
+        0 18px 44px -10px rgb(0 0 0 / 0.6);
+      opacity: var(--fb-tear-up);
+    }
+
+    .fb-tear-sheet canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 3px;
+      background-color: var(--fb-paper);
+    }
+
+    /* The sheet's own edge: a hairline, so paper on paper still reads as a sheet. */
+    .fb-tear-sheet::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgb(20 17 14 / 0.18);
+    }
+
+    /* Torn free: its spine edge carries the other half of the perforations. */
+    .fb-tear-sheet[data-torn] canvas,
+    .fb-tear-sheet[data-torn]::after {
+      mask: radial-gradient(circle at 0 50%, transparent 2.4px, #000 2.9px) 0 0 / 100% 9px repeat-y;
+    }
+
+    /* ─── "Keep this page", on the paused page ──────────────────────────── */
+
+    .fb-keep {
+      position: absolute;
+      /* Beside the page stamp ("p. 31", 64 px down and 18 in), on its line. Its 44 px target starts under the top
+         row (56 px), whose keys reach over it on a player under 1240 px; the chip stands 3 px up inside it. */
+      top: 56px;
+      left: 76px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      min-height: var(--fb-target);
+      padding: 0 10px 6px;
+      border: 0;
+      border-radius: var(--fb-radius-control);
+      background: none;
+      color: var(--fb-ink);
+      font-family: var(--fb-font);
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+      cursor: pointer;
+      touch-action: none;
+      pointer-events: auto;
+      isolation: isolate;
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    /* The chip it's printed on: paper, like the stamp, and smaller than the key's target. */
+    .fb-keep::before {
+      content: "";
+      position: absolute;
+      inset: 3px 0 9px;
+      z-index: -1;
+      border-radius: 8px;
+      background-color: var(--fb-paper);
+      box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.35),
+        0 6px 14px -6px rgb(0 0 0 / 0.5);
+      transition: background-color var(--fb-fast) var(--fb-ease);
+    }
+
+    .fb-keep .fb-keycap {
+      border-color: var(--fb-line-control);
+      background: #fffdf8;
+      color: var(--fb-ink);
+      box-shadow: 0 1px 0 var(--fb-line-control);
+    }
+
+    :scope[data-fb-print]:not([data-fb-caption-over~="top"], [data-fb-slip], [data-fb-tearing]) .fb-keep {
+      display: inline-flex;
+    }
+
+    /* Where a centred hint would reach the key (a player under 928 px), the hint stands under the key's line. */
+    @container media-root (560px <= width < 928px) {
+      :scope[data-fb-print]:not([data-fb-caption-over~="top"], [data-fb-slip], [data-fb-tearing]) .fb-hint {
+        top: 108px;
+      }
+    }
+
+    .fb-keep {
+      @starting-style {
+        opacity: 0;
+      }
+
+      transition:
+        opacity var(--fb-fast) var(--fb-ease-out),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-keep:hover::before {
+        background-color: #fffdf8;
+      }
+    }
+
+    .fb-keep:active {
+      transform: scale(0.96);
+    }
+
+    .fb-keep:focus-visible {
+      outline: 2px solid var(--fb-ring);
+      outline-offset: -4px;
+    }
+
+    .fb-keep:focus-visible::before {
+      box-shadow:
+        0 0 0 4px var(--fb-ring-plate),
+        0 6px 14px -6px rgb(0 0 0 / 0.5);
+    }
+
+    /* (data-fb-fill: an iPhone's player filling the window, screen.ts. It is fullscreen in all but name.) */
+    :scope:fullscreen .fb-keep,
+    :scope[data-fb-fill] .fb-keep {
+      top: max(56px, calc(env(safe-area-inset-top, 0px) + 44px));
+      left: calc(max(18px, env(safe-area-inset-left, 0px)) + 58px);
+    }
+
+    /* A player under 560 px keeps its picture clear (under 480 it is a phone's; up to 560 the plate key stands where
+       this key's line would be): there the key is Settings' "Keep this page" (and S). */
+    @container media-root (width < 560px) {
+      :scope .fb-keep {
+        display: none !important;
+      }
+    }
+
+    /* And on a phone on its side (a short player under a finger), whose picture keeps only the print. */
+    @media (hover: none) and (pointer: coarse) {
+      :scope[data-fb-short] .fb-keep {
+        display: none !important;
+      }
+    }
+
+    /* ─── The slip: what was kept, and its link ─────────────────────────── */
+
+    .fb-tear-slip {
+      position: absolute;
+      top: 56px;
+      left: 12px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "thumb said close"
+        "thumb act close";
+      align-items: center;
+      column-gap: 12px;
+      max-width: min(420px, calc(100% - 24px));
+      padding: 6px 6px 6px 10px;
+      border-radius: 12px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.35),
+        0 14px 34px -12px rgb(0 0 0 / 0.65);
+      font-family: var(--fb-font);
+      pointer-events: auto;
+      transition:
+        opacity var(--fb-base) var(--fb-ease-out),
+        transform var(--fb-base) var(--fb-ease-out);
+
+      @starting-style {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+    }
+
+    .fb-tear-slip[hidden] {
+      display: none;
+    }
+
+    /* The sheet itself, small: what the file looks like. */
+    .fb-tear-thumb {
+      grid-area: thumb;
+      width: 84px;
+      height: auto;
+      border-radius: 2px;
+      outline: 1px solid rgb(0 0 0 / 0.1);
+      outline-offset: -1px;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+    }
+
+    .fb-tear-thumb[hidden] {
+      display: none;
+    }
+
+    .fb-tear-said {
+      grid-area: said;
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.3;
+      text-wrap: balance;
+      /* Its own short line over the link's 44 px one (the close key stands beside both): the slip is 85 px tall, and
+         clears the chapter tabs on the shortest picture it stands on. */
+      padding-top: 8px;
+    }
+
+    .fb-tear-copy {
+      grid-area: act;
+      justify-self: start;
+      min-height: var(--fb-target);
+      margin-inline-start: -8px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 8px;
+      background: none;
+      color: var(--fb-ink);
+      font: inherit;
+      font-size: 16px;
+      font-weight: 500;
+      text-align: start;
+      text-decoration: underline;
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-tear-copy[data-done] {
+      text-decoration: none;
+      color: var(--fb-ink-soft);
+    }
+
+    .fb-tear-copy[hidden],
+    .fb-tear-link[hidden] {
+      display: none;
+    }
+
+    .fb-tear-link {
+      grid-area: act;
+      min-width: 0;
+      width: 100%;
+      min-height: var(--fb-target);
+      padding: 0 10px;
+      border: 1px solid var(--fb-line-control);
+      border-radius: 8px;
+      background: #fffdf8;
+      color: var(--fb-ink);
+      font-family: var(--fb-mono);
+      font-size: 16px;
+    }
+
+    .fb-tear-close {
+      grid-area: close;
+      align-self: start;
+      display: grid;
+      place-items: center;
+      width: var(--fb-target);
+      height: var(--fb-target);
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: none;
+      color: var(--fb-ink);
+      cursor: pointer;
+      transition: transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-tear-close media-icon {
+      display: grid;
+      width: 20px;
+      height: 20px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-tear-copy:not([data-done]):hover,
+      .fb-tear-close:hover {
+        background-color: #ebe4d5;
+      }
+    }
+
+    .fb-tear-copy:active,
+    .fb-tear-close:active {
+      transform: scale(0.96);
+    }
+
+    :is(.fb-tear-copy, .fb-tear-close, .fb-tear-link):focus-visible {
+      outline: 2px solid var(--fb-ring);
+      outline-offset: 2px;
+    }
+
+    /* The stamp gives its place to the slip while it's up. */
+    /* (Named twice over: the print's own rule shows the stamp from two attributes.) */
+    :scope[data-fb-slip][data-fb-print]:not([data-fb-tearing]) .fb-stamp,
+    :scope[data-fb-slip] .fb-stamp {
+      opacity: 0;
+    }
+
+    @container media-root (width < 480px) {
+      .fb-tear-slip {
+        top: 60px;
+        left: 8px;
+        max-width: calc(100% - 16px);
+      }
+
+      .fb-tear-thumb {
+        width: 64px;
+      }
+    }
+
+    /* Under 720 px the picture has room for the slip or the plate key, not both: the key waits (P still lays the
+       plate out). */
+    @container media-root (width < 720px) {
+      :scope[data-fb-slip] .fb-plate-toggle {
+        visibility: hidden;
+      }
+    }
+
+    :scope:fullscreen .fb-tear-slip,
+    :scope[data-fb-fill] .fb-tear-slip {
+      top: max(56px, calc(env(safe-area-inset-top, 0px) + 44px));
+      left: max(12px, env(safe-area-inset-left, 0px));
+    }
+
+    /* ─── Settings' "Keep this page" ────────────────────────────────────── */
+
+    .fb-menu-keep .media-menu-hint .fb-keycap {
+      margin-inline-start: auto;
+    }
+
+    /* ─── Preferences ───────────────────────────────────────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-tear-slip,
+      .fb-keep,
+      .fb-tear-stub {
+        transition-duration: 0ms !important;
+      }
+
+      .fb-tear-slip {
+        @starting-style {
+          transform: none;
+        }
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-keep::before,
+      .fb-tear-slip {
+        border: 1px solid ButtonText;
+      }
+    }
+  }
+}

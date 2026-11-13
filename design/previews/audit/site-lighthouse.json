@@ -1,0 +1,68 @@
+{
+  "measured": "2026-11-13T18:57:34.905Z",
+  "how": "node scripts/site-lighthouse.mjs, Lighthouse 12.8.2 on the site's production build; the phone preset is the median of 3 runs (simulated slow 4G, CPU 4x slower), the desktop preset one run; ms, and CLS as a score",
+  "url": "http://127.0.0.1:4403/",
+  "runs": 3,
+  "mobile": {
+    "performance": 99,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "fcp": 1202,
+    "lcp": 1652,
+    "tbt": 92,
+    "cls": 0,
+    "all": [
+      {
+        "performance": 97,
+        "accessibility": 100,
+        "bestPractices": 100,
+        "fcp": 1202,
+        "lcp": 2103,
+        "tbt": 160,
+        "cls": 0,
+        "load": 7.9
+      },
+      {
+        "performance": 99,
+        "accessibility": 100,
+        "bestPractices": 100,
+        "fcp": 1202,
+        "lcp": 1652,
+        "tbt": 92,
+        "cls": 0,
+        "load": 7.1
+      },
+      {
+        "performance": 99,
+        "accessibility": 100,
+        "bestPractices": 100,
+        "fcp": 1202,
+        "lcp": 1652,
+        "tbt": 79,
+        "cls": 0,
+        "load": 7.2
+      }
+    ]
+  },
+  "desktop": {
+    "performance": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "fcp": 322,
+    "lcp": 364,
+    "tbt": 0,
+    "cls": 0,
+    "all": [
+      {
+        "performance": 100,
+        "accessibility": 100,
+        "bestPractices": 100,
+        "fcp": 322,
+        "lcp": 364,
+        "tbt": 0,
+        "cls": 0,
+        "load": 6.7
+      }
+    ]
+  }
+}

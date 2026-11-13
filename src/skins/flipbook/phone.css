@@ -1,0 +1,801 @@
+/*
+ * The book in one hand: a phone's player (room.ts marks it; under 480 px wide).
+ *
+ * In the page (`data-fb-pad`) the picture is the film's alone. The controls are the book's lower cover, bound under
+ * the picture as one object: the chapter tabs, the fore-edge as a strip the whole width for a thumb, a running foot
+ * (the chapter, the page), the book's own keys by name (Contents, Bookmark, Caption style), and one row of keys with
+ * a large Play. Nothing of theirs stands on the film, and they never hide. The pad hangs under the player's own box (a margin holds its place in the page), so whatever the page
+ * gives the picture, 16:9 or not, stays the picture's.
+ *
+ * Filling the screen (`data-fb-screen`, upright) the same pad lies over the foot of the screen, clear of the home
+ * indicator, and comes and goes with the controls.
+ *
+ * The picture is the largest thing a thumb can reach, so it takes what phones taught: a tap plays and pauses, a swipe
+ * across it flips the pages (flip.ts), a double tap on a side skips ten seconds, a hold runs the film at twice the
+ * speed (hand.ts). Up and down still scroll the page.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    :scope {
+      /* The pad's height: 6 px, the tabs' 44, the edge's 56, 4, the book's keys' 44, 4, the keys' 52, and 10 to the
+         foot. (A page that holds the pad's room from its first paint holds this much: apps/site, proof.css.) */
+      --fb-pad-h: 220px;
+    }
+
+    /* ─── The pad's place: under the picture, one object with it ─────────── */
+
+    :scope[data-fb-pad] {
+      overflow: visible;
+      margin-block-end: var(--fb-pad-h);
+      /* The picture's box and the pad's, clipped as one rounded card: what the picture's shows spill (a turning page,
+         the fanned deck) is cut at its sides and top as before, and goes under the pad at its foot. */
+      clip-path: inset(0 0 calc(-1 * var(--fb-pad-h)) 0 round var(--media-video-border-radius));
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    :scope[data-fb-pad] > * {
+      /* Nothing of the controls is on the picture: what stands over the slab elsewhere stands at the picture's foot. */
+      --fb-inset: 0px;
+      --fb-slab-top: 0px;
+      --fb-tabs-reach: 0px;
+      --media-caption-controls-y: 0px;
+    }
+
+    :scope[data-fb-pad] .video-controls-content .fb-bar {
+      top: 100%;
+      right: 0;
+      bottom: auto;
+      left: 0;
+      height: var(--fb-pad-h);
+      border-radius: 0 0 var(--media-video-border-radius) var(--media-video-border-radius);
+      /* The pad is the player's lower half, not chrome over the film: it stays. */
+      opacity: 1 !important;
+      transform: none !important;
+      pointer-events: auto !important;
+      box-shadow:
+        inset 0 1px 0 rgb(0 0 0 / 0.6),
+        inset 0 -1px 0 rgb(0 0 0 / 0.5);
+    }
+
+    /* The picture keeps nothing of the controls: no shade at its foot, no title chip, no keys along its top. */
+    :scope[data-fb-pad] .video-controls-backdrop,
+    :scope[data-fb-pad] .video-controls-top {
+      display: none;
+    }
+
+    /* ─── The pad itself: tabs, the edge, the running foot, the keys ─────── */
+
+    :scope[data-fb-hand] .fb-bar {
+      display: grid;
+      grid-template-rows: 100px 44px 52px;
+      row-gap: 4px;
+      align-content: start;
+      padding: 6px 12px 10px;
+      border-width: 0;
+      /* A press on the pad is a press on a control or on nothing: never a text selection, a callout or a zoom. */
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+
+    /* The join: a gilt hairline where the picture meets the cover, as a tooled line on a binding. */
+    :scope[data-fb-hand] .fb-bar::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, rgb(214 174 85 / 0.2), rgb(241 220 150 / 0.75) 50%, rgb(214 174 85 / 0.2));
+      pointer-events: none;
+    }
+
+    /* The page block that peeks from under a slab over the film has nothing to peek from here. */
+    :scope[data-fb-pad] .fb-bar::before {
+      display: none;
+    }
+
+    /* No keyboard, no keycaps: a touch screen's keys carry their names alone. */
+    @media (hover: none) and (pointer: coarse) {
+      :scope .fb-keycap:not(fb-keymap *) {
+        display: none !important;
+      }
+
+      /* (A named key without its cap is still a whole target.) */
+      :scope :is(.fb-top-key, .fb-slab-key) {
+        min-width: var(--fb-target);
+      }
+    }
+
+    :scope[data-fb-hand] .fb-seek {
+      display: block;
+      height: 100px;
+      padding: 0;
+    }
+
+    /* The tabs stand on the edge's upper side: a whole target each, their faces meeting the pages. */
+    :scope[data-fb-hand] .fb-tabs {
+      inset-inline: 0;
+      top: 44px;
+    }
+
+    :scope[data-fb-hand] .fb-tabs .fb-tab {
+      height: 44px;
+      margin-left: 0;
+      padding-inline-end: 4px;
+      touch-action: manipulation;
+      --fb-tab-face-end: 4px;
+    }
+
+    :scope[data-fb-hand] .fb-tabs .fb-tab-face {
+      left: 0;
+      height: 26px;
+      min-width: 28px;
+      margin-left: 0;
+      padding-inline: 7px;
+      border-radius: 6px 6px 0 0;
+    }
+
+    /* A tap on a tab goes there (touch.ts): the slip that names it is the keyboard's and the mouse's. */
+    @media (hover: none) {
+      :scope[data-fb-hand] .fb-tabs .fb-tab:active .fb-tab-name {
+        visibility: hidden;
+        opacity: 0;
+      }
+    }
+
+    /* The fore-edge: 30 px of pages the whole width, in a 56 px strip that is all the slider's. Sideways it flips;
+       up and down it lets the page scroll (flip.ts waits to see which before the film moves). */
+    :scope[data-fb-hand] .media-time-slider {
+      position: absolute;
+      inset: 44px 0 0;
+      display: block;
+      height: 56px;
+      /* (Video.js writes touch-action: none on its sliders, inline.) */
+      touch-action: pan-y !important;
+    }
+
+    :scope[data-fb-hand] .fb-edge {
+      top: 0;
+      height: 30px;
+      margin-top: 0;
+    }
+
+    :scope[data-fb-hand] .fb-edge-block {
+      border-radius: 4px;
+    }
+
+    :scope[data-fb-hand] .fb-edge-paint {
+      height: 30px;
+      border-radius: 4px;
+      /* Already the pages' own height here: it shows through them, it doesn't stand up from them. */
+      transform: none;
+    }
+
+    /* The ribbon: across the pages and a little out of them at either side, in a target of its own. */
+    :scope[data-fb-hand] .media-time-slider-thumb {
+      top: -5px;
+      /* A whole 24 px box (what an audit measures a slider's thumb by), the ribbon drawn 16 px wide inside it. Kept
+         inside the edge's ends, so it is whole on the film's first and last page. */
+      left: clamp(12px, var(--media-slider-fill, 0%), calc(100% - 12px));
+      width: 24px;
+      height: 42px;
+      margin: 0 0 0 -12px;
+      /* Across pages this thick it has gilt behind it, not the slab: an ink line down each side tells its paper from
+         the gilt (paper on gilt alone is under 2:1; either on ink, over 8:1). */
+      filter: drop-shadow(1.5px 0 0 rgb(20 17 14 / 0.9)) drop-shadow(-1.5px 0 0 rgb(20 17 14 / 0.9));
+    }
+
+    :scope[data-fb-hand] .media-time-slider[data-dragging] .media-time-slider-thumb {
+      left: clamp(12px, var(--media-slider-pointer, 0%), calc(100% - 12px));
+    }
+
+    :scope[data-fb-hand] .media-time-slider-thumb::after {
+      inset: 0 4px;
+    }
+
+    :scope[data-fb-hand] .media-time-slider-thumb::before {
+      inset: 2px 6px;
+    }
+
+    /* The running foot, in the strip under the pages: the chapter on the left, the page on the right. It is part of
+       the edge's target (it takes no pointer), so a thumb that lands a little low still has the edge. */
+    :scope[data-fb-hand] .fb-clock {
+      display: contents;
+    }
+
+    :scope[data-fb-hand] .fb-folio {
+      position: absolute;
+      top: 88px;
+      right: 14px;
+      left: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      height: 16px;
+      padding: 0;
+      font-size: 12px;
+      line-height: 16px;
+      pointer-events: none;
+    }
+
+    /* (A film with no pages has no running foot: nothing is laid out for it.) */
+    :scope[data-fb-hand] .fb-folio:empty {
+      display: none;
+    }
+
+    :scope[data-fb-hand] .fb-folio::before {
+      content: attr(data-fb-chapter);
+      flex: 0 1 auto;
+      width: auto;
+      min-width: 0;
+      height: auto;
+      overflow: hidden;
+      background: none;
+      color: var(--fb-paper-soft);
+      font-family: var(--fb-font);
+      font-weight: 600;
+      letter-spacing: 0;
+      text-overflow: ellipsis;
+    }
+
+    /*
+     * The book's own keys, a row of theirs between the running foot and the transport: Contents, Bookmark, Caption
+     * style, each with its name, as the wide player prints them on its slab. (Upright, a phone's picture carries no
+     * keys, and these three were only in the Settings sheet, where the book's owner did not find them.) The first
+     * stands under the foot's chapter and the last under its page number; the icons are the wide player's, and so
+     * are their states (the ribbon red with its tick on a marked moment).
+     *
+     * Each with its name where the names fit beside each other: from 376 px (named, the three need 349 px of the
+     * pad's row). Narrower, the caption key is its "Aa" alone, which says lettering by itself, and Contents and
+     * Bookmark keep their names (down to 320 px). That is the pad's width, known before the first frame, so the row
+     * is drawn once and nothing in it moves. Only what a stylesheet cannot know is measured (labels.ts, once the
+     * type is in: a longer language, a reader's wider letter spacing): there the row is marked, `data-fb-bare`
+     * `style` and then `all`, and every key is its icon alone, still a whole target, its name still said.
+     */
+    .fb-book-row {
+      display: none;
+    }
+
+    :scope[data-fb-hand] .fb-book-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      min-width: 0;
+      height: 44px;
+    }
+
+    :scope[data-fb-hand] .fb-book-key {
+      grid-auto-flow: column;
+      grid-auto-columns: auto;
+      column-gap: 7px;
+      flex: none;
+      width: auto;
+      min-width: 44px;
+      height: 44px;
+      padding-inline: 8px;
+      touch-action: manipulation;
+    }
+
+    /* The row's ends stand under the running foot's: the first icon's ink (2 px inside its cell) under the chapter's
+       first letter, the last name's end under the page count's. */
+    :scope[data-fb-hand] .fb-book-key:first-child {
+      padding-inline-start: 0;
+    }
+
+    :scope[data-fb-hand] .fb-book-key:last-child {
+      padding-inline-end: 2px;
+    }
+
+    :scope[data-fb-hand] .fb-book-key .media-button-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    :scope[data-fb-hand] .fb-book-key .fb-key-name {
+      position: static;
+      z-index: 1;
+      width: auto;
+      height: auto;
+      clip-path: none;
+      color: var(--fb-paper);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+    }
+
+    :scope[data-fb-hand] .fb-book-row[data-fb-bare="all"] .fb-book-key,
+    :scope[data-fb-hand] .fb-book-row[data-fb-bare] .fb-captype-key {
+      padding-inline: 0;
+    }
+
+    :scope[data-fb-hand] .fb-book-row[data-fb-bare="all"] .fb-key-name,
+    :scope[data-fb-hand] .fb-book-row[data-fb-bare] .fb-captype-key .fb-key-name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      clip-path: inset(50%);
+    }
+
+    @container media-root (width < 376px) {
+      :scope[data-fb-hand] .fb-book-row .fb-captype-key {
+        padding-inline: 0;
+      }
+
+      :scope[data-fb-hand] .fb-book-row .fb-captype-key .fb-key-name {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        clip-path: inset(50%);
+      }
+    }
+
+    /* The keys: Play as the one large paper key, Mute and the time beside it; captions, the sheet and fullscreen at
+       the end. */
+    :scope[data-fb-hand] .fb-row {
+      --fb-target: 48px;
+      gap: 4px;
+      height: 52px;
+    }
+
+    /* Mute is a key of the pad (the small slab over the film keeps it in Settings, skin.css): sound is one tap away
+       on a phone, where the volume itself is the device's. (Video.js hides it where the browser lets no page mute.) */
+    :scope[data-fb-hand] .fb-mute:not([hidden]) {
+      display: grid;
+    }
+
+    :scope[data-fb-hand] .fb-group {
+      gap: 0;
+    }
+
+    :scope[data-fb-hand] .fb-row .media-button {
+      width: 48px;
+      height: 48px;
+      touch-action: manipulation;
+    }
+
+    :scope[data-fb-hand] .fb-row .fb-play {
+      width: 64px;
+      height: 52px;
+      margin-inline-start: -3px;
+    }
+
+    :scope[data-fb-hand] .fb-play .media-button-icon-base {
+      width: 24px;
+      height: 24px;
+    }
+
+    :scope[data-fb-hand] .fb-row .media-button-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    :scope[data-fb-hand] .fb-time-display {
+      height: 48px;
+      padding-inline: 8px;
+      font-size: 16px;
+      touch-action: manipulation;
+    }
+
+    /* With Mute in the row the film's length has room from 402 px (an iPhone Pro, a Pixel): narrower, the elapsed time
+       alone. The whole of it stays the key's name and is in the field it opens; edge.ts sets --fb-elapsed-ch.
+       Filling the screen the pad stands 8 px in from either side, so there it is from 418 px. */
+    @container media-root (width < 402px) {
+      :scope[data-fb-hand] .fb-time-display {
+        min-width: var(--fb-target);
+        max-width: max(var(--fb-target), calc(var(--fb-elapsed-ch, 4) * 1ch + 16px));
+        overflow: hidden;
+        text-align: start;
+        text-overflow: clip;
+      }
+    }
+
+    @container media-root (width < 418px) {
+      :scope[data-fb-hand][data-fb-screen] .fb-time-display {
+        min-width: var(--fb-target);
+        max-width: max(var(--fb-target), calc(var(--fb-elapsed-ch, 4) * 1ch + 16px));
+        overflow: hidden;
+        text-align: start;
+        text-overflow: clip;
+      }
+    }
+
+    /* The narrowest phones (320 px; to 360 filling the screen): six keys of 44 px, and Play a little less wide, so
+       the row ends inside the pad. */
+    @container media-root (width < 344px) {
+      :scope[data-fb-hand] .fb-row {
+        --fb-target: 44px;
+      }
+
+      :scope[data-fb-hand] .fb-row .media-button {
+        width: 44px;
+        height: 44px;
+      }
+
+      :scope[data-fb-hand] .fb-row .fb-play {
+        width: 56px;
+        height: 52px;
+      }
+
+      :scope[data-fb-hand] .fb-time-display {
+        height: 44px;
+      }
+    }
+
+    @container media-root (width < 360px) {
+      :scope[data-fb-hand][data-fb-screen] .fb-row {
+        --fb-target: 44px;
+      }
+
+      :scope[data-fb-hand][data-fb-screen] .fb-row .media-button {
+        width: 44px;
+        height: 44px;
+      }
+
+      :scope[data-fb-hand][data-fb-screen] .fb-row .fb-play {
+        width: 56px;
+        height: 52px;
+      }
+
+      :scope[data-fb-hand][data-fb-screen] .fb-time-display {
+        height: 44px;
+      }
+    }
+
+    /* ─── Filling the screen, upright: the pad over the screen's foot ────── */
+
+    :scope[data-fb-hand][data-fb-screen] > * {
+      --fb-inset: 8px;
+      /* 8 px inset and the pad's 220. */
+      --fb-slab-top: 228px;
+      --fb-tabs-reach: 0px;
+    }
+
+    :scope[data-fb-hand][data-fb-screen] .fb-bar {
+      height: var(--fb-pad-h);
+      border-radius: 18px;
+    }
+
+    :scope[data-fb-hand][data-fb-screen] .fb-bar::after {
+      inset-inline: 18px;
+    }
+
+    /* ─── Filling the screen where a page can't ask for fullscreen (screen.ts) ─── */
+
+    /* An iPhone gives element fullscreen to no one but its own video player. So the player fills the window itself,
+       in the top layer where it can (a popover), our controls with it. The insets are the notch's and the home
+       indicator's (the page asks for viewport-fit=cover; elsewhere they're 0). */
+    :scope[data-fb-fill] {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 2147483001;
+      width: 100vw !important;
+      height: 100dvh !important;
+      max-width: none !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      aspect-ratio: auto !important;
+      overflow: hidden;
+      clip-path: none;
+      background-color: #000;
+    }
+
+    :scope[data-fb-fill]::backdrop {
+      background: #000;
+    }
+
+    :scope[data-fb-fill] .fb-bar {
+      left: max(var(--fb-inset), env(safe-area-inset-left, 0px));
+      right: max(var(--fb-inset), env(safe-area-inset-right, 0px));
+      bottom: max(var(--fb-inset), env(safe-area-inset-bottom, 0px));
+    }
+
+    :scope[data-fb-fill] .video-controls-top {
+      padding-top: max(12px, env(safe-area-inset-top, 0px));
+      /* Left and right, not padding-inline: the insets are the screen's own sides, and Safari 26 drops a logical
+         shorthand that holds env() or var() under the armour's revert-layer (tests/unit/flipbook-armour.test.ts). */
+      padding-left: max(12px, env(safe-area-inset-left, 0px));
+      padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+
+    /* Where there is no fullscreen at all Video.js hides its key; the fill needs none, so the key stays. */
+    :scope[data-fb-fillable] .media-fullscreen-button[data-hidden] {
+      display: grid;
+    }
+
+    :scope[data-fb-fill] .media-fullscreen-button .media-fullscreen-button-enter-icon {
+      opacity: 0;
+    }
+
+    :scope[data-fb-fill] .media-fullscreen-button .media-fullscreen-button-exit-icon {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
+    /* ─── The picture under a thumb ─────────────────────────────────────── */
+
+    /* Sideways is the film's (a swipe flips, flip.ts); up and down is the page's; two fingers still zoom. */
+    :scope {
+      touch-action: pan-y pinch-zoom;
+    }
+
+    @media (forced-colors: active) {
+      :scope[data-fb-hand] .fb-bar::after {
+        background: CanvasText;
+      }
+    }
+  }
+}
+
+/* ─── What a touch on the picture shows (hand.ts) ───────────────────────── */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    fb-hand {
+      position: absolute;
+      inset: 0;
+      z-index: 29;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* A touch leaves no keyboard ring round the player; the next key press brings rings back. */
+    :scope[data-fb-touch]:focus-visible::after {
+      opacity: 0;
+    }
+
+    /* A long press on the film is the hold: no selection, no callout, no image menu. */
+    :scope :is(video, .media-poster, .media-poster-image) {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* The skip's mark: a paper slip on the side that was tapped, three leaves going over beside its count. */
+    .fb-hand-mark {
+      position: absolute;
+      top: 50%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      margin-top: -18px;
+      padding: 0 12px 0 10px;
+      border-radius: 8px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.3),
+        0 8px 20px -8px rgb(0 0 0 / 0.55);
+      font-family: var(--fb-mono);
+      font-size: 14px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      opacity: 0;
+      transform: scale(0.96);
+      transition:
+        opacity var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-hand-mark[data-side="start"] {
+      left: 12%;
+    }
+
+    .fb-hand-mark[data-side="end"] {
+      right: 12%;
+      flex-direction: row-reverse;
+    }
+
+    .fb-hand-mark[data-open] {
+      opacity: 1;
+      transform: none;
+    }
+
+    .fb-hand-leaves {
+      position: relative;
+      width: 14px;
+      height: 18px;
+      perspective: 80px;
+    }
+
+    .fb-hand-leaves > i {
+      position: absolute;
+      inset: 0;
+      border-radius: 1px 2px 2px 1px;
+      background: linear-gradient(90deg, #d8ccb6, #fffdf8 30%);
+      box-shadow: 0 0 0 1px rgb(20 17 14 / 0.55);
+      transform-origin: 0 50%;
+      backface-visibility: hidden;
+    }
+
+    .fb-hand-mark[data-direction="back"] .fb-hand-leaves > i {
+      background: linear-gradient(270deg, #d8ccb6, #fffdf8 30%);
+      border-radius: 2px 1px 1px 2px;
+      transform-origin: 100% 50%;
+    }
+
+    /* The hold's chip, and the hand's speed while a swipe drives the film (flip.ts): ink, at the picture's head. */
+    .fb-hand-chip,
+    .fb-pace-chip {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      display: grid;
+      place-items: center;
+      min-width: 7ch;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 7px;
+      background: var(--fb-ink);
+      color: var(--fb-paper);
+      box-shadow:
+        0 0 0 1px rgb(246 241 231 / 0.55),
+        0 6px 16px -6px rgb(0 0 0 / 0.7);
+      font-family: var(--fb-mono);
+      font-size: 14px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      white-space: nowrap;
+      /* Over the fan's leaves (fan.ts), when a finger is high on the picture. */
+      z-index: 3;
+      opacity: 0;
+      translate: -50% 0;
+      transition: opacity var(--fb-fast) var(--fb-ease);
+    }
+
+    :is(.fb-hand-chip, .fb-pace-chip)[data-open] {
+      opacity: 1;
+    }
+
+    :scope[data-fb-screen] :is(.fb-hand-chip, .fb-pace-chip) {
+      top: max(16px, env(safe-area-inset-top, 0px));
+    }
+
+    @media (forced-colors: active) {
+      .fb-hand-mark,
+      .fb-hand-chip,
+      .fb-pace-chip {
+        forced-color-adjust: none;
+        border: 1px solid CanvasText;
+        background: Canvas;
+        color: CanvasText;
+      }
+    }
+  }
+}
+
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* One count at a time: while the skip's mark is on the picture, the chip over the ribbon stands down. */
+    :scope:has(.fb-hand-mark[data-open]) .fb-edge-chip {
+      opacity: 0;
+    }
+  }
+}
+
+/* ─── The sheet: a handle, a drag down, the chapters with their pages (menu.ts) ─── */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* A chapter's first page and its start are the sheet's; the small popup keeps its plain list. */
+    .fb-menu-chapter-page,
+    .fb-menu-chapter-time {
+      display: none;
+    }
+
+    @container media-root (width < 480px) {
+      @media (width < 640px) {
+        /* The handle: what says "this pulls down". */
+        .media-menu-popup::before {
+          content: "";
+          position: absolute;
+          top: 8px;
+          left: 50%;
+          z-index: 20;
+          width: 36px;
+          height: 4px;
+          margin-left: -18px;
+          border-radius: 2px;
+          background: rgb(246 241 231 / 0.42);
+          pointer-events: none;
+        }
+
+        .media-menu-popup {
+          /* Its rows scroll inside it; the page behind never moves with them. */
+          overscroll-behavior: contain;
+          -webkit-user-select: none;
+          user-select: none;
+          -webkit-touch-callout: none;
+        }
+
+        /* The handle's strip is the sheet's own (a drag on it never scrolls the rows): the rows start under it. */
+        .media-menu-popup {
+          height: calc(var(--media-menu-height) + 24px + env(safe-area-inset-bottom, 0px));
+          /* 128 px stay clear above the sheet: on a real iPhone (402 × 714) a sheet 56 px from the top sat against the
+             host page's own header (Pedro, 12 Nov). A longer list, Quality's seven rows, scrolls inside. */
+          max-height: min(calc(100dvh - 128px), 700px);
+          touch-action: none;
+        }
+
+        .media-menu-content {
+          top: 24px;
+          max-height: calc(100% - 24px);
+          padding-top: 0;
+          touch-action: pan-y;
+        }
+
+        .media-menu-popup[data-fb-still] .media-menu-content {
+          touch-action: none;
+        }
+
+        /* Three groups, a hairline between: how it plays, where in the book, where it goes. (Mute leads the third
+           only where the phone lets no page set its volume, and Volume is not there.) */
+        :is(.fb-menu-chapters:not([data-fb-empty]), .fb-menu-volume:not([data-fb-off]), .fb-menu-volume[data-fb-off] ~ [data-fb-menu="mute"]:not([hidden])) {
+          margin-top: 9px;
+        }
+
+        :is(.fb-menu-chapters:not([data-fb-empty]), .fb-menu-volume:not([data-fb-off]), .fb-menu-volume[data-fb-off] ~ [data-fb-menu="mute"]:not([hidden]))::before {
+          content: "";
+          position: absolute;
+          inset: -5px 12px auto;
+          height: 1px;
+          background: rgb(246 241 231 / 0.12);
+          pointer-events: none;
+        }
+
+        .media-menu-item,
+        .media-menu-radio-item {
+          position: relative;
+          font-size: 16px;
+          touch-action: manipulation;
+        }
+
+        .media-menu-popup[data-fb-still] :is(.media-menu-item, .media-menu-back-item, .media-menu-radio-item) {
+          touch-action: none;
+        }
+
+        /* The chapters as the book's contents: each with its first page, its number and name, and where it starts. */
+        .fb-menu-chapter {
+          min-height: 60px;
+          gap: 12px;
+        }
+
+        .fb-menu-chapter-page {
+          display: block;
+          flex: none;
+          width: 64px;
+          aspect-ratio: var(--fb-print-ratio, 1.7778);
+          border-radius: 3px;
+          background-color: var(--fb-cover-lo);
+          background-image: var(--fb-sprite);
+          background-size: var(--fb-sprite-size);
+          box-shadow:
+            0 0 0 1px rgb(246 241 231 / 0.5),
+            0 2px 6px -2px rgb(0 0 0 / 0.6);
+        }
+
+        .fb-menu-chapter .fb-menu-chapter-name {
+          flex: 1;
+        }
+
+        .fb-menu-chapter-time {
+          display: block;
+          flex: none;
+          min-width: 5ch;
+          font-weight: 400;
+          text-align: end;
+          color: var(--fb-paper-mute);
+          font-family: var(--fb-mono);
+          font-size: 14px;
+          font-variant-numeric: tabular-nums;
+        }
+      }
+    }
+  }
+}

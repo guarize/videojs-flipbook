@@ -1,0 +1,229 @@
+/*
+ * Flipbook: accessibility fixes, in a layer of their own after the skin's components, so each one reads as a fix to
+ * one finding (design/previews/audit-a11y/findings.md) and wins over the look it corrects without !important.
+ */
+@layer a11y {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── Names that are read, not seen ─────────────────────────────────── */
+
+    /* The spoken copy of a word set in capitals ("Now") stays as written, so it is read as a word (#20). */
+    .fb-sr-only {
+      text-transform: none;
+    }
+
+    /* ─── Hover content can be hovered (#8) ─────────────────────────────── */
+
+    .media-tooltip-popup[data-open] {
+      pointer-events: auto;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-time-display:hover::after {
+        pointer-events: auto;
+      }
+    }
+
+    /* Escape put the "Type a time" hint away: it stays away until the pointer leaves or focus moves on. */
+    .fb-time[data-x-hint-dismissed] .fb-time-display::after {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ─── A time that can't be used, said in words (#5) ─────────────────── */
+
+    .fb-time {
+      position: relative;
+    }
+
+    .fb-time [data-x-part="error"]:not(:empty) {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      z-index: 2;
+      width: max-content;
+      max-width: min(320px, 70cqw);
+      padding: 6px 10px;
+      border-left: 3px solid var(--fb-accent);
+      border-radius: 5px;
+      background-color: var(--fb-paper);
+      color: var(--fb-ink);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px -6px rgb(0 0 0 / 0.5);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    /* ─── The shortcuts card scrolls by keyboard (#3) ───────────────────── */
+
+    .fb-keymap:focus-visible {
+      outline: 2px solid var(--fb-ring);
+      outline-offset: -2px;
+      border-radius: var(--fb-radius-card);
+    }
+
+    /* ─── When the character keys answer: a line at the foot of the card (#4) ─ */
+
+    .fb-keymap-note {
+      margin: 0;
+      padding: 12px 4px 0;
+      border-top: 1px solid color-mix(in srgb, var(--fb-ink) 12%, transparent);
+      color: #5b5249;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+
+    /* ─── Control boundaries at 3:1 with the house margin (#26) ─────────── */
+
+    .fb-captype-option,
+    .fb-captype-reset {
+      border-color: var(--fb-line-control);
+    }
+
+    /* ─── Forced colours: Windows contrast themes (#1, #7) ──────────────── */
+
+    /*
+     * The system's colours, set by what each part is. Nothing here opts out of forcing except a selection's own fill,
+     * which is set in system colours on the element that shows it.
+     */
+    @media (forced-colors: active) {
+      :scope {
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      /* Controls: the button colours, with a visible edge. */
+      .media-button,
+      .fb-time-display,
+      .fb-time-field,
+      .fb-tab,
+      .fb-resume-button,
+      .fb-sheet-close,
+      .fb-captype-option,
+      .fb-captype-reset,
+      .fb-captype-done,
+      .media-menu-item,
+      .media-menu-radio-item,
+      .media-menu-back-item {
+        forced-color-adjust: auto;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+        color: ButtonText;
+      }
+
+      .media-button,
+      .fb-time-display,
+      .fb-tab,
+      .fb-captype-reset {
+        border: 1px solid ButtonText;
+      }
+
+      .media-button:disabled,
+      .media-button[aria-disabled="true"] {
+        border-color: GrayText;
+        color: GrayText;
+      }
+
+      /* Keycaps, tab faces and the speed: printed marks, in the text colour on the page colour. */
+      .fb-keycap,
+      .fb-tab-face,
+      .fb-tab-name,
+      .fb-rate,
+      .fb-folio,
+      .fb-ends,
+      .media-title {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      .fb-keycap,
+      .fb-tab-face {
+        border: 1px solid CanvasText;
+      }
+
+      /* The speed is drawn as the key's ::after, which the skin hides with every key's decoration in forced colours. */
+      .fb-rate::after {
+        display: inline;
+      }
+
+      /* Where you are, and what's chosen: the selection colours. */
+      .fb-tab[data-current] .fb-tab-face,
+      .media-menu-radio-item[aria-checked="true"],
+      .fb-captype-option:has(:checked) {
+        forced-color-adjust: none;
+        border-color: Highlight;
+        background-color: Highlight;
+        background-image: none;
+        color: HighlightText;
+      }
+
+      /* The current chapter's number is printed on a red gradient: a plain mark in forced colours. */
+      .fb-tab-face {
+        background-image: none;
+        box-shadow: none;
+      }
+
+      /* Inside a chosen caption option the radio mark is drawn in the selection's text colour, not the skin's red. */
+      .fb-captype-option:has(:checked) .fb-captype-text::before {
+        border-color: HighlightText;
+        background: Highlight;
+      }
+
+      /* The caption options' ring is on the option (the radio inside is hidden), so it is set there. */
+      .fb-captype-option:has(:focus-visible) {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px Canvas;
+      }
+
+      /* Surfaces laid over the picture: the page colours, with an edge. */
+      .fb-sheet-page,
+      .media-menu-popup,
+      .media-tooltip-popup,
+      .fb-label,
+      .fb-time [data-x-part="error"]:not(:empty) {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        background-color: Canvas;
+        color: CanvasText;
+      }
+
+      .fb-time [data-x-part="error"]:not(:empty) {
+        border: 1px solid CanvasText;
+        border-left-width: 3px;
+      }
+
+      /* Sliders: the track's edge, the played part in the selection colour. */
+      .media-time-slider-track,
+      .media-volume-slider-track {
+        border: 1px solid CanvasText;
+      }
+
+      /*
+       * Focus (#7): the skin's rings are box-shadows, which forced colours remove. Every focus ring here is an outline
+       * in the system's highlight colour, the player's own included.
+       */
+      /* The player's ring is its top layer (::after, above the picture and the bar), drawn as an outline. */
+      :scope:focus-visible::after {
+        outline: 3px solid Highlight;
+        outline-offset: -3px;
+        box-shadow: none;
+      }
+
+      :scope :focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+      }
+
+      .fb-keymap:focus-visible,
+      .media-menu-item:focus-visible,
+      .media-menu-radio-item:focus-visible,
+      .media-menu-back-item:focus-visible {
+        outline-offset: -2px;
+      }
+    }
+  }
+}

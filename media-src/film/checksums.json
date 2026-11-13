@@ -1,0 +1,15 @@
+{
+  "from": "https://flipbook.gua.studio/media/film/",
+  "files": [
+    {
+      "name": "film-720.mp4",
+      "to": "apps/preview/public/media/film/film-720.mp4",
+      "bytes": 38265465,
+      "sha256": "fb05ab02fc409829fd8a6506d93487be0c1321e2d3ec98ee323af9654fada98c"
+    }
+  ],
+  "silent": {
+    "from": "apps/preview/public/media/film/film-720.mp4",
+    "to": "test-fixtures/film-720-silent.mp4"
+  }
+}

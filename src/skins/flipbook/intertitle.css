@@ -1,0 +1,235 @@
+/*
+ * Captions as intertitles (intertitle.ts): the picture set as a plate on the page, and the cue in ink in the band of
+ * paper under it. Loaded with its module, after the core sheets.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── The page: paper, with the picture as a plate on it ────────────── */
+
+    :scope[data-fb-intertitle] {
+      background-color: var(--fb-paper);
+    }
+
+    /* The plate, and the pages that turn and riffle over it, at its size. The player's own box doesn't change. */
+    /* Over the paused print's own margin (flip.css): this page has its margins already. */
+    :scope[data-fb-intertitle] > :is(video, mux-video, hls-video, hlsjs-video, .media-poster, .fb-turn, .fb-riffle, canvas.fb-stand) {
+      transform-origin: 50% 0 !important;
+      transform: translate3d(0, var(--fb-it-y, 0px), 0) scale(var(--fb-it-scale, 1)) !important;
+      /* A plate set on the page has a plate's corners, the same on all four (the player's own are rounded at the
+         head only, on a phone's pad: carried in here, the plate had two round corners and two square). */
+      border-radius: 2px;
+    }
+
+    :scope[data-fb-intertitle] .fb-print-frame {
+      opacity: 0;
+    }
+
+    :scope[data-fb-intertitle][data-fb-intertitle-moving] > :is(video, mux-video, hls-video, hlsjs-video, .media-poster, .fb-turn, .fb-riffle, canvas.fb-stand) {
+      transition: transform var(--fb-slow) var(--fb-ease-out);
+    }
+
+    /* The controls' vignette is for a picture under them. Here they stand on paper, each on its own board. */
+    :scope[data-fb-intertitle] .video-controls-backdrop {
+      opacity: 0;
+    }
+
+    /* The corner that lifts is the page's own, and the page under it is paper too. */
+    :scope[data-fb-intertitle] .fb-curl-image {
+      background-image: none !important;
+      background-color: #e9e2d3;
+    }
+
+    /* The skin's caption layer stands down: the same cues are set here. */
+    :scope[data-fb-intertitle] fb-captions > .fb-captions-lines {
+      display: none;
+    }
+
+    /* ─── The card ──────────────────────────────────────────────────────── */
+
+    .fb-intertitle {
+      position: absolute;
+      inset: 0;
+      z-index: 26;
+      display: none;
+      pointer-events: none;
+    }
+
+    :scope[data-fb-intertitle] .fb-intertitle {
+      display: block;
+    }
+
+    .fb-intertitle-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* The rule stands at the band's head on every card: one line or two, it does not move from card to card. */
+      justify-content: flex-start;
+      gap: 0.4em;
+      width: max-content;
+      padding: 6px 18px 8px;
+      color: var(--fb-ink);
+      font-family: var(--fb-font);
+      /* The caption sizes and their floors, as on the picture: S 14, M 16, L 19, XL 22. */
+      font-size: clamp(16px, 2.3cqw, 26px);
+      opacity: 0;
+      transition: opacity var(--fb-fast) var(--fb-ease);
+    }
+
+    :scope[data-fb-cap-size="s"] .fb-intertitle-card {
+      font-size: clamp(14px, 1.9cqw, 22px);
+    }
+
+    :scope[data-fb-cap-size="l"] .fb-intertitle-card {
+      font-size: clamp(19px, 2.9cqw, 32px);
+    }
+
+    :scope[data-fb-cap-size="xl"] .fb-intertitle-card {
+      font-size: clamp(22px, 3.6cqw, 40px);
+    }
+
+    /* A cue too short for its cards at the viewer's size is set a size smaller (intertitle.ts): the same four sizes. */
+    :scope .fb-intertitle[data-step="l"] .fb-intertitle-card {
+      font-size: clamp(19px, 2.9cqw, 32px);
+    }
+
+    :scope .fb-intertitle[data-step="m"] .fb-intertitle-card {
+      font-size: clamp(16px, 2.3cqw, 26px);
+    }
+
+    :scope .fb-intertitle[data-step="s"] .fb-intertitle-card {
+      font-size: clamp(14px, 1.9cqw, 22px);
+    }
+
+    .fb-intertitle[data-open] .fb-intertitle-card {
+      opacity: 1;
+    }
+
+    .fb-intertitle[data-moving] .fb-intertitle-card {
+      transition:
+        opacity var(--fb-fast) var(--fb-ease),
+        transform var(--fb-slow) var(--fb-ease-out);
+    }
+
+    /* A short rule over the line, as over the title on the cover. */
+    .fb-intertitle-rule {
+      flex: none;
+      width: 1.6em;
+      height: 2px;
+      border-radius: 1px;
+      background-color: var(--fb-accent-deep);
+    }
+
+    .fb-intertitle-lines {
+      display: grid;
+      /* The room kept for two lines is the lines' own: a single line stands in its middle, under the rule. */
+      flex: 1 1 auto;
+      align-content: center;
+      gap: 0.12em;
+      font-size: 1em;
+      font-weight: 550;
+      line-height: 1.3;
+      letter-spacing: -0.006em;
+      text-align: center;
+    }
+
+    .fb-intertitle-line {
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    /* Where a run of words is set out of sight, at the card's width, to count its lines (intertitle.ts). */
+    .fb-intertitle-gauge {
+      position: absolute;
+      top: 0;
+      left: 0;
+      visibility: hidden;
+    }
+
+    /* Who speaks: named over the line, in the cover's red, at the caption's own size. */
+    .fb-intertitle-speaker {
+      display: block;
+      color: var(--fb-accent-deep);
+      font-weight: 700;
+    }
+
+    /* Music and described sounds: the page's second ink, so speech stays the darkest thing in the band. */
+    .fb-intertitle-line:is([data-kind="music"], [data-kind="sound"]) {
+      color: var(--fb-ink-soft);
+      font-weight: 500;
+    }
+
+    /* On a player too small to make room over the controls: the card on the plate's foot, on its own slip of paper. */
+    .fb-intertitle[data-over] .fb-intertitle-card {
+      border-radius: 4px;
+      background-color: var(--fb-paper);
+      box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.3),
+        0 8px 20px -8px rgb(0 0 0 / 0.5);
+    }
+
+    :scope[data-fb-intertitle-top] .media-title {
+      visibility: hidden;
+    }
+
+    /* ─── The Caption style page's preview, as an intertitle ────────────── */
+
+    :scope[data-fb-cap-mode="intertitle"] .fb-captype-preview {
+      background-color: var(--fb-paper);
+    }
+
+    :scope[data-fb-cap-mode="intertitle"] .fb-captype-frame {
+      inset: 8px 22% 44px;
+      border-radius: 1px;
+      background-size: cover !important;
+      background-position: center !important;
+      outline: 1px solid rgb(0 0 0 / 0.1);
+      outline-offset: -1px;
+    }
+
+    :scope[data-fb-cap-mode="intertitle"] .fb-captions-lines.fb-captype-lines {
+      top: auto;
+      bottom: 8px;
+      font-weight: 550;
+    }
+
+    :scope[data-fb-cap-mode="intertitle"] .fb-captype-lines .fb-captions-line {
+      padding: 0;
+      background: none;
+      color: var(--fb-ink);
+      -webkit-text-stroke: 0;
+      text-shadow: none;
+    }
+
+    /* ─── Preferences ───────────────────────────────────────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope[data-fb-intertitle] > :is(video, mux-video, hls-video, hlsjs-video, .media-poster, .fb-turn, .fb-riffle, canvas.fb-stand),
+      .fb-intertitle-card {
+        transition-duration: 0ms !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      :scope[data-fb-intertitle] {
+        background-color: Canvas;
+      }
+
+      .fb-intertitle-card {
+        color: CanvasText;
+      }
+
+      .fb-intertitle-rule {
+        background-color: CanvasText;
+      }
+
+      .fb-intertitle-speaker,
+      .fb-intertitle-line:is([data-kind="music"], [data-kind="sound"]) {
+        color: CanvasText;
+      }
+    }
+  }
+}

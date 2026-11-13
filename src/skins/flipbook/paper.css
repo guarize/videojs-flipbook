@@ -1,0 +1,17 @@
+/*
+ * Real paper (paper.ts): the WebGL canvas a turning page is drawn on, shared by the chapter turns, the opening
+ * riffle, the contents' arrival, the back cover's leaves and the picture-in-picture turn. Adopted once, by whichever
+ * of those extras arrives first (extras/paper.ts).
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    .fb-paper {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      transition: opacity 140ms linear;
+    }
+  }
+}

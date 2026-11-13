@@ -1,0 +1,344 @@
+/*
+ * Caption style (captype.ts): the viewer's choices, applied to the skin's own caption layer (captions.ts) through
+ * attributes on the player, and the page that sets them: four native radio groups set as printed choices, and a
+ * preview line on the frame you're watching.
+ */
+@layer components {
+  @scope (.media-skin[data-theme="flipbook"][data-preset="video"]) {
+    /* ─── The style, on the captions ────────────────────────────────────── */
+
+    :scope[data-fb-cap-size="s"] .fb-captions-lines {
+      font-size: clamp(14px, 1.9cqw, 22px);
+    }
+
+    :scope[data-fb-cap-size="l"] .fb-captions-lines {
+      font-size: clamp(19px, 2.9cqw, 32px);
+    }
+
+    :scope[data-fb-cap-size="xl"] .fb-captions-lines {
+      font-size: clamp(22px, 3.6cqw, 40px);
+    }
+
+    /* See-through still keeps paper text above 6:1 over a white frame. */
+    :scope[data-fb-cap-bg="translucent"] .fb-captions-line {
+      background: rgb(20 17 14 / 0.7);
+    }
+
+    /* No plate: each letter carries its own ink outline, so it reads over any frame. */
+    :scope[data-fb-cap-bg="outline"] .fb-captions-line {
+      background: none;
+      -webkit-text-stroke: 0.16em rgb(13 11 9);
+      paint-order: stroke fill;
+      text-shadow: 0 0.04em 0.12em rgb(0 0 0 / 0.8);
+    }
+
+    :scope[data-fb-cap-color="yellow"] .fb-captions-line {
+      color: #ffd84a;
+    }
+
+    /* ─── The page ──────────────────────────────────────────────────────── */
+
+    .fb-captype {
+      display: grid;
+      gap: 14px;
+    }
+
+    .fb-captype-preview {
+      position: relative;
+      height: 132px;
+      overflow: hidden;
+      border-radius: 3px;
+      background-color: var(--fb-desk);
+      box-shadow: 0 0 0 3px #fffdf8, 0 1px 4px 2px rgb(0 0 0 / 0.25);
+    }
+
+    .fb-captype-frame {
+      position: absolute;
+      inset: 0;
+      background-repeat: no-repeat;
+    }
+
+    /* The preview line is the caption layer's own markup, so it takes every choice exactly as the captions will. */
+    .fb-captions-lines.fb-captype-lines {
+      top: auto;
+      bottom: 12px;
+      max-width: 94%;
+      opacity: 1;
+      transform: translateX(-50%);
+      transition: none;
+    }
+
+    :scope[data-fb-cap-position="top"] .fb-captions-lines.fb-captype-lines {
+      top: 12px;
+      bottom: auto;
+    }
+
+    .fb-captype-off {
+      margin: 0;
+      color: #5b5249;
+      font-size: 16px;
+    }
+
+    .fb-captype-off[hidden] {
+      display: none;
+    }
+
+    .fb-captype-groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 24px;
+    }
+
+    .fb-captype-group {
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    /* Style (on the picture, or an intertitle) leads the page, across both columns. */
+    .fb-captype-group[data-group="mode"] {
+      grid-column: 1 / -1;
+    }
+
+    .fb-captype-group[hidden],
+    .fb-captype-note[hidden] {
+      display: none;
+    }
+
+    /* With an intertitle chosen the page sets these itself: they stand down, and the note under them says why. */
+    .fb-captype-group:disabled {
+      opacity: 0.45;
+    }
+
+    .fb-captype-group:disabled :is(.fb-captype-option, .fb-captype-input) {
+      cursor: not-allowed;
+    }
+
+    .fb-captype-note {
+      margin: 0;
+      color: #5b5249;
+      font-size: 16px;
+      text-wrap: pretty;
+    }
+
+    .fb-captype-group legend {
+      margin-bottom: 6px;
+      padding: 0;
+      color: #5b5249;
+      font-family: var(--fb-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .fb-captype-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* A printed choice: a ring that fills when chosen, so the state is shape as well as ink. */
+    .fb-captype-option {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--fb-target);
+      padding: 0 14px 0 12px;
+      border: 1px solid #8a8073;
+      border-radius: 8px;
+      background-color: #fffdf8;
+      color: var(--fb-ink);
+      font-size: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition:
+        background-color var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-captype-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .fb-captype-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .fb-captype-text::before {
+      content: "";
+      flex: none;
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid currentColor;
+      border-radius: 50%;
+      box-sizing: border-box;
+    }
+
+    .fb-captype-option:has(:checked) {
+      border-color: var(--fb-ink);
+      background-color: var(--fb-ink);
+      color: var(--fb-paper);
+    }
+
+    .fb-captype-option:has(:checked) .fb-captype-text::before {
+      border-width: 3.5px;
+      border-color: var(--fb-paper);
+      background: var(--fb-red);
+    }
+
+    /* The colour choices show their colour. */
+    .fb-captype-option[data-value="yellow"] .fb-captype-text::after,
+    .fb-captype-option[data-value="white"] .fb-captype-text::after {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgb(20 17 14 / 0.55);
+    }
+
+    .fb-captype-option[data-value="white"] .fb-captype-text::after {
+      background: #fffdf8;
+    }
+
+    .fb-captype-option[data-value="yellow"] .fb-captype-text::after {
+      background: #ffd84a;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-captype-option:not(:has(:checked)):hover {
+        background-color: #f1ebde;
+      }
+    }
+
+    .fb-captype-option:active {
+      transform: scale(0.96);
+    }
+
+    .fb-captype-option:has(:focus-visible) {
+      outline: 2px solid var(--fb-red);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgb(20 17 14 / 0.92);
+    }
+
+    /* Reset and Done stay in reach however far the choices scroll: the foot is pinned to the page's bottom edge
+       (over the body's own bottom padding), on paper, under its printed rule. */
+    .fb-captype-foot {
+      --fb-foot-pad: 18px;
+      position: sticky;
+      bottom: calc(-1 * var(--fb-foot-pad));
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: calc(-1 * var(--fb-foot-pad));
+      padding-top: 12px;
+      padding-bottom: var(--fb-foot-pad);
+      border-top: 1px solid rgb(20 17 14 / 0.12);
+      background: var(--fb-paper);
+    }
+
+    /* A focused choice scrolled into view lands above the pinned foot (its 12 px of air, a key, its 18 px foot). */
+    .fb-sheet-body:has(> .fb-captype-foot) {
+      scroll-padding-block-end: calc(var(--fb-target) + 30px);
+    }
+
+    .fb-captype-saved {
+      flex: 1;
+      margin: 0;
+      color: #5b5249;
+      font-size: 14px;
+    }
+
+    .fb-captype-reset,
+    .fb-captype-done {
+      min-height: var(--fb-target);
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: var(--fb-radius-control);
+      font-family: var(--fb-font);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition:
+        background-color var(--fb-fast) var(--fb-ease),
+        transform var(--fb-fast) var(--fb-ease-out);
+    }
+
+    .fb-captype-reset {
+      border-color: #8a8073;
+      background: transparent;
+      color: var(--fb-ink);
+    }
+
+    .fb-captype-done {
+      background: var(--fb-ink);
+      color: var(--fb-paper);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .fb-captype-reset:hover {
+        background-color: rgb(20 17 14 / 0.06);
+      }
+    }
+
+    .fb-captype-reset:active,
+    .fb-captype-done:active {
+      transform: scale(0.96);
+    }
+
+    @container media-root (width < 720px) {
+      .fb-captype-foot {
+        --fb-foot-pad: 14px;
+      }
+
+      .fb-captype-preview {
+        height: 84px;
+      }
+
+      .fb-captype-groups {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .fb-captype-saved {
+        display: none;
+      }
+
+      .fb-captype-foot {
+        justify-content: flex-end;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fb-captype-option,
+      .fb-captype-reset,
+      .fb-captype-done {
+        transition-duration: 0ms !important;
+        transform: none !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .fb-captype-option {
+        border-color: ButtonText;
+      }
+
+      .fb-captype-option:has(:checked) {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+      }
+    }
+  }
+}
